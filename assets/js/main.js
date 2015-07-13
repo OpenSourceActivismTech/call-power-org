@@ -38,6 +38,13 @@
 				);
 			});
 
+		// Redirect to main domain if we're being loaded on gh-pages project url
+		if (window.location.host !== 'callpower.org') {
+			page = window.location.pathname.replace('/call-power-org/','');
+			redirect = 'http://www.callpower.org/'+page;
+			window.location.replace(redirect);
+		}
+
 	});
 
 })(jQuery);
