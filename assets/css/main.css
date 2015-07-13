@@ -1464,6 +1464,9 @@ section.logo img, article.logo img {
   max-width: 25%;
   margin: 0px 10px;
   vertical-align: middle; }
+  section.logo img.full, article.logo img.full {
+    max-width: 100%;
+    margin-bottom: 30px; }
 
 header {
   text-align: center; }
