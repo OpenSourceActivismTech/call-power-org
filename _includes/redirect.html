@@ -1,6 +1,6 @@
 <script>
 // Redirect to main domain if we're being loaded on gh-pages project url
-var onMainDomain = /(^|\.)callpower\.org$/.test(window.location.hostname);
+var onMainDomain = /(^|\.)callpower\.org|localhost$/.test(window.location.hostname);
 if (!onMainDomain) {
 	var page = window.location.pathname.replace('/call-power-org/','');
 	var redirect = 'http://www.callpower.org/'+page;
