@@ -1,3 +1,5 @@
+---
+---
 <!DOCTYPE HTML>
 <!--
 	Directive theme by HTML5 UP
@@ -10,7 +12,7 @@
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<!--[if lte IE 8]><script src="assets/js/ie/html5shiv.js"></script><![endif]-->
-		<link rel="stylesheet" href="assets/css/main.css" />
+		<link rel="stylesheet" href="assets/css/main.css?d={{site.time | date: '%s'}}" />
 		<!--[if lte IE 8]><link rel="stylesheet" href="assets/css/ie8.css" /><![endif]-->
 	</head>
 	<body>
@@ -25,20 +27,20 @@
 
 				<div class="box alt container">
 					<section class="feature left">
-						<a href="#" class="image icon fa-bullhorn"><img src="images/pic01.jpg" alt="" /></a>
+						<a href="#" class="image icon fa-bullhorn"><img src="images/pic01.jpg?d={{site.time | date: '%s'}}" alt="" /></a>
 						<div class="content">
 							<h3>Easy to Use</h3>
 							<p>Record a message, choose your targets, and the campaign is live. Callers can take action via web form, email, or text to phone. No dialing required.</p>
 					</section>
 					<section class="feature right">
-						<a href="#" class="image icon fa-bolt"><img src="images/pic02.jpg" alt="" /></a>
+						<a href="#" class="image icon fa-bolt"><img src="images/pic02.jpg?d={{site.time | date: '%s'}}" alt="" /></a>
 						<div class="content">
 							<h3>Flexible and Powerful</h3>
 							<p>CallPower placed over 100,000 calls to Congress, the FCC and the White House during the fight for Net Neutrality. Now available for your campaign!</p>
 						</div>
 					</section>
 					<section class="feature left">
-						<a href="#" class="image icon fa-code"><img src="images/pic03.jpg" alt="" /></a>
+						<a href="#" class="image icon fa-code"><img src="images/pic03.jpg?d={{site.time | date: '%s'}}" alt="" /></a>
 						<div class="content">
 							<h3>Open Source</h3>
 							<p>Our code is available for free, and is easy to host in the cloud or own your own servers. When anyone adds features, they will also be free.</p>
@@ -78,7 +80,7 @@
 						</header>
 							<p>
 							<a href="https://eff.org"><img src="assets/logos/eff.png" alt="Electronic Frontier Foundation"/></a>
-							<a href="https://www.fightforthefuture.org"><img src="assets/logos/ftff.png" alt="Fight for the Future"/></a>
+							<a href="https://www.fightforthefuture.org"><img src="assets/logos/ftff-black.png" alt="Fight for the Future"/></a>
 							<a href="https://demandprogress.org"><img src="assets/logos/dp.png" alt="Demand Progress"/> </a>
 							<a href="http://colorofchange.org"><img src="assets/logos/coc.png" alt="ColorOfChange"/> </a>
 							<a href="https://taskforce.is"><img src="assets/logos/taskforce.png" alt="Taskforce"/> </a>
@@ -138,7 +140,7 @@
 			<script src="assets/js/skel.min.js"></script>
 			<script src="assets/js/util.js"></script>
 			<!--[if lte IE 8]><script src="assets/js/ie/respond.min.js"></script><![endif]-->
-			<script src="assets/js/main.js"></script>
+			<script src="assets/js/main.js?d={{ site.time | date: '%s' }}"></script>
 
 	</body>
 </html>
