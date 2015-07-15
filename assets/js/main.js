@@ -4,6 +4,19 @@
 	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
 */
 
+function validatePhone(num) {
+    num = num.replace(/\s/g, '').replace(/\(/g, '').replace(/\)/g, '');
+    num = num.replace("+", "").replace(/\-/g, '');
+
+    if (num.charAt(0) == "1")
+        num = num.substr(1);
+
+    if (num.length != 10)
+        return false;
+
+    return num;
+}
+
 (function($) {
 
 	skel.breakpoints({
@@ -37,6 +50,36 @@
 					skel.breakpoint('narrower').active
 				);
 			});
+
+		$('form#demo').submit(function(event) {
+			event.preventDefault();
+
+	        var phone = $('input[name=phone]').val();
+	        var zipcode = $('input[name=zip]').val();
+
+	        if (!validatePhone(phone))
+	            return alert('Please enter a valid US phone number!');
+
+			var data = {
+	            campaignId: '1', 
+	            userPhone: validatePhone(phone),
+	            zipcode: zipcode // not required, don't validate
+	        };
+
+			$.ajax({
+	            url: 'http://demo.callpower.org/call/create',
+	            type: "get",
+	            dataType: "json",
+	            data: data,
+	            success: function(res) {
+	            	alert("We are calling you now!");
+	                trackEvent('call');
+	                console.log('Placed Call Power call: ', res);
+	            }, error: function(xhr, status, code) {
+	            	console.error(status);
+	            }
+	        });
+		});
 	});
 
 })(jQuery);
