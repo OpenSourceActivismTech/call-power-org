@@ -1,18 +1,16 @@
-/*
-	Directive by HTML5 UP
-	html5up.net | @n33co
-	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
-*/
+/* global console, skel */
 
 function validatePhone(num) {
     num = num.replace(/\s/g, '').replace(/\(/g, '').replace(/\)/g, '');
     num = num.replace("+", "").replace(/\-/g, '');
 
-    if (num.charAt(0) == "1")
+    if (num.charAt(0) === "1") {
         num = num.substr(1);
+    }
 
-    if (num.length != 10)
+    if (num.length !== 10) {
         return false;
+    }
 
     return num;
 }
@@ -74,16 +72,14 @@ function validatePhone(num) {
 	            dataType: "json",
 	            data: data,
 	            success: function(res) {
-	            	alert("We are calling you now!");
-	                trackEvent('call');
 	                console.log('Placed Call Power call: ', res);
-	            }, error: function(xhr, status, code) {
+
+	                $('form#demo').slideUp();
+			        $('.form-replace').slideDown();
+	            }, error: function(xhr, status) {
 	            	console.error(status);
 	            }
 	        });
-
-	        $('form#demo').slideUp();
-	        $('.form-replace').slideDown();
 		});
 	});
 
