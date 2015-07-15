@@ -307,6 +307,11 @@
 			background: _palette(border-bg);
 			border-color: _palette(accent1, bg);
 		}
+
+		&.error {
+			background: _palette(border-bg);
+			border-color: _palette(accent3, bg);
+		}
 	}
 
 	input[type="text"],

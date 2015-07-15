@@ -1582,6 +1582,14 @@ textarea {
   textarea:focus {
     background: rgba(224, 224, 224, 0.15);
     border-color: #4eb980; }
+  input[type="text"].error,
+  input[type="password"].error,
+  input[type="email"].error,
+  input[type="tel"].error,
+  select.error,
+  textarea.error {
+    background: rgba(224, 224, 224, 0.15);
+    border-color: #fec44f; }
 
 input[type="text"],
 input[type="password"],

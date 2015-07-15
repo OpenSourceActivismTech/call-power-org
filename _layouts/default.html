@@ -42,25 +42,7 @@
 					<h2>Try a Demo</h2>
 				</header>
 
-				<p>Enter your phone number below and get a call back immediately.</p>
-
-				<form id="demo">
-					<div class="row">
-						<div class="6u 12u(mobilep)">
-							<input type="tel" name="phone" placeholder="Phone Number" />
-						</div>
-						<div class="6u 12u(mobilep)">
-							<input type="text" name="zip" placeholder="Zipcode (optional)" />
-						</div>
-					</div>
-					<div class="row">
-						<div class="12u">
-							<ul class="actions">
-								<li><input type="submit" value="Call Now" /></li>
-							</ul>
-						</div>
-					</div>
-				</form>
+				{% include form.html %}
 				{%endif%}
 
 				<ul class="icons">

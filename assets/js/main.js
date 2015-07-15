@@ -57,8 +57,10 @@ function validatePhone(num) {
 	        var phone = $('input[name=phone]').val();
 	        var zipcode = $('input[name=zip]').val();
 
-	        if (!validatePhone(phone))
-	            return alert('Please enter a valid US phone number!');
+	        if (!validatePhone(phone)) {
+	        	$('input[name=phone]').addClass('error');
+	            return;
+	        }
 
 			var data = {
 	            campaignId: '1', 
@@ -79,6 +81,9 @@ function validatePhone(num) {
 	            	console.error(status);
 	            }
 	        });
+
+	        $('form#demo').slideUp();
+	        $('.form-replace').slideDown();
 		});
 	});
 
