@@ -18,6 +18,10 @@
 		<meta property="og:title"              content="Call Power" />
 		<meta property="og:description"        content="{{page.title}}" />
 		<meta property="og:image"              content="{%if page.image%}{{page.image}}{%else%}http://callpower.org/images/fb-header.png{%endif%}" />
+
+		{% if page.extra_head %}
+			{{page.extra_head}}
+		{% endif %}
 	</head>
 	<body>
 		{% include analytics.html %}
@@ -69,6 +73,10 @@
 		<script src="{{ site.url }}/assets/js/util.js"></script>
 		<!--[if lte IE 8]><script src="{{ site.url }}/assets/js/ie/respond.min.js"></script><![endif]-->
 		<script src="{{ site.url }}/assets/js/main.js?d={{ site.time | date: '%s' }}"></script>
+
+		{% if page.extra_scripts %}
+			{{page.extra_scripts}}
+		{% endif %}
 
 	</body>
 </html>
