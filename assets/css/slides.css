@@ -9,10 +9,12 @@
 #slides .slidesjs-previous {
   margin-right: 5px;
   float:left;
+  border: none;
 }
 #slides .slidesjs-next {
   margin-right: 5px;
   float:left;
+  border: none;
 }
 
 .slidesjs-pagination {

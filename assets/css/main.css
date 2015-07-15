@@ -2150,6 +2150,8 @@ input[type="button"],
       height: 25px; }
     #header h1 {
       font-size: 2em; }
+      #header h1 a {
+        border: 0; }
     #header p {
       font-size: 1.15em; }
 

@@ -28,8 +28,8 @@
 
 		{% if page.header %}{{page.header}}{%else%}
     	<div id="header">
-			<span class="logo icon fa-phone"></span>
-			<h1>Call Power</h1>
+			<a href="/"><span class="logo icon fa-phone"></span></a>
+			<h1><a href="/">Call Power</a></h1>
 			<p>{{page.title}}</p>
 		</div>
 		{%endif%}
@@ -50,6 +50,7 @@
 				{%endif%}
 
 				<ul class="icons">
+					<li><a href="/" class="icon fa-phone"><span class="label">CallPower</span></a></li>
 					<li><a href="https://github.com/spacedogXYZ/call-power/" class="icon fa-github"><span class="label">Github</span></a></li>
 				</ul>
 				<ul class="copyright">
