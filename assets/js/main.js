@@ -1,4 +1,4 @@
-/* global console, skel */
+/* global console, skel, ga */
 
 function validatePhone(num) {
     num = num.replace(/\s/g, '').replace(/\(/g, '').replace(/\)/g, '');
@@ -13,6 +13,24 @@ function validatePhone(num) {
     }
 
     return num;
+}
+
+function mailSignup() {
+	var endpoint = "//xyz.us11.list-manage.com/subscribe/post-json?u=ec3363d24d5bbc1f9b600a120&amp;id=d707cc2443&c=?";
+	$.ajax({
+		type: 'get',
+		url: endpoint,
+		data: $('form').serialize(),
+		dataType    : 'json',
+        contentType: "application/json; charset=utf-8",
+        success: function(data) {
+			if (data.result !== "success") {
+                console.error(data);
+            } else {
+	    	    ga('send', 'event', 'mailSignup');
+            }
+        }
+	});
 }
 
 (function($) {
@@ -71,11 +89,15 @@ function validatePhone(num) {
 	            type: "get",
 	            dataType: "json",
 	            data: data,
-	            success: function(res) {
-	                console.log('Placed Call Power call: ', res);
+	            success: function() {
+	                ga('send', 'event', 'demoCall');
 
 	                $('form#demo').slideUp();
 			        $('.form-replace').slideDown();
+
+			        if ($('input[type=email]').val()) {
+				        mailSignup();
+				    }
 	            }, error: function(xhr, status) {
 	            	console.error(status);
 	            }
