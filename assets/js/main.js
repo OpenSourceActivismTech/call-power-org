@@ -67,7 +67,7 @@ function mailSignup() {
 				);
 			});
 
-		$('form#demo').submit(function(event) {
+		$('form#demoForm').submit(function(event) {
 			event.preventDefault();
 
 	        var phone = $('input[name=phone]').val();
@@ -92,7 +92,7 @@ function mailSignup() {
 	            success: function() {
 	                ga('send', 'event', 'demoCall');
 
-	                $('form#demo').slideUp();
+	                $('form#demoForm').slideUp();
 			        $('.form-replace').slideDown();
 
 			        if ($('input[type=email]').val()) {
