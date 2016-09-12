@@ -19,6 +19,7 @@ class Campaign(db.Model):
     created_time = db.Column(db.DateTime, default=datetime.utcnow)
 
     name = db.Column(db.String(STRING_LEN), nullable=False, unique=True)
+    campaign_country = db.Column(db.Integer, db.ForeignKey('campaign_country.id'), nullable=False, unique=False)
     campaign_type = db.Column(db.String(STRING_LEN))
     campaign_state = db.Column(db.String(STRING_LEN))
     campaign_subtype = db.Column(db.String(STRING_LEN))
@@ -120,9 +121,10 @@ class Campaign(db.Model):
     def required_fields(self):
         """API convenience method for rendering campaigns externally
         Returns dict of parameters and data types required to place call"""
-        fields = {'userPhone': 'US'}  # TODO, update for multiple countries
+        fields = dict()
+        fields['userPhone'] = self.campaign_country.country_code
         if self.segment_by == 'location':
-            fields.update({'userLocation': self.locate_by})
+            fields['userLocation'] = self.locate_by
         return fields
 
     def segment_display(self):
@@ -142,6 +144,14 @@ class Campaign(db.Model):
             return ", ".join(["%s" % t.name for t in self.target_set])
         else:
             return self.campaign_subtype_display()
+
+
+class CampaignCountry(db.Model):
+    __tablename__ = 'campaign_country'
+
+    id = db.Column(db.Integer, primary_key=True)
+    country_code = db.Column(db.String(STRING_LEN), index=True, unique=True)
+    name = db.Column(db.String(STRING_LEN), nullable=True)
 
 
 class CampaignTarget(db.Model):
