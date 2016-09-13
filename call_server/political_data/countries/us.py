@@ -2,13 +2,76 @@ import csv
 import collections
 import random
 
-from . import DataProvider
+from . import DataProvider, CampaignType
 
 from ...campaign.constants import (TARGET_CHAMBER_BOTH, TARGET_CHAMBER_UPPER, TARGET_CHAMBER_LOWER,
         ORDER_IN_ORDER, ORDER_SHUFFLE, ORDER_UPPER_FIRST, ORDER_LOWER_FIRST)
 
+from ..geocode import Geocoder
 
-class USData(DataProvider):
+
+class USCampaignType(CampaignType):
+    pass
+
+
+class USCampaignType_Executive(USCampaignType):
+    name = "Executive"
+    subtypes = [
+        ('exec', "President"),
+        ('office', "Office")
+    ]
+
+    def get_targets(self, location, campaign_region=None):
+        return {
+            'exec': list(self.data_provider.get_executive())
+        }
+
+
+class USCampaignType_Congress(USCampaignType):
+    name = "Congress"
+    subtypes = [
+        ('upper', "Senate"),
+        ('lower', "House")
+    ]
+    target_order_choices = [
+        ('upper-first', "Senate First"),
+        ('lower-first', "House First")
+    ]
+
+    def get_targets(self, location, campaign_region=None):
+        return {
+            'upper': list(self.data_provider.get_congress_upper(location)),
+            'lower': list(self.data_provider.get_congress_lower(location))
+        }
+
+
+class USCampaignType_State(USCampaignType):
+    name = "State"
+    subtypes = [
+        ('exec', "Governor"),
+        ('upper', "Legislature - Upper Body"),
+        ('lower', "Legislature - Lower Body")
+    ]
+
+    def get_targets(self, location, campaign_region=None):
+        # FIXME: For exec, use campaign state by default. Not user-provided location.
+        #        I don't know why this doesn't apply everywhere.
+        return {
+            'exec': list(self.data_provider.get_state_governor(location))
+            'upper': list(self.data_provider.get_state_upper(location)),
+            'lower': list(self.data_provider.get_state_lower(location))
+        }
+
+
+class USDataProvider(DataProvider):
+    campaign_types = {
+        'executive': USCampaignType_Executive,
+        'congress': USCampaignType_Congress,
+        'state': USCampaignType_State,
+        # 'local': USCampaignType_Local,
+        # 'custom': USCampaignType_Custom
+    }
+
     KEY_BIOGUIDE = 'us:bioguide:{bioguide_id}'
     KEY_HOUSE = 'us:house:{state}:{district}'
     KEY_SENATE = 'us:senate:{state}'
@@ -16,6 +79,17 @@ class USData(DataProvider):
 
     def __init__(self, cache):
         self.cache = cache
+        self.geocoder = Geocoder()
+
+    def get_location(self, locate_by, raw):
+        if locate_by == LOCATION_POSTAL:
+            return self.geocoder.zipcode(raw)
+        elif locate_by == LOCATION_ADDRESS:
+            return self.geocoder.geocode(raw)
+        elif locate_by == LOCATION_LATLON:
+            return self.geocoder.reverse(raw)
+        else:
+            return None
 
     def _load_legislators(self):
         """
@@ -93,7 +167,7 @@ class USData(DataProvider):
         key = self.KEY_SENATE.format(state=state)
         return self.cache.get(key) or []
 
-    def get_district(self, zipcode):
+    def get_districts(self, zipcode):
         return self.cache.get(self.KEY_ZIPCODE.format(zipcode=zipcode)) or {}
 
     def get_bioguide(self, uid):
@@ -107,48 +181,18 @@ class USData(DataProvider):
     def get_uid(self, key):
         return self.cache.get(key) or {}
 
-    def locate_targets(self, zipcode, chambers=TARGET_CHAMBER_BOTH, order=ORDER_IN_ORDER):
-        """ Find all congressional targets for a zipcode, crossing state boundaries if necessary.
-        Returns a list of cached bioguide keys in specified order.
-        """
+    def get_congress_upper(self, location):
+        districts = self.get_districts(location.zipcode)
+        # This is a set because zipcodes may cross states
+        states = set(d['state'] for d in districts)
 
-        districts = self.cache.get(self.KEY_ZIPCODE.format(zipcode=zipcode))
-        if not districts:
-            return None
-
-        states = set(d['state'] for d in districts)  # yes, there are zipcodes that cross states
-        if not states:
-            return None
-
-        senators = []
-        house_reps = []
         for state in states:
             for senator in self.get_senators(state):
-                senators.append(self.KEY_BIOGUIDE.format(**senator))
-        for d in districts:
-            rep = self.get_house_member(d['state'], d['house_district'])[0]
-            house_reps.append(self.KEY_BIOGUIDE.format(**rep))
+                yield self.KEY_BIOGUIDE.format(**senator)
 
-        targets = []
-        if chambers == TARGET_CHAMBER_UPPER:
-            targets = senators
-        elif chambers == TARGET_CHAMBER_LOWER:
-            targets = house_reps
-        else:
-            # default to TARGET_CHAMBER_BOTH
-            if order == ORDER_UPPER_FIRST:
-                targets.extend(senators)
-                targets.extend(house_reps)
-            elif order == ORDER_LOWER_FIRST:
-                targets.extend(house_reps)
-                targets.extend(senators)
-            else:
-                # default to name
-                targets.extend(senators)
-                targets.extend(house_reps)
-                targets.sort()
+    def get_congress_lower(self, location):
+        districts = self.get_districts(location.zipcode)
 
-        if order == ORDER_SHUFFLE:
-            random.shuffle(targets)
-
-        return targets
+        for district in districts:
+            rep = self.get_house_member(district['state'], district['house_district'])[0]
+            yield self.KEY_BIOGUIDE.format(**rep)
