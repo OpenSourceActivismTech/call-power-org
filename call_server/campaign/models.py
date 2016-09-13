@@ -153,6 +153,16 @@ class CampaignCountry(db.Model):
     country_code = db.Column(db.String(STRING_LEN), index=True, unique=True)
     name = db.Column(db.String(STRING_LEN), nullable=True)
 
+    def __unicode__(self):
+        if self.name:
+            return self.name
+        else:
+            return self.country_code
+
+    @classmethod
+    def available_countries(*args, **kwargs):
+        return CampaignCountry.query
+
 
 class CampaignTarget(db.Model):
     __tablename__ = 'campaign_target_sets'

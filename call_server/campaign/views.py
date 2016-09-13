@@ -14,10 +14,12 @@ from ..extensions import db
 from ..utils import choice_items, choice_keys, choice_values_flat, duplicate_object
 
 from .constants import CAMPAIGN_NESTED_CHOICES, CUSTOM_CAMPAIGN_CHOICES, EMPTY_CHOICES, STATUS_LIVE
-from .models import Campaign, Target, CampaignTarget, AudioRecording, CampaignAudioRecording
+from .models import (Campaign, CampaignCountry, Target, CampaignTarget,
+                     AudioRecording, CampaignAudioRecording)
 from ..call.models import Call
-from .forms import (CampaignForm, CampaignAudioForm, AudioRecordingForm,
-                    CampaignLaunchForm, CampaignStatusForm, TargetForm)
+from .forms import (CountryForm, CampaignForm, CampaignAudioForm,
+                    AudioRecordingForm, CampaignLaunchForm,
+                    CampaignStatusForm, TargetForm)
 
 campaign = Blueprint('campaign', __name__, url_prefix='/admin/campaign')
 
@@ -40,20 +42,41 @@ def index():
 
 
 @campaign.route('/create', methods=['GET', 'POST'])
+def start_form():
+    form = CountryForm()
+
+    if form.validate_on_submit():
+        country = form.country.data
+        if country:
+            return redirect(
+                url_for('campaign.form', country_code=country.country_code)
+            )
+
+    return render_template('campaign/choose_country.html',
+        form=form)
+
+@campaign.route('/create/<string:country_code>', methods=['GET', 'POST'])
 @campaign.route('/<int:campaign_id>/edit', methods=['GET', 'POST'])
-def form(campaign_id=None):
+def form(country_code=None, campaign_id=None):
     edit = False
     if campaign_id:
         edit = True
 
     if edit:
         campaign = Campaign.query.filter_by(id=campaign_id).first_or_404()
-        form = CampaignForm(obj=campaign)
+        campaign_country = CampaignCountry.query.filter_by(
+            id=campaign.campaign_country
+        ).first_or_404()
         campaign_id = campaign.id
+        form = CampaignForm(obj=campaign)
     else:
         campaign = Campaign()
-        form = CampaignForm()
+        campaign_country = CampaignCountry.query.filter_by(
+            country_code=country_code
+        ).first_or_404()
+        campaign.campaign_country = campaign_country.id
         campaign_id = None
+        form = CampaignForm()
 
     # for fields with dynamic choices, set to empty here in view
     # will be updated in client
@@ -114,6 +137,7 @@ def form(campaign_id=None):
         return redirect(url_for('campaign.audio', campaign_id=campaign.id))
 
     return render_template('campaign/form.html', form=form, edit=edit, campaign_id=campaign_id,
+                           campaign_country=campaign_country,
                            descriptions=current_app.config.CAMPAIGN_FIELD_DESCRIPTIONS,
                            CAMPAIGN_NESTED_CHOICES=CAMPAIGN_NESTED_CHOICES,
                            CUSTOM_CAMPAIGN_CHOICES=CUSTOM_CAMPAIGN_CHOICES)
@@ -129,7 +153,7 @@ def copy(campaign_id):
     db.session.commit()
 
     flash('Campaign copied.', 'success')
-    return redirect(url_for('campaign.form', campaign_id=new_campaign.id))
+    return redirect(url_for('campaign.edit_form', campaign_id=new_campaign.id))
 
 
 @campaign.route('/<int:campaign_id>/audio', methods=['GET', 'POST'])
@@ -283,6 +307,9 @@ def show_recording(campaign_id, recording_id):
 @campaign.route('/<int:campaign_id>/launch', methods=['GET', 'POST'])
 def launch(campaign_id):
     campaign = Campaign.query.filter_by(id=campaign_id).first_or_404()
+    campaign_country = CampaignCountry.query.filter_by(
+        id=campaign.campaign_country
+    ).first_or_404()
     form = CampaignLaunchForm()
 
     if form.validate_on_submit():
@@ -331,7 +358,8 @@ def launch(campaign_id):
             if campaign.embed.get('script'):
                 form.embed_script.data = campaign.embed.get('script')
 
-    return render_template('campaign/launch.html', campaign=campaign, form=form,
+    return render_template('campaign/launch.html', campaign=campaign,
+        form=form, campaign_country=campaign_country,
         descriptions=current_app.config.CAMPAIGN_FIELD_DESCRIPTIONS)
 
 

@@ -4,7 +4,7 @@ from wtforms import (HiddenField, SubmitField, TextField,
                      SelectField, SelectMultipleField,
                      BooleanField, RadioField, IntegerField,
                      FileField, FieldList, FormField)
-from wtforms.ext.sqlalchemy.fields import QuerySelectMultipleField
+from wtforms.ext.sqlalchemy.fields import QuerySelectField, QuerySelectMultipleField
 from wtforms_components import PhoneNumberField
 from wtforms.widgets import TextArea
 from wtforms.validators import Required, Optional, AnyOf, NumberRange, ValidationError
@@ -14,9 +14,17 @@ from .constants import (CAMPAIGN_CHOICES, CAMPAIGN_NESTED_CHOICES,
                         CAMPAIGN_STATUS, EMBED_FORM_CHOICES, EMBED_SCRIPT_DISPLAY)
 from ..political_data.constants import US_STATES
 
-from .models import TwilioPhoneNumber
+from .models import CampaignCountry, TwilioPhoneNumber
 
 from ..utils import choice_items, choice_keys, choice_values, choice_values_flat
+
+
+class CountryForm(Form):
+    country = QuerySelectField(
+        _('Select Country'),
+        query_factory=CampaignCountry.available_countries,
+        validators=[Required()])
+    submit = SubmitField(_('Next'))
 
 
 class TargetForm(Form):
