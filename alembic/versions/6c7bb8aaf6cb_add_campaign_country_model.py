@@ -33,7 +33,7 @@ def upgrade():
     )
 
     op.bulk_insert(campaign_country_table, [
-        {'id': 1, 'country_code': 'US', 'name': 'United States'}
+        {'id': 1, 'country_code': 'us', 'name': 'United States'}
     ])
 
     with op.batch_alter_table(u'campaign_campaign', schema=None) as batch_op:
