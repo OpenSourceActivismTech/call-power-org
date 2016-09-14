@@ -1,6 +1,9 @@
 import csv
 import collections
 import random
+import itertools
+
+from sunlight import openstates, response_cache
 
 from . import DataProvider, CampaignType
 
@@ -23,8 +26,11 @@ class USCampaignType_Executive(USCampaignType):
 
     def get_targets(self, location, campaign_region=None):
         return {
-            'exec': list(self.data_provider.get_executive())
+            'exec': list(self._get_executive())
         }
+
+    def _get_executive(self):
+        return self.data_provider.get_executive()
 
 
 class USCampaignType_Congress(USCampaignType):
@@ -40,9 +46,25 @@ class USCampaignType_Congress(USCampaignType):
 
     def get_targets(self, location, campaign_region=None):
         return {
-            'upper': list(self.data_provider.get_congress_upper(location)),
-            'lower': list(self.data_provider.get_congress_lower(location))
+            'upper': list(self._get_congress_upper(location)),
+            'lower': list(self._get_congress_lower(location))
         }
+
+    def _get_congress_upper(self, location):
+        districts = self.data_provider.get_districts(location.zipcode)
+        # This is a set because zipcodes may cross states
+        states = set(d['state'] for d in districts)
+
+        for state in states:
+            for senator in self.data_provider.get_senators(state):
+                yield self.data_provider.KEY_BIOGUIDE.format(**senator)
+
+    def _get_congress_lower(self, location):
+        districts = self.data_provider.get_districts(location.zipcode)
+
+        for district in districts:
+            rep = self.data_provider.get_house_members(district['state'], district['house_district'])[0]
+            yield self.data_provider.KEY_BIOGUIDE.format(**rep)
 
 
 class USCampaignType_State(USCampaignType):
@@ -57,10 +79,30 @@ class USCampaignType_State(USCampaignType):
         # FIXME: For exec, use campaign state by default. Not user-provided location.
         #        I don't know why this doesn't apply everywhere.
         return {
-            'exec': list(self.data_provider.get_state_governor(location))
-            'upper': list(self.data_provider.get_state_upper(location)),
-            'lower': list(self.data_provider.get_state_lower(location))
+            'exec': list(self._get_state_governor(location, campaign_region))
+            'upper': list(self._get_state_upper(location, campaign_region)),
+            'lower': list(self._get_state_lower(location, campaign_region))
         }
+
+    def _get_state_governor(self, location, campaign_region=None):
+        return self.data_provider.get_state_governor(location)
+
+    def _get_state_upper(self, location, campaign_region=None):
+        legislators = self.data_provider.get_state_legislators(location.latlon)
+        filtered = self._filter_legislators(legislators, campaign_region)
+        return (l for l in filtered if l['chamber'] == 'upper')
+
+    def _get_state_lower(self, location, campaign_region=None):
+        legislators = self.data_provider.get_state_legislators(location.latlon)
+        filtered = self._filter_legislators(legislators, campaign_region)
+        return (l for l in filtered if l['chamber'] == 'lower')
+
+    def _filter_legislators(self, legislators, campaign_region=None):
+        for legislator in legislators:
+            is_active = legisator['active']
+            in_state = campaign_region is None or legislator['state'].upper() == campaign_region.upper()
+            if is_active and in_state:
+                yield legislator
 
 
 class USDataProvider(DataProvider):
@@ -75,11 +117,15 @@ class USDataProvider(DataProvider):
     KEY_BIOGUIDE = 'us:bioguide:{bioguide_id}'
     KEY_HOUSE = 'us:house:{state}:{district}'
     KEY_SENATE = 'us:senate:{state}'
+    KEY_OPENSTATES = 'us_state:openstates:{id}'
+    KEY_GOVERNOR = 'us_state:governor:{state}'
     KEY_ZIPCODE = 'us:zipcode:{zipcode}'
 
-    def __init__(self, cache):
+    def __init__(self, cache, api_cache=None):
         self.cache = cache
         self.geocoder = Geocoder()
+        if api_cache is not None:
+            response_cache.enable(api_cache)
 
     def get_location(self, locate_by, raw):
         if locate_by == LOCATION_POSTAL:
@@ -143,56 +189,99 @@ class USDataProvider(DataProvider):
 
         return districts
 
-    def load_data(self):
+    def _load_governors(self):
+        """
+        Load US state governor data from saved file
+        Returns a dictionary keyed by state to cache for fast lookup
+
+        eg us:governor:CA = {'title':'Governor', 'name':'Jerry Brown Jr.', 'phone': '18008076755'}
+        """
+        governors = collections.defaultdict(dict)
+
+        with open('call_server/political_data/data/us_states.csv') as f:
+            reader = csv.DictReader(f)
+
+            for l in reader:
+                direct_key = self.KEY_GOVERNOR.format(**{'state': l['state']})
+                d = {
+                    'title': 'Governor',
+                    'name': l.get('name'),
+                    'phone': l.get('phone'),
+                    'state': l.get('state')
+                }
+                governors[direct_key] = d
+        return governors
+
+    def load_data(self):cache
         districts = self._load_districts()
         legislators = self._load_legislators()
+        governors = self._load_governors()
 
         if hasattr(self.cache, 'set_many'):
             self.cache.set_many(districts)
             self.cache.set_many(legislators)
+            self.cache.set_many(governors)
         elif hasattr(self.cache, 'update'):
             self.cache.update(legislators)
             self.cache.update(districts)
+            self.cache.update(governors)
         else:
             raise AttributeError('cache does not appear to be dict-like')
 
-        return len(districts) + len(legislators)
+        return len(districts) + len(legislators) + len(governors)
+
+    def cache_set(self, key, val):
+        if hasattr(self.cache, 'set'):
+            self.cache.set(key, val)
+        elif hasattr(self.cache, 'update'):
+            self.cache.update({key: val})
+        else:
+            raise AttributeError('cache does not appear to be dict-like')
 
     # convenience methods for easy house, senate, district access
-    def get_house_member(self, state, district):
-        key = self.KEY_HOUSE.format(state=state, district=district)
-        return self.cache.get(key)
-
-    def get_senators(self, state):
-        key = self.KEY_SENATE.format(state=state)
-        return self.cache.get(key) or []
-
-    def get_districts(self, zipcode):
-        return self.cache.get(self.KEY_ZIPCODE.format(zipcode=zipcode)) or {}
-
-    def get_bioguide(self, uid):
-        return self.cache.get(self.KEY_BIOGUIDE.format(bioguide_id=uid)) or {}
-
     def get_executive(self):
         # return Whitehouse comment line
         return [{'office': 'Whitehouse Comment Line',
                 'number': '12024561111'}]
 
-    def get_uid(self, key):
-        return self.cache.get(key) or {}
+    def get_house_members(self, state, district):
+        key = self.KEY_HOUSE.format(state=state, district=district)
+        return self.cache.get(key, list())
 
-    def get_congress_upper(self, location):
-        districts = self.get_districts(location.zipcode)
-        # This is a set because zipcodes may cross states
-        states = set(d['state'] for d in districts)
+    def get_senators(self, state):
+        key = self.KEY_SENATE.format(state=state)
+        return self.cache.get(key, list())
 
-        for state in states:
-            for senator in self.get_senators(state):
-                yield self.KEY_BIOGUIDE.format(**senator)
+    def get_districts(self, zipcode):
+        key = self.KEY_ZIPCODE.format(zipcode=zipcode)
+        return self.cache.get(key, dict())
 
-    def get_congress_lower(self, location):
-        districts = self.get_districts(location.zipcode)
+    def get_governor(self, state):
+        cache_key = self.KEY_GOVERNOR.format(state=state)
+        return self.cache.get(cache_key) or {}
 
-        for district in districts:
-            rep = self.get_house_member(district['state'], district['house_district'])[0]
-            yield self.KEY_BIOGUIDE.format(**rep)
+    def locate_governor(self, state):
+        return [self.KEY_GOVERNOR.format(state=state)]
+
+    def get_state_legislators(self, latlon):
+        if type(latlon) == tuple:
+            lat = latlon[0]
+            lon = latlon[1]
+        else:
+            try:
+                (lat, lon) = latlon.split(',')
+            except ValueError:
+                raise ValueError('USStateData requires location as lat,lon')
+
+        return openstates.legislator_geo_search(lat, lon)
+
+    def get_legid(self, legid):
+        cache_key = self.KEY_OPENSTATES.format(id=legid)
+        return self.get_key(cache_key) or {}
+
+    def get_bioguide(self, uid):
+        key = self.KEY_BIOGUIDE.format(bioguide_id=uid)
+        return self.cache.get(key, dict())
+
+    def get_uid(self, key, default=dict()):
+        return self.cache.get(key, default)
