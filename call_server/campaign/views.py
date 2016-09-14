@@ -42,22 +42,39 @@ def index():
 
 
 @campaign.route('/create', methods=['GET', 'POST'])
-def start_form():
+def country_form():
     form = CountryForm()
 
+    country_type_choices = list()
+    for country in CampaignCountry.available_countries():
+        country_data = country.get_country_data()
+        for type_id, type_name in country_data.campaign_type_choices:
+            full_id = '/'.join([country.country_code, type_id])
+            full_name = "{country} - {type}".format(country=country.name, type=type_name)
+            country_type_choices.append((full_id, full_name))
+
+    form.country.choices = choice_items(country_type_choices)
+
     if form.validate_on_submit():
-        country = form.country.data
-        if country:
+        country_type = form.country.data
+
+        try:
+            country_code, type_id = country_type.split('/', 1)
+        except ValueError:
+            country_code = None
+            type_id = None
+
+        if country_code and type_id:
             return redirect(
-                url_for('campaign.form', country_code=country.country_code)
+                url_for('campaign.form', country_code=country_code, campaign_type=type_id)
             )
 
     return render_template('campaign/choose_country.html',
         form=form)
 
-@campaign.route('/create/<string:country_code>', methods=['GET', 'POST'])
+@campaign.route('/create/<string:country_code>/<string:campaign_type>', methods=['GET', 'POST'])
 @campaign.route('/<int:campaign_id>/edit', methods=['GET', 'POST'])
-def form(country_code=None, campaign_id=None):
+def form(country_code=None, campaign_type=None, campaign_id=None):
     edit = False
     if campaign_id:
         edit = True
@@ -75,12 +92,18 @@ def form(country_code=None, campaign_id=None):
             country_code=country_code
         ).first_or_404()
         campaign.campaign_country = campaign_country.id
+        campaign.campaign_type = campaign_type
         campaign_id = None
         form = CampaignForm()
 
     # for fields with dynamic choices, set to empty here in view
     # will be updated in client
-    form.campaign_subtype.choices = choice_values_flat(CAMPAIGN_NESTED_CHOICES)
+    campaign_data = campaign.get_campaign_data()
+
+    if campaign_data:
+        form.campaign_state.choices = choice_items(campaign_data.region_choices)
+        form.campaign_subtype.choices = choice_items(campaign_data.subtype_choices)
+
     form.target_set.choices = choice_items(EMPTY_CHOICES)
 
     # check request.form for campaign_subtype, reset if not present
@@ -138,6 +161,7 @@ def form(country_code=None, campaign_id=None):
 
     return render_template('campaign/form.html', form=form, edit=edit, campaign_id=campaign_id,
                            campaign_country=campaign_country,
+                           campaign_type=campaign_data,
                            descriptions=current_app.config.CAMPAIGN_FIELD_DESCRIPTIONS,
                            CAMPAIGN_NESTED_CHOICES=CAMPAIGN_NESTED_CHOICES,
                            CUSTOM_CAMPAIGN_CHOICES=CUSTOM_CAMPAIGN_CHOICES)

@@ -18,7 +18,7 @@
 {% block body %}
 <h3>{% if edit %}Edit Campaign{%else%}New Campaign{%endif%}</h3>
 
-<p>{{ campaign_country.name }}</p>
+<p>{{ campaign_country.name }} - {{ campaign_type.name }}</p>
 
 <form class="form-horizontal" id="campaign" method="POST" action="" >
     {{ form.hidden_tag() }}
@@ -27,40 +27,12 @@
         <legend>Type</legend>
 
         {{render_field_default(form.name) }}
-
-        {# campaign type including nested #}
-        {% with %}
-            {% set field = form.campaign_type %}
-            {% set state = form.campaign_state %}
-            {% set nested_field = form.campaign_subtype %}
-
-            <div class="form-group campaign_type {% if field.errors %}error{% endif %}">
-                {{ render_label(field, label_width) }}
-
-                <div class="control-group {{control_width}}">
-                {{ field(class_='form-control inline') }}
-                {{ state(class_='form-control inline hide-initial') }}
-                {{ nested_field(class_='form-control inline nested', **{'data-nested-choices': CAMPAIGN_NESTED_CHOICES|json, 'data-nested-selected': nested_field.object_data} ) }}
-                <div class="description">
-                    <span class="glyphicon glyphicon-info-sign info small"></span>
-                    <span class="help-inline">{{ descriptions.get(field.id)|safe }}</span>
-                </div>
-                {% if field.errors -%}
-                    {% for error in field.errors -%}
-                    <span class="help-block error">{{ error|e }}</span>
-                    {%- endfor %}
-                {%- endif %}
-                
-                {% if nested_field.errors -%}
-                    {% for error in nested_field.errors -%}
-                    <span class="help-block error">{{ error|e }}</span>
-                    {%- endfor %}
-                {%- endif %}
-                </div>
-
-                <span class="help-block"></span>
-            </div>
-        {% endwith %}
+        {% if form.campaign_state.choices %}
+            {{render_field_default(form.campaign_state)}}
+        {% endif %}
+        {% if form.campaign_subtype.choices %}
+            {{render_field_default(form.campaign_subtype)}}
+        {% endif %}
     </fieldset>
 
     <fieldset class="border">
@@ -145,6 +117,11 @@
 
     <div class="form-group container">
         <div class="form-actions">
+            <div class="pull-left">
+                <a href="{{url_for('campaign.country_form')}}" class="btn btn-primary btn-warning">
+                <span class="glyphicon glyphicon-arrow-left"></span> Back
+                </a>
+            </div>
             {% if edit %}
                 <a class="btn btn-warning" href="{{ url_for('campaign.status', campaign_id=campaign_id) }}">Edit Status</a>
             {%endif%}

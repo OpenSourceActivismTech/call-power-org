@@ -12,18 +12,14 @@ from wtforms.validators import Required, Optional, AnyOf, NumberRange, Validatio
 from .constants import (CAMPAIGN_CHOICES, CAMPAIGN_NESTED_CHOICES,
                         SEGMENT_BY_CHOICES, LOCATION_CHOICES, ORDERING_CHOICES,
                         CAMPAIGN_STATUS, EMBED_FORM_CHOICES, EMBED_SCRIPT_DISPLAY)
-from ..political_data.constants import US_STATES
 
-from .models import CampaignCountry, TwilioPhoneNumber
+from .models import TwilioPhoneNumber
 
 from ..utils import choice_items, choice_keys, choice_values, choice_values_flat
 
 
 class CountryForm(Form):
-    country = QuerySelectField(
-        _('Select Country'),
-        query_factory=CampaignCountry.available_countries,
-        validators=[Required()])
+    country = SelectField(_('Select Country'), validators=[Required()])
     submit = SubmitField(_('Next'))
 
 
@@ -38,9 +34,8 @@ class TargetForm(Form):
 class CampaignForm(Form):
     next = HiddenField()
     name = TextField(_('Campaign Name'), [Required()])
-    campaign_type = SelectField(_('Campaign Type'), [Required()], choices=choice_items(CAMPAIGN_CHOICES), description=True)
-    campaign_state = SelectField(_('State'), [Optional()], choices=choice_items(US_STATES))
-    campaign_subtype = SelectField('', [AnyOf(choice_keys(choice_values_flat(CAMPAIGN_NESTED_CHOICES))), Optional()], )
+    campaign_state = SelectField(_('State'), [Optional()])
+    campaign_subtype = SelectField(_('Subtype'), [Optional()])
     # nested_type passed to data-field in template, but starts empty
 
     segment_by = RadioField(_('Segment By'), [Required()], choices=choice_items(SEGMENT_BY_CHOICES),

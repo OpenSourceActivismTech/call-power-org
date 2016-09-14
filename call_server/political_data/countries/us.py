@@ -11,10 +11,15 @@ from ...campaign.constants import (TARGET_CHAMBER_BOTH, TARGET_CHAMBER_UPPER, TA
         ORDER_IN_ORDER, ORDER_SHUFFLE, ORDER_UPPER_FIRST, ORDER_LOWER_FIRST)
 
 from ..geocode import Geocoder
+from ..constants import US_STATES
 
 
 class USCampaignType(CampaignType):
     pass
+
+
+class USCampaignType_Custom(USCampaignType):
+    name = "Custom"
 
 
 class USCampaignType_Executive(USCampaignType):
@@ -45,6 +50,10 @@ class USCampaignType_Congress(USCampaignType):
         ('upper-first', "Senate First"),
         ('lower-first', "House First")
     ]
+
+    @property
+    def region_choices(self):
+        return US_STATES
 
     def all_targets(self, location, campaign_region=None):
         return {
@@ -103,6 +112,10 @@ class USCampaignType_State(USCampaignType):
         ('lower-first', "Lower First")
     ]
 
+    @property
+    def region_choices(self):
+        return US_STATES
+
     def all_targets(self, location, campaign_region=None):
         # FIXME: For exec, use campaign state by default. Not user-provided location.
         #        I don't know why this doesn't apply everywhere.
@@ -154,13 +167,13 @@ class USCampaignType_State(USCampaignType):
 
 
 class USDataProvider(DataProvider):
-    campaign_types = {
-        'executive': USCampaignType_Executive,
-        'congress': USCampaignType_Congress,
-        'state': USCampaignType_State,
-        # 'local': USCampaignType_Local,
-        # 'custom': USCampaignType_Custom
-    }
+    campaign_types = [
+        ('executive', USCampaignType_Executive),
+        ('congress', USCampaignType_Congress),
+        ('state', USCampaignType_State),
+        # ('local', USCampaignType_Local),
+        ('custom', USCampaignType_Custom)
+    ]
 
     KEY_BIOGUIDE = 'us:bioguide:{bioguide_id}'
     KEY_HOUSE = 'us:house:{state}:{district}'

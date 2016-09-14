@@ -8,6 +8,7 @@ from sqlalchemy import UniqueConstraint
 from ..extensions import db, cache
 from ..utils import convert_to_dict
 from ..political_data.adapters import adapt_to_target
+from ..political_data import get_country_data
 from .constants import (CAMPAIGN_CHOICES, CAMPAIGN_NESTED_CHOICES, STRING_LEN, TWILIO_SID_LENGTH,
                         CAMPAIGN_STATUS, STATUS_PAUSED, SEGMENT_BY_CHOICES, LOCATION_CHOICES, ORDERING_CHOICES, )
 
@@ -145,13 +146,23 @@ class Campaign(db.Model):
         else:
             return self.campaign_subtype_display()
 
-    def get_country_code(self):
-        campaign_country = CampaignCountry.query.filter_by(
+    def get_country_instance(self):
+        return CampaignCountry.query.filter_by(
             id=self.campaign_country
-        ).first()
+        ).first()        
 
+    def get_country_code(self):
+        campaign_country = self.get_country_instance()
         if campaign_country:
             return campaign_country.country_code
+        else:
+            return None
+
+    def get_campaign_data(self):
+        campaign_country = self.get_country_instance()
+        if campaign_country:
+            country_data = campaign_country.get_country_data()
+            return country_data.get_campaign_type(self.campaign_type)
         else:
             return None
 
@@ -172,6 +183,9 @@ class CampaignCountry(db.Model):
     @classmethod
     def available_countries(*args, **kwargs):
         return CampaignCountry.query
+
+    def get_country_data(self):
+        return get_country_data(self.country_code, cache=cache, api_cache='localmem')
 
 
 class CampaignTarget(db.Model):
