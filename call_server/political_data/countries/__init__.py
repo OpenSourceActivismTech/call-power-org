@@ -1,3 +1,5 @@
+import itertools
+
 class DataProvider(object):
     campaign_types = dict()
 
@@ -30,10 +32,23 @@ class CampaignType(object):
         """
         raise NotImplementedError()
 
-    def get_targets(self, location, campaign_region=None):
+    def all_targets(self, location, campaign_region=None):
         """
         Find all targets for a location, crossing political boundaries if
         necessary.
         @return  a dictionary of target uids grouped by subtype.
         """
         raise NotImplementedError()
+
+    def sort_targets(self, targets, subtype, order):
+        """
+        Sort and filter a dictionary of targets (grouped by subtype), as
+        returned from all_targets, based on the provided subtype and order.
+        @return  a list of sorted and filtered target uids
+        """
+        raise NotImplementedError()
+
+    def get_targets_for_campaign(self, location, campaign):
+        country_code = campaign.get_country_code()
+        all_targets = self.all_targets(location, campaign.campaign_state)
+        return self.sort_targets(all_targets, campaign.campaign_subtype, campaign.target_ordering)

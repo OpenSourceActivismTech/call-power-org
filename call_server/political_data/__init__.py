@@ -7,7 +7,7 @@ COUNTRIES = {
 
 class NoDataProviderError(Exception):
     def __init__(self, country_code):
-        self.message = "There is no data provider available for '{}'".format(country_code)
+        self.message = "No data provider available for country code '{}'".format(country_code)
 
 
 def get_country_data(country_code, **kwargs):

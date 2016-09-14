@@ -24,9 +24,9 @@ class USCampaignType_Executive(USCampaignType):
         ('office', "Office")
     ]
 
-    def get_targets(self, location, campaign_region=None):
+    def all_targets(self, location, campaign_region=None):
         return {
-            'exec': list(self._get_executive())
+            'exec': self._get_executive()
         }
 
     def _get_executive(self):
@@ -36,19 +36,41 @@ class USCampaignType_Executive(USCampaignType):
 class USCampaignType_Congress(USCampaignType):
     name = "Congress"
     subtypes = [
+        ('both', "Both Bodies"),
         ('upper', "Senate"),
         ('lower', "House")
     ]
     target_order_choices = [
+        ('shuffle', "Shuffle"),
         ('upper-first', "Senate First"),
         ('lower-first', "House First")
     ]
 
-    def get_targets(self, location, campaign_region=None):
+    def all_targets(self, location, campaign_region=None):
         return {
-            'upper': list(self._get_congress_upper(location)),
-            'lower': list(self._get_congress_lower(location))
+            'upper': self._get_congress_upper(location),
+            'lower': self._get_congress_lower(location)
         }
+
+    def sort_targets(self, targets, subtype, order):
+        result = []
+
+        if subtype == 'both':
+            if order == 'upper-first':
+                result.extend(targets.get('upper'))
+                result.extend(targets.get('lower'))
+            else:
+                result.extend(targets.get('lower'))
+                result.extend(targets.get('upper'))
+        elif subtype == 'upper':
+            result.extend(targets.get('upper'))
+        elif subtype == 'lower':
+            result.extend(targets.get('lower'))
+
+        if order == 'shuffle':
+            random.shuffle(result)
+
+        return result
 
     def _get_congress_upper(self, location):
         districts = self.data_provider.get_districts(location.zipcode)
@@ -71,18 +93,44 @@ class USCampaignType_State(USCampaignType):
     name = "State"
     subtypes = [
         ('exec', "Governor"),
+        ('both', "Legislature - Both Bodies"),
         ('upper', "Legislature - Upper Body"),
         ('lower', "Legislature - Lower Body")
     ]
+    target_order_choices = [
+        ('shuffle', "Shuffle"),
+        ('upper-first', "Upper First"),
+        ('lower-first', "Lower First")
+    ]
 
-    def get_targets(self, location, campaign_region=None):
+    def all_targets(self, location, campaign_region=None):
         # FIXME: For exec, use campaign state by default. Not user-provided location.
         #        I don't know why this doesn't apply everywhere.
         return {
-            'exec': list(self._get_state_governor(location, campaign_region)),
-            'upper': list(self._get_state_upper(location, campaign_region)),
-            'lower': list(self._get_state_lower(location, campaign_region))
+            'exec': self._get_state_governor(location, campaign_region),
+            'upper': self._get_state_upper(location, campaign_region),
+            'lower': self._get_state_lower(location, campaign_region)
         }
+
+    def sort_targets(self, targets, subtype, order):
+        result = []
+
+        if subtype == 'both':
+            if order == 'upper-first':
+                result.extend(targets.get('upper'))
+                result.extend(targets.get('lower'))
+            else:
+                result.extend(targets.get('lower'))
+                result.extend(targets.get('upper'))
+        elif subtype == 'upper':
+            result.extend(targets.get('upper'))
+        elif subtype == 'lower':
+            result.extend(targets.get('lower'))
+
+        if order == 'shuffle':
+            random.shuffle(result)
+
+        return result
 
     def _get_state_governor(self, location, campaign_region=None):
         return self.data_provider.get_state_governor(location)
