@@ -1,5 +1,3 @@
-from countries import us, us_state
-
 COUNTRIES = {
     'us': 'countries.us.USDataProvider'
 }
@@ -9,7 +7,7 @@ class NoDataError(Exception):
         self.message = "No political data available for '{}'".format(country_code)
 
 
-def get_country(country_code):
+def get_country_data(country_code):
     path = COUNTRIES.get(country_code)
 
     if path is None:
@@ -29,10 +27,10 @@ def get_country(country_code):
         return data
 
 def load_data(cache):
-    us_data = us.USData(cache)
-    us_state_data = us_state.USStateData(cache)
-
     n = 0
-    n += us_data.load_data()
-    n += us_state_data.load_data()
+
+    for country_code in COUNTRIES.keys():
+        country_data = get_country_data(country_code)
+        n += country.load_data()
+
     return n

@@ -79,7 +79,7 @@ class USCampaignType_State(USCampaignType):
         # FIXME: For exec, use campaign state by default. Not user-provided location.
         #        I don't know why this doesn't apply everywhere.
         return {
-            'exec': list(self._get_state_governor(location, campaign_region))
+            'exec': list(self._get_state_governor(location, campaign_region)),
             'upper': list(self._get_state_upper(location, campaign_region)),
             'lower': list(self._get_state_lower(location, campaign_region))
         }
@@ -212,7 +212,7 @@ class USDataProvider(DataProvider):
                 governors[direct_key] = d
         return governors
 
-    def load_data(self):cache
+    def load_data(self):
         districts = self._load_districts()
         legislators = self._load_legislators()
         governors = self._load_governors()

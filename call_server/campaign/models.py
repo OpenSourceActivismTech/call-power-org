@@ -145,6 +145,16 @@ class Campaign(db.Model):
         else:
             return self.campaign_subtype_display()
 
+    def get_country_code(self):
+        campaign_country = CampaignCountry.query.filter_by(
+            id=self.campaign_country
+        ).first()
+
+        if campaign_country:
+            return campaign_country.country_code
+        else:
+            return None
+
 
 class CampaignCountry(db.Model):
     __tablename__ = 'campaign_country'
