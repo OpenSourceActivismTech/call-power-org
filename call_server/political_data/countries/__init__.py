@@ -1,6 +1,9 @@
 class DataProvider(object):
     campaign_types = dict()
 
+    def __init__(self, **kwargs):
+        pass
+
     def get_campaign_type(self, type_id):
         type_class = self.campaign_types.get(type_id)
         return type_class(self)

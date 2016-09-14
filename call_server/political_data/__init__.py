@@ -1,36 +1,39 @@
+import countries
+import importlib
+
 COUNTRIES = {
-    'us': 'countries.us.USDataProvider'
+    'us': 'call_server.political_data.countries.us.USDataProvider'
 }
 
-class NoDataError(Exception):
+class NoDataProviderError(Exception):
     def __init__(self, country_code):
-        self.message = "No political data available for '{}'".format(country_code)
+        self.message = "There is no data provider available for '{}'".format(country_code)
 
 
-def get_country_data(country_code):
+def get_country_data(country_code, **kwargs):
     path = COUNTRIES.get(country_code)
 
     if path is None:
-        raise NoDataError(country_code)
+        raise NoDataProviderError(country_code)
 
     try:
-        module, class_name = path.rsplit('.')
+        module_name, class_name = path.rsplit('.', 1)
     except ValueError:
-        raise NoDataError(country_code)
+        raise NoDataProviderError(country_code)
 
     try:
-        module = __import__(module_name)
-        data = getattr(module, class_name)
-    except ImportError, AttributeError:
-        raise NoDataError(country_code)
+        module = importlib.import_module(module_name)
+        dataProviderClass = getattr(module, class_name)
+    except (ImportError, AttributeError) as e:
+        raise NoDataProviderError(country_code)
     else:
-        return data
+        return dataProviderClass(**kwargs)
 
 def load_data(cache):
     n = 0
 
     for country_code in COUNTRIES.keys():
-        country_data = get_country_data(country_code)
-        n += country.load_data()
+        country_data = get_country_data(country_code, cache=cache)
+        n += country_data.load_data()
 
     return n

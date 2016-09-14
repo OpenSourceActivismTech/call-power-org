@@ -121,7 +121,8 @@ class USDataProvider(DataProvider):
     KEY_GOVERNOR = 'us_state:governor:{state}'
     KEY_ZIPCODE = 'us:zipcode:{zipcode}'
 
-    def __init__(self, cache, api_cache=None):
+    def __init__(self, cache, api_cache=None, **kwargs):
+        super(USDataProvider, self).__init__(**kwargs)
         self.cache = cache
         self.geocoder = Geocoder()
         if api_cache is not None:
