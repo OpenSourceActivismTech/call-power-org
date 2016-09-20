@@ -9,8 +9,7 @@ from wtforms_components import PhoneNumberField
 from wtforms.widgets import TextArea
 from wtforms.validators import Required, Optional, AnyOf, NumberRange, ValidationError
 
-from .constants import (CAMPAIGN_CHOICES, CAMPAIGN_NESTED_CHOICES,
-                        SEGMENT_BY_CHOICES, LOCATION_CHOICES, ORDERING_CHOICES,
+from .constants import (SEGMENT_BY_CHOICES, LOCATION_CHOICES, ORDERING_CHOICES,
                         CAMPAIGN_STATUS, EMBED_FORM_CHOICES, EMBED_SCRIPT_DISPLAY)
 
 from .models import TwilioPhoneNumber
@@ -41,10 +40,9 @@ class CampaignForm(Form):
     segment_by = RadioField(_('Segment By'), [Required()], choices=choice_items(SEGMENT_BY_CHOICES),
                             description=True, default=SEGMENT_BY_CHOICES[0][0])
     locate_by = RadioField(_('Locate By'), [Optional()], choices=choice_items(LOCATION_CHOICES),
-                                  description=True, default=None)
+                           description=True, default=None)
     target_set = FieldList(FormField(TargetForm, _('Choose Targets')), validators=[Optional()])
-    target_ordering = RadioField(_('Order'), choices=choice_items(ORDERING_CHOICES),
-                                 description=True, default=ORDERING_CHOICES[0][0])
+    target_ordering = RadioField(_('Order'), [Optional()], description=True)
 
     call_limit = BooleanField(_('Limit Maximum Calls'), [Optional()], default=False)
     call_maximum = IntegerField(_('Call Maximum'), [Optional(), NumberRange(min=0)])
@@ -55,6 +53,13 @@ class CampaignForm(Form):
     allow_call_in = BooleanField(_('Allow Call In'))
 
     submit = SubmitField(_('Edit Audio'))
+
+    def __init__(self, campaign_data=None, *args, **kwargs):
+        super(CampaignForm, self).__init__(*args, **kwargs)
+        if campaign_data:
+            self.campaign_state.choices = choice_items(campaign_data.region_choices)
+            self.campaign_subtype.choices = choice_items(campaign_data.subtype_choices)
+            self.target_ordering.choices = choice_items(campaign_data.target_order_choices)
 
     def validate(self):
         # check default validation

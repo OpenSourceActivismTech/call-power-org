@@ -9,8 +9,8 @@ from ..extensions import db, cache
 from ..utils import convert_to_dict
 from ..political_data.adapters import adapt_to_target
 from ..political_data import get_country_data
-from .constants import (CAMPAIGN_CHOICES, CAMPAIGN_NESTED_CHOICES, STRING_LEN, TWILIO_SID_LENGTH,
-                        CAMPAIGN_STATUS, STATUS_PAUSED, SEGMENT_BY_CHOICES, LOCATION_CHOICES, ORDERING_CHOICES, )
+from .constants import (STRING_LEN, TWILIO_SID_LENGTH,
+                        CAMPAIGN_STATUS, STATUS_PAUSED, SEGMENT_BY_CHOICES, LOCATION_CHOICES)
 
 
 class Campaign(db.Model):
@@ -100,7 +100,11 @@ class Campaign(db.Model):
 
     def order_display(self):
         "Display method for this campaign's ordering"
-        return dict(ORDERING_CHOICES).get(self.target_ordering)
+        campaign_data = self.get_campaign_data()
+        if campaign_data:
+            return campaign_data.get_order_display(self.target_ordering)
+        else:
+            return None
 
     def phone_numbers(self, region_code=None):
         "Phone numbers for this campaign, can be limited to a specified region code (ISO-2)"

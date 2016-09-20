@@ -11,35 +11,6 @@ TARGET_CHAMBER_BOTH = 'both'
 TARGET_CHAMBER_UPPER = 'upper'
 TARGET_CHAMBER_LOWER = 'lower'
 
-CAMPAIGN_CHOICES = (
-    ('', ''),
-    (TYPE_EXECUTIVE, 'Executive'),
-    (TYPE_CONGRESS, 'Congress'),
-    (TYPE_STATE, 'State'),
-    (TYPE_LOCAL, 'Local'),
-    (TYPE_CUSTOM, 'Custom'),
-)
-CAMPAIGN_NESTED_CHOICES = (
-    ('', ''),
-    (TYPE_EXECUTIVE, (
-        (TARGET_EXECUTIVE, 'President'),
-        (TARGET_OFFICE, 'Office')
-    )),
-    (TYPE_CONGRESS, (
-        (TARGET_CHAMBER_BOTH, 'Both Bodies'),
-        (TARGET_CHAMBER_UPPER, 'Senate Only'),
-        (TARGET_CHAMBER_LOWER, 'House Only')
-    )),
-    (TYPE_STATE, (
-        (TARGET_EXECUTIVE, 'Governor'),
-        (TARGET_CHAMBER_BOTH, 'Legislature - Both Bodies'),
-        (TARGET_CHAMBER_UPPER, 'Legislature - Upper Body'),
-        (TARGET_CHAMBER_LOWER, 'Legislature - Lower Body')
-    )),
-    (TYPE_LOCAL, ()),
-    (TYPE_CUSTOM, ()),
-)
-
 # these types of campaigns cannot be looked up via api
 # default to the custom target interface
 CUSTOM_CAMPAIGN_CHOICES = [

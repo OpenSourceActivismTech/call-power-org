@@ -1,4 +1,4 @@
-import itertools
+from flask.ext.babel import gettext as _
 
 class DataProvider(object):
     campaign_types = []
@@ -24,7 +24,9 @@ class DataProvider(object):
 class CampaignType(object):
     name = None
     subtypes = []
-    target_order_choices = []
+    target_orders = [
+        ('in-order', _("In order"))
+    ]
 
     def __init__(self, data_provider):
         self.data_provider = data_provider
@@ -54,10 +56,19 @@ class CampaignType(object):
 
     @property
     def subtype_choices(self):
-        return [(key, name) for key, name in self.subtypes]
+        return CampaignType.subtypes + self.subtypes
 
     def get_subtype_display(self, subtype, campaign_region=None):
-        return dict(self.subtypes).get(subtype, '')
+        choices_dict = dict(self.subtype_choices)
+        return choices_dict.get(subtype, None)
+
+    @property
+    def target_order_choices(self):
+        return CampaignType.target_orders + self.target_orders
+
+    def get_order_display(self, target_order):
+        choices_dict = dict(self.target_order_choices)
+        return choices_dict.get(target_order, None)
 
     def get_targets_for_campaign(self, location, campaign):
         country_code = campaign.get_country_code()

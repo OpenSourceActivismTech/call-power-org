@@ -13,7 +13,7 @@ from twilio.util import TwilioCapability
 from ..extensions import db
 from ..utils import choice_items, choice_keys, choice_values_flat, duplicate_object
 
-from .constants import CAMPAIGN_NESTED_CHOICES, CUSTOM_CAMPAIGN_CHOICES, EMPTY_CHOICES, STATUS_LIVE
+from .constants import EMPTY_CHOICES, STATUS_LIVE
 from .models import (Campaign, CampaignCountry, Target, CampaignTarget,
                      AudioRecording, CampaignAudioRecording)
 from ..call.models import Call
@@ -109,7 +109,8 @@ def form(country_code=None, campaign_type=None, campaign_id=None):
             id=campaign.campaign_country
         ).first_or_404()
         campaign_id = campaign.id
-        form = CampaignForm(obj=campaign)
+        campaign_data = campaign.get_campaign_data()
+        form = CampaignForm(obj=campaign, campaign_data=campaign_data)
     else:
         campaign = Campaign()
         campaign_country = CampaignCountry.query.filter_by(
@@ -118,15 +119,8 @@ def form(country_code=None, campaign_type=None, campaign_id=None):
         campaign.campaign_country = campaign_country.id
         campaign.campaign_type = campaign_type
         campaign_id = None
-        form = CampaignForm()
-
-    # for fields with dynamic choices, set to empty here in view
-    # will be updated in client
-    campaign_data = campaign.get_campaign_data()
-
-    if campaign_data:
-        form.campaign_state.choices = choice_items(campaign_data.region_choices)
-        form.campaign_subtype.choices = choice_items(campaign_data.subtype_choices)
+        campaign_data = campaign.get_campaign_data()
+        form = CampaignForm(campaign_data=campaign_data)
 
     form.target_set.choices = choice_items(EMPTY_CHOICES)
 
@@ -186,9 +180,7 @@ def form(country_code=None, campaign_type=None, campaign_id=None):
     return render_template('campaign/form.html', form=form, edit=edit, campaign_id=campaign_id,
                            campaign_country=campaign_country,
                            campaign_type=campaign_data,
-                           descriptions=current_app.config.CAMPAIGN_FIELD_DESCRIPTIONS,
-                           CAMPAIGN_NESTED_CHOICES=CAMPAIGN_NESTED_CHOICES,
-                           CUSTOM_CAMPAIGN_CHOICES=CUSTOM_CAMPAIGN_CHOICES)
+                           descriptions=current_app.config.CAMPAIGN_FIELD_DESCRIPTIONS)
 
 
 @campaign.route('/<int:campaign_id>/copy', methods=['GET', 'POST'])

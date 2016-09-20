@@ -1,8 +1,4 @@
-import csv
-import collections
-import random
-import itertools
-
+from flask.ext.babel import gettext as _
 from sunlight import openstates, response_cache
 
 from . import DataProvider, CampaignType
@@ -12,6 +8,11 @@ from ...campaign.constants import (TARGET_CHAMBER_BOTH, TARGET_CHAMBER_UPPER, TA
 
 from ..geocode import Geocoder
 from ..constants import US_STATES
+
+import csv
+import collections
+import random
+import itertools
 
 
 class USCampaignType(CampaignType):
@@ -25,8 +26,8 @@ class USCampaignType_Custom(USCampaignType):
 class USCampaignType_Executive(USCampaignType):
     name = "Executive"
     subtypes = [
-        ('exec', "President"),
-        ('office', "Office")
+        ('exec', _("President")),
+        ('office', _("Office"))
     ]
 
     def all_targets(self, location, campaign_region=None):
@@ -41,14 +42,14 @@ class USCampaignType_Executive(USCampaignType):
 class USCampaignType_Congress(USCampaignType):
     name = "Congress"
     subtypes = [
-        ('both', "Both Bodies"),
-        ('upper', "Senate"),
-        ('lower', "House")
+        ('both', _("Both Bodies")),
+        ('upper', _("Senate")),
+        ('lower', _("House"))
     ]
-    target_order_choices = [
-        ('shuffle', "Shuffle"),
-        ('upper-first', "Senate First"),
-        ('lower-first', "House First")
+    target_orders = [
+        ('shuffle', _("Shuffle")),
+        ('upper-first', _("Senate First")),
+        ('lower-first', _("House First"))
     ]
 
     @property
@@ -101,15 +102,15 @@ class USCampaignType_Congress(USCampaignType):
 class USCampaignType_State(USCampaignType):
     name = "State"
     subtypes = [
-        ('exec', "Governor"),
-        ('both', "Legislature - Both Bodies"),
-        ('upper', "Legislature - Upper Body"),
-        ('lower', "Legislature - Lower Body")
+        ('exec', _("Governor")),
+        ('both', _("Legislature - Both Bodies")),
+        ('upper', _("Legislature - Upper Body")),
+        ('lower', _("Legislature - Lower Body"))
     ]
-    target_order_choices = [
-        ('shuffle', "Shuffle"),
-        ('upper-first', "Upper First"),
-        ('lower-first', "Lower First")
+    target_orders = [
+        ('shuffle', _("Shuffle")),
+        ('upper-first', _("Upper First")),
+        ('lower-first', _("Lower First"))
     ]
 
     @property
