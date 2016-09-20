@@ -11,6 +11,8 @@ class NoDataProviderError(Exception):
 
 
 def get_country_data(country_code, **kwargs):
+    country_code = country_code.lower()
+
     path = COUNTRIES.get(country_code)
 
     if path is None:

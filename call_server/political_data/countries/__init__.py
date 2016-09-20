@@ -56,6 +56,9 @@ class CampaignType(object):
     def subtype_choices(self):
         return [(key, name) for key, name in self.subtypes]
 
+    def get_subtype_display(self, subtype, campaign_region=None):
+        return dict(self.subtypes).get(subtype, '')
+
     def get_targets_for_campaign(self, location, campaign):
         country_code = campaign.get_country_code()
         all_targets = self.all_targets(location, campaign.campaign_state)

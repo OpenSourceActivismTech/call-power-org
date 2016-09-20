@@ -116,6 +116,13 @@ class USCampaignType_State(USCampaignType):
     def region_choices(self):
         return US_STATES
 
+    def get_subtype_display(self, subtype, campaign_region=None):
+        display = super(USCampaignType_State, self).get_subtype_display(subtype, campaign_region)
+        if display:
+            return "{} - {}".format(campaign_region, display)
+        else:
+            return display
+
     def all_targets(self, location, campaign_region=None):
         # FIXME: For exec, use campaign state by default. Not user-provided location.
         #        I don't know why this doesn't apply everywhere.

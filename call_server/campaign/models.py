@@ -84,26 +84,19 @@ class Campaign(db.Model):
 
     def campaign_type_display(self):
         "Display method for this campaign's type"
-        campaign_choices = convert_to_dict(CAMPAIGN_CHOICES)
-        val = ''
-        if self.campaign_type:
-            val = campaign_choices.get(self.campaign_type, '')
-
-        return val
+        campaign_data = self.get_campaign_data()
+        if campaign_data:
+            return campaign_data.name
+        else:
+            return None
 
     def campaign_subtype_display(self):
         "Display method for this campaign's subtype"
-        subtype_choices = convert_to_dict(CAMPAIGN_NESTED_CHOICES)
-        campaign_subtypes = dict(subtype_choices[self.campaign_type])
-        val = ''
-        if self.campaign_subtype and self.campaign_subtype != "None":
-            sub = campaign_subtypes.get(self.campaign_subtype, '')
-            if self.campaign_type == 'state':
-                # special case, show specific state
-                val = '%s - %s' % (self.campaign_state, sub)
-            else:
-                val = sub
-        return val
+        campaign_data = self.get_campaign_data()
+        if campaign_data:
+            return campaign_data.get_subtype_display(self.campaign_subtype, campaign_region=self.campaign_state)
+        else:
+            return None
 
     def order_display(self):
         "Display method for this campaign's ordering"
