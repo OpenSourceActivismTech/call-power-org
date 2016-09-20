@@ -19,7 +19,7 @@ from ..utils import choice_items, choice_keys, choice_values, choice_values_flat
 
 
 class CountryForm(Form):
-    country = SelectField(_('Select Country'), validators=[Required()])
+    country_type = SelectField(_('Select Country'), validators=[Required()])
     submit = SubmitField(_('Next'))
 
 

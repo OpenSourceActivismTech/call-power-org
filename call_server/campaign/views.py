@@ -42,31 +42,55 @@ def index():
 
 
 @campaign.route('/create', methods=['GET', 'POST'])
-def country_form():
+@campaign.route('/<int:campaign_id>/edit-type', methods=['GET', 'POST'])
+def country_form(campaign_id=None):
+    edit = False
+    if campaign_id:
+        edit = True
+
+    if edit:
+        campaign = Campaign.query.filter_by(id=campaign_id).first_or_404()
+    else:
+        campaign = None
+
     form = CountryForm()
 
     country_type_choices = list()
     for country in CampaignCountry.available_countries():
         country_data = country.get_country_data()
-        for type_id, type_name in country_data.campaign_type_choices:
-            full_id = '/'.join([country.country_code, type_id])
+        for campaign_type, type_name in country_data.campaign_type_choices:
+            full_id = '/'.join([country.country_code, campaign_type])
             full_name = "{country} - {type}".format(country=country.name, type=type_name)
             country_type_choices.append((full_id, full_name))
 
-    form.country.choices = choice_items(country_type_choices)
+    form.country_type.choices = choice_items(country_type_choices)
+    if campaign and not request.form.get('country_type'):
+        current_country_type = '/'.join([campaign.get_country_code(), campaign.campaign_type])
+        form.country_type.data = current_country_type
 
     if form.validate_on_submit():
-        country_type = form.country.data
+        country_type = form.country_type.data
 
         try:
-            country_code, type_id = country_type.split('/', 1)
+            country_code, campaign_type = country_type.split('/', 1)
         except ValueError:
             country_code = None
-            type_id = None
+            campaign_type = None
 
-        if country_code and type_id:
+        if campaign and country_code and campaign_type:
+            campaign_country = CampaignCountry.query.filter_by(
+                country_code=country_code
+            ).first_or_404()
+            campaign.campaign_country = campaign_country.id
+            campaign.campaign_type = campaign_type
+            db.session.add(campaign)
+            db.session.commit()
             return redirect(
-                url_for('campaign.form', country_code=country_code, campaign_type=type_id)
+                url_for('campaign.form', campaign_id=campaign.id)
+            )
+        elif country_code and campaign_type:
+            return redirect(
+                url_for('campaign.form', country_code=country_code, campaign_type=campaign_type)
             )
 
     return render_template('campaign/choose_country.html',

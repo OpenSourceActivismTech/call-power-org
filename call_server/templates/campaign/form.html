@@ -118,13 +118,13 @@
     <div class="form-group container">
         <div class="form-actions">
             <div class="pull-left">
-                <a href="{{url_for('campaign.country_form')}}" class="btn btn-primary btn-warning">
+                <a href="{{url_for('campaign.country_form', campaign_id=campaign_id)}}" class="btn btn-warning">
                 <span class="glyphicon glyphicon-arrow-left"></span> Back
                 </a>
+                {% if edit %}
+                    <a class="btn btn-warning" href="{{ url_for('campaign.status', campaign_id=campaign_id) }}"><span class="glyphicon glyphicon-edit"></span> Edit Status</a>
+                {%endif%}
             </div>
-            {% if edit %}
-                <a class="btn btn-warning" href="{{ url_for('campaign.status', campaign_id=campaign_id) }}">Edit Status</a>
-            {%endif%}
             <div class="pull-right">
                 {{render_button(form.submit, {'field':'btn-success', 'icon':'arrow-right'}) }}
             </div>
