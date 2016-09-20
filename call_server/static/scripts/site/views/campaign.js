@@ -21,6 +21,9 @@
 
     initialize: function() {
       // init child views
+
+      console.log("CAMPAIGN INITIALIZE");
+
       this.searchForm = new CallPower.Views.TargetSearch();
       this.targetListView = new CallPower.Views.TargetList();
 
@@ -45,9 +48,12 @@
       var field = $('select#campaign_type');
       var val = field.val();
 
+      console.log("SET CAMPAIGN TYPE", val);
+
       var nested_field = $('select#campaign_subtype');
       var nested_choices = nested_field.data('nested-choices');
       var nested_val = nested_field.data('nested-selected');
+      console.log("NESTED CHOICES", nested_choices);
       nested_field.empty();
 
       // fill in new choices from data attr
