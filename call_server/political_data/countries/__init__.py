@@ -1,6 +1,7 @@
 from flask.ext.babel import gettext as _
 
 class DataProvider(object):
+    country_name = None
     campaign_types = []
 
     def __init__(self, **kwargs):
@@ -14,7 +15,7 @@ class DataProvider(object):
 
     @property
     def campaign_type_choices(self):
-        return [(key, campaign_type.name) for key, campaign_type in self.campaign_types]
+        return [(key, campaign_type.type_name) for key, campaign_type in self.campaign_types]
 
     def get_campaign_type(self, type_id):
         type_class = dict(self.campaign_types).get(type_id)
@@ -22,7 +23,7 @@ class DataProvider(object):
 
 
 class CampaignType(object):
-    name = None
+    type_name = None
     subtypes = []
     target_orders = [
         ('in-order', _("In order"))
@@ -53,6 +54,10 @@ class CampaignType(object):
         @return  a list of sorted and filtered target uids
         """
         raise NotImplementedError()
+
+    @property
+    def country_name(self):
+        return self.data_provider.country_name
 
     @property
     def subtype_choices(self):

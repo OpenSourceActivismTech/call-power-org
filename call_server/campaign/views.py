@@ -11,10 +11,11 @@ from sqlalchemy.sql import func, desc
 from twilio.util import TwilioCapability
 
 from ..extensions import db
+from ..political_data import COUNTRY_CHOICES
 from ..utils import choice_items, choice_keys, choice_values_flat, duplicate_object
 
 from .constants import EMPTY_CHOICES, STATUS_LIVE
-from .models import (Campaign, CampaignCountry, Target, CampaignTarget,
+from .models import (Campaign, Target, CampaignTarget,
                      AudioRecording, CampaignAudioRecording)
 from ..call.models import Call
 from .forms import (CountryForm, CampaignForm, CampaignAudioForm,
@@ -56,16 +57,15 @@ def country_form(campaign_id=None):
     form = CountryForm()
 
     country_type_choices = list()
-    for country in CampaignCountry.available_countries():
-        country_data = country.get_country_data()
-        for campaign_type, type_name in country_data.campaign_type_choices:
-            full_id = '/'.join([country.country_code, campaign_type])
-            full_name = "{country} - {type}".format(country=country.name, type=type_name)
+    for country_code, country_name in COUNTRY_CHOICES:
+        for campaign_type, type_name in Campaign.get_campaign_type_choices(country_code):
+            full_id = '/'.join([country_code, campaign_type])
+            full_name = "{country} - {type}".format(country=country_name, type=type_name)
             country_type_choices.append((full_id, full_name))
 
     form.country_type.choices = choice_items(country_type_choices)
     if campaign and not request.form.get('country_type'):
-        current_country_type = '/'.join([campaign.get_country_code(), campaign.campaign_type])
+        current_country_type = '/'.join([campaign.country_code, campaign.campaign_type])
         form.country_type.data = current_country_type
 
     if form.validate_on_submit():
@@ -78,10 +78,7 @@ def country_form(campaign_id=None):
             campaign_type = None
 
         if campaign and country_code and campaign_type:
-            campaign_country = CampaignCountry.query.filter_by(
-                country_code=country_code
-            ).first_or_404()
-            campaign.campaign_country = campaign_country.id
+            campaign.campaign_country = country_code
             campaign.campaign_type = campaign_type
             db.session.add(campaign)
             db.session.commit()
@@ -105,20 +102,14 @@ def form(country_code=None, campaign_type=None, campaign_id=None):
 
     if edit:
         campaign = Campaign.query.filter_by(id=campaign_id).first_or_404()
-        campaign_country = CampaignCountry.query.filter_by(
-            id=campaign.campaign_country
-        ).first_or_404()
         campaign_id = campaign.id
         campaign_data = campaign.get_campaign_data()
         form = CampaignForm(obj=campaign, campaign_data=campaign_data)
     else:
         campaign = Campaign()
-        campaign_country = CampaignCountry.query.filter_by(
-            country_code=country_code
-        ).first_or_404()
-        campaign.campaign_country = campaign_country.id
-        campaign.campaign_type = campaign_type
         campaign_id = None
+        campaign.country_code = country_code
+        campaign.campaign_type = campaign_type
         campaign_data = campaign.get_campaign_data()
         form = CampaignForm(campaign_data=campaign_data)
 
@@ -131,7 +122,7 @@ def form(country_code=None, campaign_type=None, campaign_id=None):
     if form.validate_on_submit():
         # can't use populate_obj with nested forms, iterate over fields manually
         for field in form:
-            if field.name != 'target_set':
+            if field.name not in ['target_set', 'campaign_country', 'campaign_type']:
                 setattr(campaign, field.name, field.data)
 
         # handle target_set nested data
@@ -178,8 +169,7 @@ def form(country_code=None, campaign_type=None, campaign_id=None):
         return redirect(url_for('campaign.audio', campaign_id=campaign.id))
 
     return render_template('campaign/form.html', form=form, edit=edit, campaign_id=campaign_id,
-                           campaign_country=campaign_country,
-                           campaign_type=campaign_data,
+                           campaign_data=campaign_data,
                            descriptions=current_app.config.CAMPAIGN_FIELD_DESCRIPTIONS)
 
 
@@ -347,9 +337,6 @@ def show_recording(campaign_id, recording_id):
 @campaign.route('/<int:campaign_id>/launch', methods=['GET', 'POST'])
 def launch(campaign_id):
     campaign = Campaign.query.filter_by(id=campaign_id).first_or_404()
-    campaign_country = CampaignCountry.query.filter_by(
-        id=campaign.campaign_country
-    ).first_or_404()
     form = CampaignLaunchForm()
 
     if form.validate_on_submit():
@@ -399,7 +386,7 @@ def launch(campaign_id):
                 form.embed_script.data = campaign.embed.get('script')
 
     return render_template('campaign/launch.html', campaign=campaign,
-        form=form, campaign_country=campaign_country,
+        campaign_data=campaign.get_campaign_data(), form=form,
         descriptions=current_app.config.CAMPAIGN_FIELD_DESCRIPTIONS)
 
 

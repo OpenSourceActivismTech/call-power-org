@@ -5,16 +5,23 @@ from wtforms import (HiddenField, SubmitField, TextField,
                      BooleanField, RadioField, IntegerField,
                      FileField, FieldList, FormField)
 from wtforms.ext.sqlalchemy.fields import QuerySelectField, QuerySelectMultipleField
-from wtforms_components import PhoneNumberField
+from wtforms_components import PhoneNumberField, read_only
 from wtforms.widgets import TextArea
 from wtforms.validators import Required, Optional, AnyOf, NumberRange, ValidationError
 
-from .constants import (SEGMENT_BY_CHOICES, LOCATION_CHOICES, ORDERING_CHOICES,
+from .constants import (SEGMENT_BY_CHOICES, LOCATION_CHOICES,
                         CAMPAIGN_STATUS, EMBED_FORM_CHOICES, EMBED_SCRIPT_DISPLAY)
 
-from .models import TwilioPhoneNumber
+from .models import Campaign, TwilioPhoneNumber
 
+from ..political_data import COUNTRY_CHOICES
 from ..utils import choice_items, choice_keys, choice_values, choice_values_flat
+
+
+class DisabledSelectField(SelectField):
+  def __call__(self, *args, **kwargs):
+    kwargs.setdefault('disabled', True)
+    return super(DisabledSelectField, self).__call__(*args, **kwargs)
 
 
 class CountryForm(Form):
@@ -33,6 +40,8 @@ class TargetForm(Form):
 class CampaignForm(Form):
     next = HiddenField()
     name = TextField(_('Campaign Name'), [Required()])
+    campaign_country = DisabledSelectField(_("Country"), [Optional()], choices=COUNTRY_CHOICES)
+    campaign_type = DisabledSelectField(_("Type"), [Optional()])
     campaign_state = SelectField(_('State'), [Optional()])
     campaign_subtype = SelectField(_('Subtype'), [Optional()])
     # nested_type passed to data-field in template, but starts empty
@@ -54,12 +63,16 @@ class CampaignForm(Form):
 
     submit = SubmitField(_('Edit Audio'))
 
-    def __init__(self, campaign_data=None, *args, **kwargs):
+    def __init__(self, campaign_data, *args, **kwargs):
         super(CampaignForm, self).__init__(*args, **kwargs)
-        if campaign_data:
-            self.campaign_state.choices = choice_items(campaign_data.region_choices)
-            self.campaign_subtype.choices = choice_items(campaign_data.subtype_choices)
-            self.target_ordering.choices = choice_items(campaign_data.target_order_choices)
+
+        read_only(self.campaign_country)
+        read_only(self.campaign_type)
+
+        self.campaign_type.choices = choice_items(campaign_data.data_provider.campaign_type_choices)
+        self.campaign_state.choices = choice_items(campaign_data.region_choices)
+        self.campaign_subtype.choices = choice_items(campaign_data.subtype_choices)
+        self.target_ordering.choices = choice_items(campaign_data.target_order_choices)
 
     def validate(self):
         # check default validation

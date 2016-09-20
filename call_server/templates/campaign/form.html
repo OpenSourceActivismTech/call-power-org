@@ -18,8 +18,6 @@
 {% block body %}
 <h3>{% if edit %}Edit Campaign{%else%}New Campaign{%endif%}</h3>
 
-<p>{{ campaign_country.name }} - {{ campaign_type.name }}</p>
-
 <form class="form-horizontal" id="campaign" method="POST" action="" >
     {{ form.hidden_tag() }}
 
@@ -27,9 +25,14 @@
         <legend>Type</legend>
 
         {{render_field_default(form.name) }}
+
+        {{render_field_default(form.campaign_country)}}
+        {{render_field_default(form.campaign_type)}}
+
         {% if form.campaign_state.choices %}
             {{render_field_default(form.campaign_state)}}
         {% endif %}
+
         {% if form.campaign_subtype.choices %}
             {{render_field_default(form.campaign_subtype)}}
         {% endif %}

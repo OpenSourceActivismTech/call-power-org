@@ -3,9 +3,6 @@ from sunlight import openstates, response_cache
 
 from . import DataProvider, CampaignType
 
-from ...campaign.constants import (TARGET_CHAMBER_BOTH, TARGET_CHAMBER_UPPER, TARGET_CHAMBER_LOWER,
-        ORDER_IN_ORDER, ORDER_SHUFFLE, ORDER_UPPER_FIRST, ORDER_LOWER_FIRST)
-
 from ..geocode import Geocoder
 from ..constants import US_STATES
 
@@ -19,12 +16,17 @@ class USCampaignType(CampaignType):
     pass
 
 
+class USCampaignType_Local(USCampaignType):
+    type_name = "Local"
+
+
 class USCampaignType_Custom(USCampaignType):
-    name = "Custom"
+    type_name = "Custom"
 
 
 class USCampaignType_Executive(USCampaignType):
-    name = "Executive"
+    type_name = "Executive"
+
     subtypes = [
         ('exec', _("President")),
         ('office', _("Office"))
@@ -40,7 +42,8 @@ class USCampaignType_Executive(USCampaignType):
 
 
 class USCampaignType_Congress(USCampaignType):
-    name = "Congress"
+    type_name = "Congress"
+
     subtypes = [
         ('both', _("Both Bodies")),
         ('upper', _("Senate")),
@@ -100,7 +103,8 @@ class USCampaignType_Congress(USCampaignType):
 
 
 class USCampaignType_State(USCampaignType):
-    name = "State"
+    type_name = "State"
+
     subtypes = [
         ('exec', _("Governor")),
         ('both', _("Legislature - Both Bodies")),
@@ -175,11 +179,13 @@ class USCampaignType_State(USCampaignType):
 
 
 class USDataProvider(DataProvider):
+    country_name = "United States"
+
     campaign_types = [
         ('executive', USCampaignType_Executive),
         ('congress', USCampaignType_Congress),
         ('state', USCampaignType_State),
-        # ('local', USCampaignType_Local),
+        ('local', USCampaignType_Local),
         ('custom', USCampaignType_Custom)
     ]
 

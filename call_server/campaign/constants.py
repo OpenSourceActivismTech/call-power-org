@@ -1,24 +1,3 @@
-# Campaign types
-TYPE_EXECUTIVE = 'executive'
-TYPE_CONGRESS = 'congress'
-TYPE_STATE = 'state'
-TYPE_LOCAL = 'local'
-TYPE_CUSTOM = 'custom'
-
-TARGET_EXECUTIVE = 'exec'
-TARGET_OFFICE = 'office'
-TARGET_CHAMBER_BOTH = 'both'
-TARGET_CHAMBER_UPPER = 'upper'
-TARGET_CHAMBER_LOWER = 'lower'
-
-# these types of campaigns cannot be looked up via api
-# default to the custom target interface
-CUSTOM_CAMPAIGN_CHOICES = [
-    'executive.office',
-    'local',
-    'custom'
-]
-
 SEGMENT_BY_LOCATION = 'location'
 SEGMENT_BY_CUSTOM = 'custom'
 SEGMENT_BY_CHOICES = (
@@ -34,17 +13,6 @@ LOCATION_CHOICES = (
     (LOCATION_POSTAL, 'ZIP / Postal Code'),
     (LOCATION_ADDRESS, 'Street Address'),
     (LOCATION_LATLON, 'Lat / Lon')
-)
-
-ORDER_IN_ORDER = 'in-order'
-ORDER_SHUFFLE = 'shuffle'
-ORDER_UPPER_FIRST = 'upper-first'
-ORDER_LOWER_FIRST = 'lower-first'
-ORDERING_CHOICES = (
-    (ORDER_IN_ORDER, 'In Order'),
-    (ORDER_SHUFFLE, 'Shuffle'),
-    (ORDER_UPPER_FIRST, 'Senate First'),
-    (ORDER_LOWER_FIRST, 'House First'),
 )
 
 STATUS_ARCHIVED = 0

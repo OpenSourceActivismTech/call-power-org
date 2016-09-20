@@ -20,7 +20,7 @@ class Campaign(db.Model):
     created_time = db.Column(db.DateTime, default=datetime.utcnow)
 
     name = db.Column(db.String(STRING_LEN), nullable=False, unique=True)
-    campaign_country = db.Column(db.Integer, db.ForeignKey('campaign_country.id'), nullable=False, unique=False)
+    country_code = db.Column(db.String(STRING_LEN), index=True)
     campaign_type = db.Column(db.String(STRING_LEN))
     campaign_state = db.Column(db.String(STRING_LEN))
     campaign_subtype = db.Column(db.String(STRING_LEN))
@@ -86,7 +86,7 @@ class Campaign(db.Model):
         "Display method for this campaign's type"
         campaign_data = self.get_campaign_data()
         if campaign_data:
-            return campaign_data.name
+            return campaign_data.type_name
         else:
             return None
 
@@ -120,7 +120,7 @@ class Campaign(db.Model):
         """API convenience method for rendering campaigns externally
         Returns dict of parameters and data types required to place call"""
         fields = dict()
-        fields['userPhone'] = self.campaign_country.country_code
+        fields['userPhone'] = self.country_code
         if self.segment_by == 'location':
             fields['userLocation'] = self.locate_by
         return fields
@@ -143,46 +143,17 @@ class Campaign(db.Model):
         else:
             return self.campaign_subtype_display()
 
-    def get_country_instance(self):
-        return CampaignCountry.query.filter_by(
-            id=self.campaign_country
-        ).first()        
-
-    def get_country_code(self):
-        campaign_country = self.get_country_instance()
-        if campaign_country:
-            return campaign_country.country_code
-        else:
-            return None
-
-    def get_campaign_data(self):
-        campaign_country = self.get_country_instance()
-        if campaign_country:
-            country_data = campaign_country.get_country_data()
-            return country_data.get_campaign_type(self.campaign_type)
-        else:
-            return None
-
-
-class CampaignCountry(db.Model):
-    __tablename__ = 'campaign_country'
-
-    id = db.Column(db.Integer, primary_key=True)
-    country_code = db.Column(db.String(STRING_LEN), index=True, unique=True)
-    name = db.Column(db.String(STRING_LEN), nullable=True)
-
-    def __unicode__(self):
-        if self.name:
-            return self.name
-        else:
-            return self.country_code
-
-    @classmethod
-    def available_countries(*args, **kwargs):
-        return CampaignCountry.query
+    @staticmethod
+    def get_campaign_type_choices(country_code):
+        country_data = get_country_data(country_code, cache=cache, api_cache='localmem')
+        return country_data.campaign_type_choices
 
     def get_country_data(self):
         return get_country_data(self.country_code, cache=cache, api_cache='localmem')
+
+    def get_campaign_data(self):
+        country_data = self.get_country_data()
+        return country_data.get_campaign_type(self.campaign_type)
 
 
 class CampaignTarget(db.Model):
