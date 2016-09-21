@@ -5,6 +5,8 @@ from . import DataProvider, CampaignType
 
 from ..geocode import Geocoder
 from ..constants import US_STATES
+from ...campaign.constants import (LOCATION_POSTAL, LOCATION_ADDRESS,
+                                   LOCATION_LATLON)
 
 import csv
 import collections

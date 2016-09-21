@@ -1,26 +1,33 @@
 from run import BaseTestCase
-from call_server.political_data.countries.us import USData
-from call_server.campaign.constants import (TARGET_CHAMBER_BOTH, TARGET_CHAMBER_UPPER, TARGET_CHAMBER_LOWER,
-        ORDER_IN_ORDER, ORDER_UPPER_FIRST, ORDER_LOWER_FIRST)
+from call_server.political_data.lookup import locate_targets
+from call_server.political_data.countries.us import USDataProvider
+from call_server.campaign.models import Campaign
 
 
 class TestData(BaseTestCase):
+    CONGRESS_CAMPAIGN = Campaign(
+        country_code='us',
+        campaign_type='congress',
+        campaign_subtype='both',
+        target_ordering='in-order',
+        locate_by='postal')
+
     def setUp(self):
         # mock the flask-cache as a dictionary
         testCache = {}
-        self.us_data = USData(testCache)
+        self.us_data = USDataProvider(testCache)
         self.us_data.load_data()
 
     def test_cache(self):
         self.assertIsNotNone(self.us_data)
 
     def test_districts(self):
-        district = self.us_data.get_district('94612')[0]
+        district = self.us_data.get_districts('94612')[0]
         self.assertEqual(district['state'], 'CA')
         self.assertEqual(district['house_district'], '13')
 
     def test_district_multiple_states(self):
-        districts = self.us_data.get_district('53811')
+        districts = self.us_data.get_districts('53811')
         # apparently this zipcode is in multiple states
         self.assertEqual(len(districts), 4)
 
@@ -31,7 +38,7 @@ class TestData(BaseTestCase):
         self.assertEqual(senator['in_office'], '1')
 
     def test_house(self):
-        rep = self.us_data.get_house_member('CA', '13')[0]
+        rep = self.us_data.get_house_members('CA', '13')[0]
         self.assertEqual(rep['chamber'], 'house')
         self.assertEqual(rep['state'], 'CA')
         self.assertEqual(rep['district'], '13')
@@ -41,15 +48,14 @@ class TestData(BaseTestCase):
         no_senators = self.us_data.get_senators('DC')
         self.assertEqual(no_senators, [])
 
-        rep = self.us_data.get_house_member('DC', '0')[0]
+        rep = self.us_data.get_house_members('DC', '0')[0]
         self.assertEqual(rep['chamber'], 'house')
         self.assertEqual(rep['state'], 'DC')
         self.assertEqual(rep['district'], '0')
         self.assertEqual(rep['in_office'], '1')
 
-
     def test_locate_targets(self):
-        uids = self.us_data.locate_targets('05055', TARGET_CHAMBER_BOTH, ORDER_IN_ORDER)
+        locate_targets('05055', self.CONGRESS_CAMPAIGN)
         # returns a list of bioguide ids
         self.assertEqual(len(uids), 3)
 
@@ -69,14 +75,14 @@ class TestData(BaseTestCase):
         self.assertEqual(house_rep['in_office'], '1')
 
     def locate_targets_house_only(self):
-        uids = self.us_data.locate_targets('05055', TARGET_CHAMBER_LOWER)
+        uids = self.us_data.locate_targets('05055', 'lower')
         self.assertEqual(len(uids), 1)
 
         first = self.us_data.get_uid(uids[0])[0]
         self.assertEqual(first['chamber'], 'house')
 
     def locate_targets_senate_only(self):
-        uids = self.us_data.locate_targets('05055', TARGET_CHAMBER_UPPER)
+        uids = self.us_data.locate_targets('05055', 'upper')
         self.assertEqual(len(uids), 2)
 
         first = self.us_data.get_uid(uids[0])[0]
@@ -86,7 +92,7 @@ class TestData(BaseTestCase):
         self.assertEqual(second['chamber'], 'senate')
 
     def test_locate_targets_ordered_house_first(self):
-        uids = self.us_data.locate_targets('05055', TARGET_CHAMBER_BOTH, ORDER_LOWER_FIRST)
+        uids = self.us_data.locate_targets('05055', 'both', 'lower-first')
         self.assertEqual(len(uids), 3)
 
         first = self.us_data.get_uid(uids[0])[0]
@@ -99,7 +105,7 @@ class TestData(BaseTestCase):
         self.assertEqual(third['chamber'], 'senate')
 
     def test_locate_targets_ordered_senate_first(self):
-        uids = self.us_data.locate_targets('05055', TARGET_CHAMBER_BOTH, ORDER_UPPER_FIRST)
+        uids = self.us_data.locate_targets('05055', 'both', 'upper-first')
         self.assertEqual(len(uids), 3)
 
         first = self.us_data.get_uid(uids[0])[0]

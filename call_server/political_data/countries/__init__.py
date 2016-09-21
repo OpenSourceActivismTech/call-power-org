@@ -13,6 +13,12 @@ class DataProvider(object):
         """
         raise NotImplementedError()
 
+    def get_location(self, locate_by, raw):
+        """
+        @return  a location within the country using the given raw input
+        """
+        raise NotImplementedError()
+
     @property
     def campaign_type_choices(self):
         return [(key, campaign_type.type_name) for key, campaign_type in self.campaign_types]
@@ -76,6 +82,8 @@ class CampaignType(object):
         return choices_dict.get(target_order, None)
 
     def get_targets_for_campaign(self, location, campaign):
-        country_code = campaign.get_country_code()
+        country_code = campaign.country_code
+        if isinstance(location, basestring):
+            location = self.data_provider.get_location(campaign.locate_by, location)
         all_targets = self.all_targets(location, campaign.campaign_state)
         return self.sort_targets(all_targets, campaign.campaign_subtype, campaign.target_ordering)
