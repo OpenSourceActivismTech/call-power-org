@@ -342,6 +342,10 @@ $(document).ready(function () {
       // call limit
       'change input[name="call_limit"]': 'changeCallLimit',
 
+      // phone numbers
+      'change select#phone_number_set': 'checkForCallInCollisions',
+      'change input#allow_call_in': 'checkForCallInCollisions',
+
       'submit': 'submitForm'
     },
 
@@ -364,6 +368,15 @@ $(document).ready(function () {
 
       // load existing items from hidden inputs
       this.targetListView.loadExistingItems();
+
+      $("#phone_number_set").parents(".controls").after(
+        $('<div id="call_in_collisions" class="panel alert-warning col-sm-4 hidden">').append(
+          "<p>This will override call in settings for these campaigns:</p>",
+          $("<ul>")
+        )
+      );
+
+      this.checkForCallInCollisions();
     },
 
     changeCampaignType: function() {
@@ -492,6 +505,23 @@ $(document).ready(function () {
       }
     },
 
+    checkForCallInCollisions: function(event) {
+      var collisions = [];
+      var taken = $("select#phone_number_set").data("call_in_map");
+      $("select#phone_number_set option:selected").each(function() {
+        if (taken[this.value] && collisions.indexOf(taken[this.value]) == -1)
+          collisions.push(taken[this.value]);
+      });
+
+      var list = $("#call_in_collisions ul").empty();
+      list.append($.map(collisions, function(name) { return $("<li>").text(name) }));
+
+      if ($("#allow_call_in").is(":checked") && collisions.length)
+        $("#call_in_collisions").removeClass("hidden");
+      else
+        $("#call_in_collisions").addClass("hidden");
+    },
+
     validateNestedSelect: function(formGroup) {
       if ($('select.nested:visible').length) {
         return !!$('select.nested option:selected').val();
@@ -597,6 +627,7 @@ $(document).ready(function () {
   });
 
 })();
+
 /*global CallPower, Backbone */
 
 (function () {
@@ -1316,8 +1347,7 @@ $(document).ready(function () {
             person.phone = person.offices[0].phone;
           }
         }
-        console.log(person);
-        
+
         // render display
         var li = renderTemplate("#search-results-item-tmpl", person);
         dropdownMenu.append(li);
