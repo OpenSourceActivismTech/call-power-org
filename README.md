@@ -54,7 +54,7 @@ Read detailed instrustions at [INSTALLATION.md](INSTALLATION.md)
 Political Data
 --------------
 
-Political data is downloaded from Sunlight as CSV files stored in this repository. These are read on startup and saved in a memory cache for fast local lookup.
+Political data is downloaded from [open data sources](OPEN_DATA_SOURCES.md) as flat files stored in this repository. These are read on startup and saved in a memory cache for fast local lookup.
 
 To update these files with new data after elections, run `cd call_server/political_data/data && make clean && make`, and `python manager.py load_political_data`
 
