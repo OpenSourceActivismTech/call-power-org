@@ -3705,6 +3705,7 @@
     class: 3
     state_rank: senior
     party: Democrat
+    phone: 202-224-5852
     url: https://www.bennet.senate.gov
     rss_url: http://www.bennet.senate.gov/rss/feeds/?type=news
 - id:
@@ -4365,6 +4366,7 @@
     class: 3
     state_rank: senior
     party: Democrat
+    phone: 202-224-2823
     url: https://www.blumenthal.senate.gov
     rss_url: http://www.blumenthal.senate.gov/rss/feeds/?type=all
 - id:
@@ -4461,6 +4463,7 @@
     class: 3
     state_rank: junior
     party: Republican
+    phone: 202-224-5721
     url: http://www.blunt.senate.gov
     rss_url: http://www.blunt.senate.gov/public/?a=rss.feed
 - id:
@@ -4544,6 +4547,7 @@
     class: 3
     state_rank: senior
     party: Republican
+    phone: 202-224-4843
     url: http://www.boozman.senate.gov
     rss_url: http://www.boozman.senate.gov/public/index.cfm/rss/feed
 - id:
@@ -5293,6 +5297,7 @@
     class: 3
     state_rank: senior
     party: Republican
+    phone: 202-224-3154
     url: http://www.burr.senate.gov
     rss_url: http://www.burr.senate.gov/public/index.cfm?fuseaction=rss.feed
 - id:
@@ -7886,6 +7891,7 @@
     class: 3
     state_rank: senior
     party: Republican
+    phone: 202-224-6142
     url: http://www.crapo.senate.gov
 - id:
     bioguide: C001087
@@ -11985,6 +11991,7 @@
     class: 3
     state_rank: senior
     party: Republican
+    phone: 202-224-3744
     url: http://www.grassley.senate.gov
     rss_url: http://grassley.senate.gov/customcf/rss_feed.cfm
 - id:
@@ -13631,6 +13638,7 @@
     class: 3
     state_rank: senior
     party: Republican
+    phone: 202-224-2551
     url: https://www.hoeven.senate.gov
     rss_url: http://www.hoeven.senate.gov/public/index.cfm/rss/feed
 - id:
@@ -14117,6 +14125,7 @@
     class: 3
     state_rank: senior
     party: Republican
+    phone: 202-224-3643
     url: http://www.isakson.senate.gov
     rss_url: http://www.isakson.senate.gov/public/?a=RSS.Feed
 - id:
@@ -14760,6 +14769,7 @@
     class: 3
     state_rank: senior
     party: Republican
+    phone: 202-224-5323
     url: http://www.ronjohnson.senate.gov
     rss_url: http://www.ronjohnson.senate.gov/public/index.cfm/rss/feed
 - id:
@@ -16242,6 +16252,7 @@
     class: 3
     state_rank: junior
     party: Republican
+    phone: 202-224-5754
     url: https://www.lankford.senate.gov
 - id:
     bioguide: L000560
@@ -16633,6 +16644,7 @@
     class: 3
     state_rank: senior
     party: Democrat
+    phone: 202-224-4242
     url: https://www.leahy.senate.gov
     rss_url: http://www.leahy.senate.gov/rss/feeds/press/
 - id:
@@ -16796,6 +16808,7 @@
     class: 3
     state_rank: junior
     party: Republican
+    phone: 202-224-5444
     url: http://www.lee.senate.gov
     rss_url: http://www.lee.senate.gov/public/index.cfm/rss/feed
 - id:
@@ -18808,6 +18821,7 @@
     class: 3
     state_rank: senior
     party: Republican
+    phone: 202-224-2235
     url: http://www.mccain.senate.gov
 - id:
     bioguide: M001165
@@ -20017,6 +20031,7 @@
     class: 3
     state_rank: junior
     party: Republican
+    phone: 202-224-6521
     url: http://www.moran.senate.gov
     rss_url: http://www.moran.senate.gov/public/index.cfm/rss/feed/
 - id:
@@ -20151,6 +20166,7 @@
     class: 3
     state_rank: senior
     party: Republican
+    phone: 202-224-6665
     url: https://www.murkowski.senate.gov
     rss_url: http://www.murkowski.senate.gov/public/?a=rss.feed
   family:
@@ -20389,6 +20405,7 @@
     class: 3
     state_rank: senior
     party: Democrat
+    phone: 202-224-2621
     url: http://www.murray.senate.gov
     rss_url: http://www.murray.senate.gov/public/?a=rss.feed
 - id:
@@ -21548,6 +21565,7 @@
     class: 3
     state_rank: junior
     party: Republican
+    phone: 202-224-4343
     url: https://www.paul.senate.gov
     rss_url: http://paul.senate.gov/rss/?p=news
   family:
@@ -22589,6 +22607,7 @@
     class: 3
     state_rank: junior
     party: Republican
+    phone: 202-224-3353
     url: http://www.portman.senate.gov
     rss_url: http://www.portman.senate.gov/public/index.cfm/rss/feed
 - id:
@@ -24602,6 +24621,7 @@
     class: 3
     state_rank: junior
     party: Republican
+    phone: 202-224-3041
     url: http://www.rubio.senate.gov
     rss_url: http://www.rubio.senate.gov/public/?a=rss.feed
 - id:
@@ -25735,6 +25755,7 @@
     class: 3
     state_rank: senior
     party: Democrat
+    phone: 202-224-6542
     url: https://www.schumer.senate.gov
 - id:
     bioguide: S001183
@@ -26180,6 +26201,7 @@
     class: 3
     state_rank: junior
     party: Republican
+    phone: 202-224-6121
     url: https://www.scott.senate.gov
     rss_url: http://www.scott.senate.gov/rss.xml
 - id:
@@ -26793,6 +26815,7 @@
     class: 3
     state_rank: senior
     party: Republican
+    phone: 202-224-5744
     url: http://www.shelby.senate.gov
     rss_url: http://www.shelby.senate.gov/public/index.cfm/rss/feed
 - id:
@@ -28781,6 +28804,7 @@
     class: 3
     state_rank: senior
     party: Republican
+    phone: 202-224-2321
     url: http://www.thune.senate.gov
     rss_url: http://www.thune.senate.gov/public/index.cfm/rss/feed
 - id:
@@ -29107,6 +29131,7 @@
     class: 3
     state_rank: junior
     party: Republican
+    phone: 202-224-4254
     url: http://www.toomey.senate.gov
     rss_url: http://toomey.senate.gov/rss/?p=hot_topic
 - id:
@@ -29546,6 +29571,7 @@
     class: 3
     state_rank: junior
     party: Democrat
+    phone: 202-225-5341
 - id:
     bioguide: V000081
     thomas: '01184'
@@ -31009,6 +31035,7 @@
     class: 3
     state_rank: senior
     party: Democrat
+    phone: 202-224-5244
     url: https://www.wyden.senate.gov
     rss_url: http://www.wyden.senate.gov/rss/feeds/?type=all&amp;
 - id:
@@ -31424,6 +31451,7 @@
     class: 3
     state_rank: junior
     party: Republican
+    phone: 202-225-5315
 - id:
     bioguide: H001041
     thomas: '01863'
@@ -31908,6 +31936,7 @@
     class: 3
     state_rank: senior
     party: Democrat
+    phone: 202-224-3934
     url: http://www.schatz.senate.gov
 - id:
     bioguide: F000454
@@ -33311,6 +33340,7 @@
     class: 3
     state_rank: junior
     party: Democrat
+    phone: 202-225-3711
 - id:
     govtrack: 412536
     bioguide: D000619
@@ -39101,6 +39131,7 @@
     class: 3
     state_rank: junior
     party: Democrat
+    phone: 202-224-3553
 - id:
     bioguide: K000393
     fec:
@@ -39124,6 +39155,7 @@
     class: 3
     state_rank: junior
     party: Republican
+    phone: 202-224-4623
 - id:
     bioguide: H001076
     fec:
@@ -39148,6 +39180,7 @@
     class: 3
     state_rank: junior
     party: Democrat
+    phone: 202-224-3324
 - id:
     bioguide: C001113
     fec:
@@ -39170,6 +39203,7 @@
     class: 3
     state_rank: junior
     party: Democrat
+    phone: 202-224-3542
 - id:
     govtrack: 412534
     bioguide: S001190

@@ -37,6 +37,10 @@ class USData(DataProvider):
                 if term["start"] < "2011-01-01":
                     continue # don't get too historical
 
+                if term.get("phone") is None:
+                    print "term does not have field phone", term["type"], info["name"]["last"]
+                    continue
+
                 district = str(term["district"]) if term.has_key("district") else None
 
                 record = {
