@@ -85,7 +85,7 @@ function mailSignup() {
 	        };
 
 			$.ajax({
-	            url: 'http://demo.callpower.org/call/create',
+	            url: 'https://demo.callpower.org/call/create',
 	            type: "get",
 	            dataType: "json",
 	            data: data,
