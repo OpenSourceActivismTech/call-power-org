@@ -17,7 +17,7 @@ class Location(dict):
             return None
 
     @property
-    def location(self):
+    def latlon(self):
         lat = self.get('location', {}).get('lat')
         lon = self.get('location', {}).get('lng')
         return (lat, lon)

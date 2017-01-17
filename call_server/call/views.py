@@ -168,6 +168,8 @@ def make_calls(params, campaign):
 
     if campaign.target_ordering == ORDER_SHUFFLE:
         # reshuffle for each caller
+        # FIXME: Hard-coded special case. This should be implemented somewhere
+        #        in call_server/political_data/countries.
         random.shuffle(params['targetIds'])
 
     # limit calls to maximum number
