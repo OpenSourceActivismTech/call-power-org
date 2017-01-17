@@ -5,14 +5,12 @@ from . import DataProvider, CampaignType
 
 from ..geocode import Geocoder
 from ..constants import US_STATES
-from ...campaign.constants import (LOCATION_POSTAL, LOCATION_ADDRESS,
-                                   LOCATION_LATLON)
+from ...campaign.constants import (LOCATION_POSTAL, LOCATION_ADDRESS, LOCATION_LATLON)
 
 import csv
 import yaml
 import collections
 import random
-
 
 class USCampaignType(CampaignType):
     pass
@@ -194,8 +192,8 @@ class USDataProvider(DataProvider):
     KEY_BIOGUIDE = 'us:bioguide:{bioguide_id}'
     KEY_HOUSE = 'us:house:{state}:{district}'
     KEY_SENATE = 'us:senate:{state}'
-    KEY_OPENSTATES = 'us_state:openstates:{id}'
-    KEY_GOVERNOR = 'us_state:governor:{state}'
+    KEY_OPENSTATES = 'us:state:openstates:{id}'
+    KEY_GOVERNOR = 'us:state:governor:{state}'
     KEY_ZIPCODE = 'us:zipcode:{zipcode}'
 
     def __init__(self, cache, api_cache=None, **kwargs):
@@ -244,7 +242,6 @@ class USDataProvider(DataProvider):
                     "bioguide_id": info["id"]["bioguide"],
                     "title":       "Senator" if term["type"] == "sen" else "Representative",
                     "phone":       term["phone"],
-                    "current":     datetime.now().strftime("%Y-%m-%d") <= term["end"],
                     "chamber":     "senate" if term["type"] == "sen" else "house",
                     "state":       term["state"],
                     "district":    district,
@@ -323,13 +320,6 @@ class USDataProvider(DataProvider):
 
         return len(districts) + len(legislators) + len(governors)
 
-    def cache_set(self, key, val):
-        if hasattr(self.cache, 'set'):
-            self.cache.set(key, val)
-        elif hasattr(self.cache, 'update'):
-            self.cache.update({key: val})
-        else:
-            raise AttributeError('cache does not appear to be dict-like')
 
     # convenience methods for easy house, senate, district access
     def get_executive(self):
@@ -351,10 +341,7 @@ class USDataProvider(DataProvider):
 
     def get_governor(self, state):
         cache_key = self.KEY_GOVERNOR.format(state=state)
-        return self.cache.get(cache_key) or {}
-
-    def locate_governor(self, state):
-        return [self.KEY_GOVERNOR.format(state=state)]
+        return self.cache.get(cache_key, dict())
 
     def get_state_legislators(self, latlon):
         if type(latlon) == tuple:
@@ -364,13 +351,9 @@ class USDataProvider(DataProvider):
             try:
                 (lat, lon) = latlon.split(',')
             except ValueError:
-                raise ValueError('USStateData requires location as lat,lon')
+                raise ValueError('USData.get_state_legislators requires location as lat,lon')
 
         return openstates.legislator_geo_search(lat, lon)
-
-    def get_legid(self, legid):
-        cache_key = self.KEY_OPENSTATES.format(id=legid)
-        return self.get_key(cache_key) or {}
 
     def get_bioguide(self, uid):
         key = self.KEY_BIOGUIDE.format(bioguide_id=uid)

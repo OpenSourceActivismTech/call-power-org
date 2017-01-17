@@ -15,7 +15,7 @@ from ..extensions import db
 from ..political_data import COUNTRY_CHOICES
 from ..utils import choice_items, choice_keys, choice_values_flat, duplicate_object
 
-from .constants import CAMPAIGN_NESTED_CHOICES, CUSTOM_CAMPAIGN_CHOICES, EMPTY_CHOICES, STATUS_LIVE
+from .constants import EMPTY_CHOICES, STATUS_LIVE
 from .models import (Campaign, Target, CampaignTarget,
                      AudioRecording, CampaignAudioRecording,
                      TwilioPhoneNumber)
@@ -124,7 +124,6 @@ def form(country_code=None, campaign_type=None, campaign_id=None):
 
     # for fields with dynamic choices, set to empty here in view
     # will be updated in client
-    form.campaign_subtype.choices = choice_values_flat(CAMPAIGN_NESTED_CHOICES)
     form.target_set.choices = choice_items(EMPTY_CHOICES)
 
     # check request.form for campaign_subtype, reset if not present
