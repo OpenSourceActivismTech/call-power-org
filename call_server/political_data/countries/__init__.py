@@ -27,6 +27,33 @@ class DataProvider(object):
         type_class = dict(self.campaign_types).get(type_id)
         return type_class(self)
 
+    def cache_get(self, key, default=list()):
+        """
+        Checks for key in cache and returns it, or default
+        This is needed because werkzeug caches don't return defaults like dicts do
+        """
+        return self._cache.get(key) or default
+
+    def cache_set(self, key, value):
+        """ Add a new key/value to the cache """
+        if hasattr(self._cache, 'set'):
+            self._cache.set(key, value)
+        elif hasattr(self._cache, 'update'):
+            self._cache.update({key:value})
+        else:
+            raise AttributeError('cache does not appear to be dict-like')
+
+    def cache_set_many(self, mapping):
+        """
+        Sets multiple keys and values from a mapping.
+        Handles difference between flask-cache and mock-dictionary
+        """
+        if hasattr(self._cache, 'set_many'):
+            self._cache.set_many(mapping)
+        elif hasattr(self._cache, 'update'):
+            self._cache.update(mapping)
+        else:
+            raise AttributeError('cache does not appear to be dict-like')
 
 class CampaignType(object):
     type_name = None

@@ -144,15 +144,15 @@ class Campaign(db.Model):
             return self.campaign_subtype_display()
 
     @staticmethod
-    def get_campaign_type_choices(country_code):
+    def get_campaign_type_choices(country_code, cache=cache):
         country_data = get_country_data(country_code, cache=cache, api_cache='localmem')
         return country_data.campaign_type_choices
 
-    def get_country_data(self):
+    def get_country_data(self, cache=cache):
         return get_country_data(self.country_code, cache=cache, api_cache='localmem')
 
-    def get_campaign_data(self):
-        country_data = self.get_country_data()
+    def get_campaign_data(self, cache=cache):
+        country_data = self.get_country_data(cache)
         return country_data.get_campaign_type(self.campaign_type)
 
 
@@ -195,7 +195,7 @@ class Target(db.Model):
         return self.number.e164
 
     @classmethod
-    def get_uid_or_cache(cls, uid, prefix=None):
+    def get_or_cache_key(cls, uid, prefix=None):
         if prefix:
             key = '%s:%s' % (prefix, uid)
         else:

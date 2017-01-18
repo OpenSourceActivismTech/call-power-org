@@ -360,7 +360,7 @@ def make_single():
     params['call_index'] = i
 
     (uid, prefix) = parse_target(params['targetIds'][i])
-    (current_target, cached) = Target.get_uid_or_cache(uid, prefix)
+    (current_target, cached) = Target.get_or_cache_key(uid, prefix)
     if cached:
         # save Target to database
         db.session.add(current_target)
@@ -399,7 +399,7 @@ def complete():
         abort(400)
 
     (uid, prefix) = parse_target(params['targetIds'][i])
-    (current_target, cached) = Target.get_uid_or_cache(uid, prefix)
+    (current_target, cached) = Target.get_or_cache_key(uid, prefix)
     call_data = {
         'session_id': params['sessionId'],
         'campaign_id': campaign.id,

@@ -192,14 +192,14 @@ class USDataProvider(DataProvider):
     KEY_BIOGUIDE = 'us:bioguide:{bioguide_id}'
     KEY_HOUSE = 'us:house:{state}:{district}'
     KEY_SENATE = 'us:senate:{state}'
-    KEY_OPENSTATES = 'us:state:openstates:{id}'
-    KEY_GOVERNOR = 'us:state:governor:{state}'
+    KEY_OPENSTATES = 'us_state:openstates:{id}'
+    KEY_GOVERNOR = 'us_state:governor:{state}'
     KEY_ZIPCODE = 'us:zipcode:{zipcode}'
 
     def __init__(self, cache, api_cache=None, **kwargs):
         super(USDataProvider, self).__init__(**kwargs)
-        self.cache = cache
-        self.geocoder = Geocoder()
+        self._cache = cache
+        self._geocoder = Geocoder()
         if api_cache is not None:
             response_cache.enable(api_cache)
 
@@ -307,16 +307,9 @@ class USDataProvider(DataProvider):
         legislators = self._load_legislators()
         governors = self._load_governors()
 
-        if hasattr(self.cache, 'set_many'):
-            self.cache.set_many(districts)
-            self.cache.set_many(legislators)
-            self.cache.set_many(governors)
-        elif hasattr(self.cache, 'update'):
-            self.cache.update(legislators)
-            self.cache.update(districts)
-            self.cache.update(governors)
-        else:
-            raise AttributeError('cache does not appear to be dict-like')
+        self.cache_set_many(districts)
+        self.cache_set_many(legislators)
+        self.cache_set_many(governors)
 
         return len(districts) + len(legislators) + len(governors)
 
@@ -329,19 +322,19 @@ class USDataProvider(DataProvider):
 
     def get_house_members(self, state, district):
         key = self.KEY_HOUSE.format(state=state, district=district)
-        return self.cache.get(key, list())
+        return self.cache_get(key)
 
     def get_senators(self, state):
         key = self.KEY_SENATE.format(state=state)
-        return self.cache.get(key, list())
+        return self.cache_get(key)
 
     def get_districts(self, zipcode):
         key = self.KEY_ZIPCODE.format(zipcode=zipcode)
-        return self.cache.get(key, dict())
+        return self.cache_get(key)
 
-    def get_governor(self, state):
-        cache_key = self.KEY_GOVERNOR.format(state=state)
-        return self.cache.get(cache_key, dict())
+    def get_state_governor(self, state):
+        key = self.KEY_GOVERNOR.format(state=state)
+        return self.cache_get(key)
 
     def get_state_legislators(self, latlon):
         if type(latlon) == tuple:
@@ -357,7 +350,7 @@ class USDataProvider(DataProvider):
 
     def get_bioguide(self, uid):
         key = self.KEY_BIOGUIDE.format(bioguide_id=uid)
-        return self.cache.get(key, dict())
+        return self.cache_get(key, dict())
 
-    def get_uid(self, key, default=dict()):
-        return self.cache.get(key, default)
+    def get_uid(self, uid):
+        return self.cache_get(uid, dict())
