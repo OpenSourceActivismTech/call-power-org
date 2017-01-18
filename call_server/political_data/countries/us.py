@@ -165,12 +165,12 @@ class USCampaignType_State(USCampaignType):
     def _get_state_upper(self, location, campaign_region=None):
         legislators = self.data_provider.get_state_legislators(location.latlon)
         filtered = self._filter_legislators(legislators, campaign_region)
-        return (l for l in filtered if l['chamber'] == 'upper')
+        return (l['leg_id'] for l in filtered if l['chamber'] == 'upper')
 
     def _get_state_lower(self, location, campaign_region=None):
         legislators = self.data_provider.get_state_legislators(location.latlon)
         filtered = self._filter_legislators(legislators, campaign_region)
-        return (l for l in filtered if l['chamber'] == 'lower')
+        return (l['leg_id'] for l in filtered if l['chamber'] == 'lower')
 
     def _filter_legislators(self, legislators, campaign_region=None):
         for legislator in legislators:
@@ -246,8 +246,7 @@ class USDataProvider(DataProvider):
                     "phone":       term["phone"],
                     "chamber":     "senate" if term["type"] == "sen" else "house",
                     "state":       term["state"],
-                    "district":    district,
-                    "bioguide_id": info["id"]["bioguide"]
+                    "district":    district
                 }
 
                 direct_key = self.KEY_BIOGUIDE.format(**record)
@@ -353,7 +352,25 @@ class USDataProvider(DataProvider):
             except ValueError:
                 raise ValueError('USData.get_state_legislators requires location as lat,lon')
 
-        return openstates.legislator_geo_search(lat, lon)
+        legislators = openstates.legislator_geo_search(lat, lon)
+
+        # save results individually in local cache
+        for l in legislators:
+            key = self.KEY_OPENSTATES.format(id=l['leg_id'])
+            self.cache_set(key, l)
+
+        return legislators
+
+    def get_state_legid(self, legid):
+        # try first to get from cache
+        key = self.KEY_OPENSTATES.format(id=legid)
+        leg = self.cache_get(key, None)
+        
+        if not leg:
+            # or lookup from openstates and save
+            leg = openstates.legislator_detail(legid)
+            self.cache_set(key, leg)
+        return leg
 
     def get_bioguide(self, uid):
         key = self.KEY_BIOGUIDE.format(bioguide_id=uid)
