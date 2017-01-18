@@ -205,11 +205,11 @@ class USDataProvider(DataProvider):
 
     def get_location(self, locate_by, raw):
         if locate_by == LOCATION_POSTAL:
-            return self.geocoder.zipcode(raw)
+            return self._geocoder.zipcode(raw)
         elif locate_by == LOCATION_ADDRESS:
-            return self.geocoder.geocode(raw)
+            return self._geocoder.geocode(raw)
         elif locate_by == LOCATION_LATLON:
-            return self.geocoder.reverse(raw)
+            return self._geocoder.reverse(raw)
         else:
             return None
 
