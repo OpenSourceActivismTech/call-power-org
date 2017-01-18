@@ -1,3 +1,4 @@
+import logging
 from run import BaseTestCase
 from call_server.political_data.lookup import locate_targets
 from call_server.political_data.countries.us import USDataProvider

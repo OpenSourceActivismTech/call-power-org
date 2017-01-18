@@ -11,6 +11,8 @@ import csv
 import yaml
 import collections
 import random
+import logging
+log = logging.getLogger(__name__)
 
 class USCampaignType(CampaignType):
     pass
@@ -172,7 +174,7 @@ class USCampaignType_State(USCampaignType):
 
     def _filter_legislators(self, legislators, campaign_region=None):
         for legislator in legislators:
-            is_active = legisator['active']
+            is_active = legislator['active']
             in_state = campaign_region is None or legislator['state'].upper() == campaign_region.upper()
             if is_active and in_state:
                 yield legislator
@@ -231,7 +233,7 @@ class USDataProvider(DataProvider):
                     continue # don't get too historical
 
                 if term.get("phone") is None:
-                    print "term does not have field phone", term["type"], info["name"]["last"]
+                    log.error("term does not have field phone {type} {name}{last}".format(term, info))
                     continue
 
                 district = str(term["district"]) if term.has_key("district") else None
@@ -295,7 +297,8 @@ class USDataProvider(DataProvider):
                 direct_key = self.KEY_GOVERNOR.format(**{'state': l['state']})
                 d = {
                     'title': 'Governor',
-                    'name': l.get('name'),
+                    'first_name': l.get('first_name'),
+                    'last_name': l.get('last_name'),
                     'phone': l.get('phone'),
                     'state': l.get('state')
                 }
@@ -310,6 +313,10 @@ class USDataProvider(DataProvider):
         self.cache_set_many(districts)
         self.cache_set_many(legislators)
         self.cache_set_many(governors)
+
+        log.info("loaded %s zipcodes" % len(districts))
+        log.info("loaded %s legislators" % len(legislators))
+        log.info("loaded %s governors" % len(governors))
 
         return len(districts) + len(legislators) + len(governors)
 
