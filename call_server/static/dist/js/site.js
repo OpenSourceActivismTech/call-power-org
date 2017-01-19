@@ -351,6 +351,7 @@ $(document).ready(function () {
 
     initialize: function() {
       // init child views
+
       this.searchForm = new CallPower.Views.TargetSearch();
       this.targetListView = new CallPower.Views.TargetList();
 
@@ -384,45 +385,9 @@ $(document).ready(function () {
       var field = $('select#campaign_type');
       var val = field.val();
 
-      var nested_field = $('select#campaign_subtype');
-      var nested_choices = nested_field.data('nested-choices');
-      var nested_val = nested_field.data('nested-selected');
-      nested_field.empty();
-
-      // fill in new choices from data attr
-      // - handle weird obj layout from constants
-      var avail = _.find(nested_choices, function(v) { return v[0] == val; })[1];
-      _.each(avail, function(v) {
-        var option = $('<option value="'+v[0]+'">'+v[1]+'</option>');
-        nested_field.append(option);
-      });
-      var nested_avail = _.find(avail, function(v) { return v[0] === nested_val; });
-
-      // reset initial choice if still valid
-      if (nested_avail) {
-        nested_field.val(nested_val);
-      } else {
-        nested_field.val('');
-      }
-
-      // hide field if no choices present
-      if (avail.length === 0) {
-        nested_field.hide();
-      } else {
-        nested_field.show();
-      }
-
       // special cases
 
-      // state: show/hide campaign_state select
-      if (val === 'state') {
-        $('select[name="campaign_state"]').show();
-        $('#target-search input[name="target-search"]').attr('placeholder', 'search OpenStates');
-      } else {
-        $('select[name="campaign_state"]').hide();
-        $('#target-search input[name="target-search"]').attr('placeholder', 'search Sunlight');
-      }
-
+      // FIXME: US-specific special case.
       // local or custom: no segment, location or search, show custom target_set
       if (val === "custom" || val === "local" || val === "executive") {
         // set default values
@@ -462,6 +427,7 @@ $(document).ready(function () {
         }
       }
 
+      // FIXME: US-specific special case.
       // congress: show/hide target_ordering values upper_first and lower_first
       if ((type === 'congress' && subtype === 'both') ||
           (type === 'state' && subtype === 'both')) {
@@ -471,7 +437,6 @@ $(document).ready(function () {
         $('input[name="target_ordering"][value="upper-first"]').parent('label').hide();
         $('input[name="target_ordering"][value="lower-first"]').parent('label').hide();
       }
-
     },
 
     clearRadioChoices: function(event) {
