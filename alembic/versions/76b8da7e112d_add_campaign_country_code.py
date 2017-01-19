@@ -1,14 +1,14 @@
 """add campaign country code
 
 Revision ID: 76b8da7e112d
-Revises: 3c34cfd19bf8
+Revises: 38f01b0893b8
 Create Date: 2016-09-20 15:04:05.740203
 
 """
 
 # revision identifiers, used by Alembic.
 revision = '76b8da7e112d'
-down_revision = '3c34cfd19bf8'
+down_revision = '38f01b0893b8'
 branch_labels = None
 depends_on = None
 
