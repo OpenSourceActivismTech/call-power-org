@@ -14,6 +14,12 @@ import random
 import logging
 log = logging.getLogger(__name__)
 
+try:
+    from yaml import CLoader as yamlLoader
+except ImportError:
+    log.info('install libyaml to speed up loadpoliticaldata')
+    from yaml import Loader as yamlLoader
+
 class USCampaignType(CampaignType):
     pass
 
@@ -227,7 +233,7 @@ class USDataProvider(DataProvider):
         legislators = collections.defaultdict(list)
 
         with open('call_server/political_data/data/us_congress_current.yaml') as f:
-            for info in yaml.load(f):
+            for info in yaml.load(f, Loader=yamlLoader):
                 term = info["terms"][-1]
                 if term["start"] < "2011-01-01":
                     continue # don't get too historical
