@@ -87,7 +87,7 @@ class TestData(BaseTestCase):
         self.assertEqual(senator_1['chamber'], 'senate')
         self.assertEqual(senator_1['state'], 'VT')
 
-    def locate_targets_house_only(self):
+    def test_locate_targets_house_only(self):
         self.CONGRESS_CAMPAIGN.campaign_subtype = 'lower'
         location = Location({'zipcode': '05055'})
         uids = locate_targets(location, self.CONGRESS_CAMPAIGN, self.mock_cache)
@@ -96,7 +96,7 @@ class TestData(BaseTestCase):
         first = self.us_data.get_uid(uids[0])[0]
         self.assertEqual(first['chamber'], 'house')
 
-    def locate_targets_senate_only(self):
+    def test_locate_targets_senate_only(self):
         self.CONGRESS_CAMPAIGN.campaign_subtype = 'upper'
         location = Location({'zipcode': '05055'})
 
