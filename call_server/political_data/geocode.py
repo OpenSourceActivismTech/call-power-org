@@ -18,9 +18,13 @@ class Location(dict):
 
     @property
     def latlon(self):
-        lat = self.get('location', {}).get('lat')
-        lon = self.get('location', {}).get('lng')
-        return (lat, lon)
+        if 'location' in self:
+            lat = self.get('location', {}).get('lat')
+            lon = self.get('location', {}).get('lng')
+            return (lat, lon)
+        else:
+            # TODO, geocode address or address_components
+            return None
 
     @property
     def zipcode(self):
