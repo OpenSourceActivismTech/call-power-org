@@ -2,11 +2,13 @@ import countries
 import importlib
 
 COUNTRY_CHOICES = [
-    ('us', "United States")
+    ('us', "United States"),
+    ('ca', "Canada")
 ]
 
 COUNTRY_DATA = {
-    'us': 'call_server.political_data.countries.us.USDataProvider'
+    'us': 'call_server.political_data.countries.us.USDataProvider',
+    'ca': 'call_server.political_data.countries.ca.CADataProvider'
 }
 
 class NoDataProviderError(Exception):
