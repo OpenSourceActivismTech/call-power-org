@@ -226,7 +226,7 @@ class USDataProvider(DataProvider):
         """
         legislators = collections.defaultdict(list)
 
-        with open('call_server/political_data/data/legislators-current.yaml') as f:
+        with open('call_server/political_data/data/us_congress_current.yaml') as f:
             for info in yaml.load(f):
                 term = info["terms"][-1]
                 if term["start"] < "2011-01-01":

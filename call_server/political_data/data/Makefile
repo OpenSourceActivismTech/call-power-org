@@ -3,8 +3,8 @@ all: legislators-current.yaml us_districts.csv us_states.csv
 clean:
 	rm -rf -- *.csv *.yaml
 
-legislators-current.yaml :
-	curl -k "https://raw.githubusercontent.com/unitedstates/congress-legislators/master/legislators-current.yaml" -o "legislators-current.yaml"
+us_congress_current.yaml :
+	curl -k "https://raw.githubusercontent.com/unitedstates/congress-legislators/master/legislators-current.yaml" -o "us_congress_current.yaml"
 
 us_districts.csv:
 	curl -k "http://assets.sunlightfoundation.com/data/districts.csv" -o "us_districts.csv"
