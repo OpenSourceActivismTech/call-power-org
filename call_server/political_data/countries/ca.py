@@ -193,7 +193,8 @@ class CADataProvider(DataProvider):
         # we don't have an easy mapping of postcode to riding
         # so just hit OpenNorth with every request and cache responses
         log.info('no data to load for political_data.countries.ca')
-
+        return 0
+        
 
     # convenience methods for easy district access
     def get_executive(self):
