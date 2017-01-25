@@ -335,6 +335,7 @@ $(document).ready(function () {
       'click a.clear': 'clearRadioChoices',
 
       // campaign targets
+      'change select#campaign_country':  'changeCampaignCountry',
       'change select#campaign_type':  'changeCampaignType',
       'change select#campaign_subtype':  'changeCampaignSubtype',
       'change input[name="segment_by"]': 'changeSegmentBy',
@@ -360,6 +361,7 @@ $(document).ready(function () {
 
       // trigger change to targeting fields
       // so defaults show properly
+      this.changeCampaignCountry();
       this.changeCampaignType();
       this.changeSegmentBy();
 
@@ -380,34 +382,62 @@ $(document).ready(function () {
       this.checkForCallInCollisions();
     },
 
+    changeCampaignCountry: function() {
+      if ($('select#campaign_country').attr('disabled')) {
+        // country already set, no need to update type
+        return false;
+      }
+
+      // updates campaign_type with available choices from data-attr
+      var country = $('select#campaign_country').val();
+      var nested_field = $('select#campaign_type');
+
+      var type_choices = nested_field.data('nested-choices');
+      var selected_choices = type_choices[country];
+      
+      // clear existing choices
+      nested_field.empty();
+      nested_field.append('<option val=""></option>');
+
+      // append new ones
+      $(selected_choices).each(function() {
+        nested_field.append('<option value="'+this[0]+'">'+this[1]+'</option>');
+      });
+    },
+
     changeCampaignType: function() {
-      // updates campaign_subtype with available choices from data-attr
-      var field = $('select#campaign_type');
-      var val = field.val();
+      // show/hide target segmenting based on campaign country and type
+      var country = $('select#campaign_country').val();
+      var type = $('select#campaign_type').val();
 
-      // special cases
+      if (country ==='us') {
+        if (type === "congress") {
+          // hide campaign_state form-group
+          $('.form-group.campaign_state').hide();
+        }
 
-      // FIXME: US-specific special case.
-      // local or custom: no segment, location or search, show custom target_set
-      if (val === "custom" || val === "local" || val === "executive") {
-        // set default values
-        $('.form-group.locate_by input[name="locate_by"][value=""]').click();
-        $('.form-group.segment_by input[name="segment_by"][value="custom"]').click();
-        // hide fields
-        $('.form-group.segment_by').hide();
-        $('.form-group.locate_by').hide();
-        $('#target-search').hide();
-        // show custom target search
-        $('#set-targets').show();
-      } else {
-        $('.form-group.segment_by').show();
-        $('.form-group.locate_by').show();
-        $('#target-search').show();
+        // local or custom: no segment, location or search, show custom target_set
+        if (type === "custom" || type === "local" || type === "executive") {
+          // set default values
+          $('.form-group.locate_by input[name="locate_by"][value=""]').click();
+          $('.form-group.segment_by input[name="segment_by"][value="custom"]').click();
+          // hide fields
+          $('.form-group.segment_by').hide();
+          $('.form-group.locate_by').hide();
+          $('#target-search').hide();
+          // show custom target search
+          $('#set-targets').show();
+        } else {
+          // congress
+          $('.form-group.segment_by').show();
+          $('.form-group.locate_by').show();
+          $('#target-search').show();
 
-        var segment_by = $('input[name="segment_by"]:checked');
-        // unless segment_by is custom
-        if (segment_by.val() !== 'custom') {
-          $('#set-targets').hide();
+          var segment_by = $('input[name="segment_by"]:checked');
+          // unless segment_by is custom
+          if (segment_by.val() !== 'custom') {
+            $('#set-targets').hide();
+          }
         }
       }
 
@@ -421,7 +451,7 @@ $(document).ready(function () {
       // state
       if (type === 'state') {
         if (subtype === 'exec') {
-          $('#target-search input[name="target-search"]').attr('placeholder', 'search US NGA');
+          $('#target-search input[name="target-search"]').attr('placeholder', 'search US Governors');
         } else {
           $('#target-search input[name="target-search"]').attr('placeholder', 'search OpenStates');
         }
@@ -545,6 +575,11 @@ $(document).ready(function () {
     },
 
     validateField: function(formGroup, validator, message) {
+      // first check to see if formGroup is present
+      if (!!formGroup) {
+        return true;
+      }
+
       // run validator for formGroup
       var isValid = validator(formGroup);
 
@@ -556,6 +591,7 @@ $(document).ready(function () {
       // toggle error states
       formGroup.parents('fieldset').find('legend').toggleClass('has-error', !isValid);
       formGroup.toggleClass('has-error', !isValid);
+
       return isValid;
     },
 
@@ -563,9 +599,12 @@ $(document).ready(function () {
     validateForm: function() {
       var isValid = true;
 
-      // campaign type
-      isValid = this.validateField($('.form-group.campaign_type'), this.validateState, 'Select a state') && isValid;
-      isValid = this.validateField($('.form-group.campaign_type'), this.validateNestedSelect, 'Select a sub-type') && isValid;
+      // campaign country and type
+      isValid = this.validateField($('.form-group.campaign_country'), this.validateSelected, 'Select a country') && isValid;
+      isValid = this.validateField($('.form-group.campaign_type'), this.validateNestedSelect, 'Select a type') && isValid;
+
+      // campaign sub-type
+      isValid = this.validateField($('.form-group.campaign_subtype'), this.validateState, 'Select a sub-type') && isValid;
 
       // campaign segmentation
       isValid = this.validateField($('.form-group.segment_by'), this.validateSegmentBy, 'Campaign type requires custom targeting') && isValid;
@@ -1134,7 +1173,9 @@ $(document).ready(function () {
   CallPower.Routers.Campaign = Backbone.Router.extend({
     routes: {
       "campaign/create": "campaignForm",
+      "campaign/create/:country/:type": "campaignForm",
       "campaign/:id/edit": "campaignForm",
+      "campaign/:id/edit-type": "campaignForm",
       "campaign/:id/copy": "campaignForm",
       "campaign/:id/audio": "audioForm",
       "campaign/:id/launch": "launchForm",

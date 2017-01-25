@@ -21,9 +21,26 @@
 <form class="form-horizontal" id="campaign" method="POST" action="" >
     {{ form.hidden_tag() }}
     <fieldset class="border">
-        <legend>Country</legend>
+        <legend>Get Started</legend>
 
-        {{render_field_default(form.country_type)}}
+        {{render_field_default(form.campaign_country)}}
+
+        {# form tricks to update campaign_type dynamically based on country #}
+        {% with %}
+        <div class="form-group campaign_type">
+            {% set nested_field = form.campaign_type %}
+            {{ render_label(nested_field, label_width) }}
+            <div class="controls {{control_width}}">
+            {{ nested_field(class_='form-control inline', **{'data-nested-choices': country_types|json} ) }}
+            {% if nested_field.errors -%}
+                {% for error in nested_field.errors -%}
+                <span class="help-block error">{{ error|e }}</span>
+                {%- endfor %}
+            {%- endif %}
+            </div>
+        </div>
+        {% endwith %}
+
     </fieldset>
 
     <div class="form-group container">

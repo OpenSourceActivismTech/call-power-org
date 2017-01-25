@@ -20,7 +20,7 @@ from .models import (Campaign, Target, CampaignTarget,
                      AudioRecording, CampaignAudioRecording,
                      TwilioPhoneNumber)
 from ..call.models import Call
-from .forms import (CountryForm, CampaignForm, CampaignAudioForm,
+from .forms import (CountryTypeForm, CampaignForm, CampaignAudioForm,
                     AudioRecordingForm, CampaignLaunchForm,
                     CampaignStatusForm, TargetForm)
 
@@ -46,7 +46,7 @@ def index():
 
 @campaign.route('/create', methods=['GET', 'POST'])
 @campaign.route('/<int:campaign_id>/edit-type', methods=['GET', 'POST'])
-def country_form(campaign_id=None):
+def country_type(campaign_id=None):
     edit = False
     if campaign_id:
         edit = True
@@ -56,28 +56,24 @@ def country_form(campaign_id=None):
     else:
         campaign = None
 
-    form = CountryForm()
+    form = CountryTypeForm()
 
-    country_type_choices = list()
+    form.campaign_country.choices = choice_items(COUNTRY_CHOICES)
+
+    # set up a list for all campaign types in each country
+    country_type_choices = dict()
+    all_valid_choices = list()
     for country_code, country_name in COUNTRY_CHOICES:
+        country_type_choices[country_code] = list()
         for campaign_type, type_name in Campaign.get_campaign_type_choices(country_code):
-            full_id = '/'.join([country_code, campaign_type])
-            full_name = "{country} - {type}".format(country=country_name, type=type_name)
-            country_type_choices.append((full_id, full_name))
+            country_type_choices[country_code].append((campaign_type, type_name))
+            all_valid_choices.append((campaign_type, type_name))
 
-    form.country_type.choices = choice_items(country_type_choices)
-    if campaign and not request.form.get('country_type'):
-        current_country_type = '/'.join([campaign.country_code, campaign.campaign_type])
-        form.country_type.data = current_country_type
+    form.campaign_type.choices = choice_items(all_valid_choices)  # accepts all valid choices, but updates dynamically in view
 
     if form.validate_on_submit():
-        country_type = form.country_type.data
-
-        try:
-            country_code, campaign_type = country_type.split('/', 1)
-        except ValueError:
-            country_code = None
-            campaign_type = None
+        country_code = form.campaign_country.data
+        campaign_type = form.campaign_type.data
 
         if campaign and country_code and campaign_type:
             campaign.campaign_country = country_code
@@ -92,8 +88,8 @@ def country_form(campaign_id=None):
                 url_for('campaign.form', country_code=country_code, campaign_type=campaign_type)
             )
 
-    return render_template('campaign/choose_country.html',
-        form=form)
+    return render_template('campaign/country_type.html',
+        form=form, country_types=country_type_choices)
 
 @campaign.route('/create/<string:country_code>/<string:campaign_type>', methods=['GET', 'POST'])
 @campaign.route('/<int:campaign_id>/edit', methods=['GET', 'POST'])
@@ -114,6 +110,8 @@ def form(country_code=None, campaign_type=None, campaign_id=None):
         campaign.campaign_type = campaign_type
         campaign_data = campaign.get_campaign_data()
         form = CampaignForm(campaign_data=campaign_data)
+        form.campaign_country.data = country_code
+        form.campaign_type.data = campaign_type
 
     # filter call in numbers on client side
     call_in_map = {}

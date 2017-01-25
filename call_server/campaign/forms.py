@@ -24,8 +24,9 @@ class DisabledSelectField(SelectField):
     return super(DisabledSelectField, self).__call__(*args, **kwargs)
 
 
-class CountryForm(Form):
-    country_type = SelectField(_('Select Country'), validators=[Required()])
+class CountryTypeForm(Form):
+    campaign_country = SelectField(_('Country'), validators=[Required()])
+    campaign_type = SelectField(_('Type'), validators=[Required()])
     submit = SubmitField(_('Next'))
 
 
@@ -40,8 +41,8 @@ class TargetForm(Form):
 class CampaignForm(Form):
     next = HiddenField()
     name = TextField(_('Campaign Name'), [Required()])
-    campaign_country = DisabledSelectField(_("Country"), [Optional()], choices=COUNTRY_CHOICES)
-    campaign_type = DisabledSelectField(_("Type"), [Optional()])
+    campaign_country = DisabledSelectField(_('Country'), [Optional()], choices=COUNTRY_CHOICES)
+    campaign_type = DisabledSelectField(_('Type'), [Optional()])
     campaign_state = SelectField(_('State'), [Optional()])
     campaign_subtype = SelectField(_('Subtype'), [Optional()])
     # nested_type passed to data-field in template, but starts empty
