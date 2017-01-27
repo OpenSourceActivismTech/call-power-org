@@ -1,68 +1,137 @@
-from geocodio import GeocodioClient
+import geopy
 import os
 
-# light wrapper around geocode.io client
-# with convenience properties to hide address components
-# TODO, add non-US postal endpoints
+from constants import US_STATE_NAME_DICT
 
+GOOGLE_SERVICE = 'GoogleV3'
+SMARTYSTREETS_SERVICE = 'LiveAddress'
+NOMINATIM_SERVICE = 'Nominatim'
 
-class Location(dict):
+class Location(geopy.Location):
+    """
+    a light wrapper around the geopy location object
+    which can return properties from the raw address_components 
+    """
+
+    def find_in_address_components(self, field):
+        """
+        finds a component by type name in raw address_components
+        """
+        if self.service is GOOGLE_SERVICE:
+            # google style, raw.address_components are a list of dicts, with types in list
+            for c in raw['address_components']:
+                if 'field' in c['types']:
+                    return c['short_name']
+            return None
+            
+        elif self.service is SMARTYSTREETS_SERVICE:
+            # smarty streets style, raw.components are named
+            return self.raw['components'].get(field)
+        
+        elif self.service is NOMINATIM_SERVICE:
+            return self.raw['address'].get(field)
+
+        try:
+            # try simple extraction from components
+            return self.raw['components'].get(field)
+        except ValueError:
+            raise NotImplementedError('unable to parse address components from geocoder service '+self.service)
+
+    @property
+    def service(self):
+        if hasattr(self, '_service'):
+            return self._service
+        else:
+            return "UnknownService"
+
+    @service.setter
+    def service(self, value):
+        self._service = value
+
     @property
     def state(self):
-        if 'state' in self:
-            return self.get('state')
-        elif 'address_components' in self.keys():
-            return self.get('address_components', {}).get('state')
+        if self.service is GOOGLE_SERVICE:
+            return self.find_in_address_components('administrative_area_level_1')
+        elif self.service is SMARTYSTREETS_SERVICE:
+            return self.find_in_address_components('state_abbreviation')
+        elif self.service is NOMINATIM_SERVICE:
+            state_name = self.find_in_address_components('state')
+            return US_STATE_NAME_DICT.get(state_name)
         else:
-            return None
+            return self.find_in_address_components('state')
 
     @property
     def latlon(self):
-        if 'location' in self:
-            lat = self.get('location', {}).get('lat')
-            lon = self.get('location', {}).get('lng')
-            return (lat, lon)
-        else:
-            # TODO, geocode address or address_components
-            return None
+        lat = self.latitude
+        lon = self.longitude
+        return (lat, lon)
 
     @property
-    def zipcode(self):
-        if 'zipcode' in self:
-            return self.get('zipcode')
-        elif 'address_components' in self.keys():
-            return self.get('address_components', {}).get('zipcode')
+    def postal(self):
+        if self.service is GOOGLE_SERVICE:
+            return self.find_in_address_components('postal_code')
+        elif self.service is SMARTYSTREETS_SERVICE:
+            return self.find_in_address_components('zipcode')
+        elif self.service is NOMINATIM_SERVICE:
+            return self.find_in_address_components('postcode')
         else:
-            return None
+            return self.find_in_address_components('zipcode')
 
 
+class LocationError(TypeError):
+    pass
 
 class Geocoder(object):
-    def __init__(self, API_KEY=None):
-        if not API_KEY:
-            # get keys from os.environ, because we may not have current_app context
-            API_KEY = os.environ.get('GEOCODE_API_KEY')
-        self.client = GeocodioClient(API_KEY)
+    """
+    a light wrapper around the geopy client
+    with configurable service name
+    """
 
-    def zipcode(self, zipcode, cache=None):
-        if cache:
-            districts = cache.get_district(zipcode)
+    def __init__(self, API_NAME=None, API_KEY=None, country='us'):
+        if not API_NAME or API_KEY:
+            # get keys from os.environ, because we may not have current_app context
+            API_NAME = os.environ.get('GEOCODE_PROVIDER', 'nominatim')  # default to the FOSS provider
+            API_KEY = os.environ.get('GEOCODE_API_KEY', None)
+
+        service = geopy.geocoders.get_geocoder_for_service(API_NAME)
+        if API_KEY:
+            self.client = service(API_KEY)
+        else:
+            if API_NAME == 'nominatim':
+                # nominatim sets country bias at init
+                self.client = service(country_bias=country)
+            else: 
+                self.client = service()
+
+    def get_service_name(self):
+        "returns geopy.geocoder class name, like GoogleV3, LiveAddress, Nominatim, etc"
+        return self.client.__class__.__name__.split('.')[-1]
+
+    def postal(self, code, country='us', cache=None):
+        if cache and country is 'us':
+            districts = cache.get_districts(code)
             if len(districts) == 1:
                 d = districts[0]
-                d['source'] = 'local district cache'
-                return Location(d)
-            else:
-                # TODO, how to handle districts that span states?
-                return self.geocode(zipcode)
-        else:
-            return self.geocode(zipcode)
+                l = Location(d, (None, None), d)
+                l.service = 'LocalUSDistrictCache'
+                return l
+
+        # fallback to geocoder if cache unavailable
+        # or if there were multiple returns
+        return self.geocode(code, country)
 
     def geocode(self, address):
-        results = self.client.geocode(address).get('results')
-        if not results:
-            return None
+        service = self.get_service_name()
+
+        if service is GOOGLE_SERVICE:
+            # bias responses to region/country (2-letter TLD)
+            result = self.client.geocode(address, region=self.country)
+        if service is NOMINATIM_SERVICE:
+            # nominatim won't return metadata unless we ask
+            result = self.client.geocode(address, addressdetails=True)
         else:
-            return Location(results[0])
+            result.service = self.client.geocode(address)
+        return result
 
     def reverse(self, latlon):
         if type(latlon) == tuple:
@@ -74,8 +143,4 @@ class Geocoder(object):
             except ValueError:
                 raise ValueError('unable to parse latlon as either tuple or comma delimited string')
 
-        results = self.client.reverse((lat, lon)).get('results')
-        if not results:
-            return None
-        else:
-            return Location(results[0])
+        return self.client.reverse((lat, lon))

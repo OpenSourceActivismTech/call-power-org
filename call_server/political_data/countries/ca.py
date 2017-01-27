@@ -77,7 +77,7 @@ class CACampaignType_Parliament(CACampaignType):
         return result
 
     def _get_member_of_parliament(self, location):
-        reps = self.data_provider.get_representatives(location.latlon)
+        reps = self.data_provider.get_representatives(location)
         filtered = self._filter_representatives(reps, "MP")
         return (r['boundary_key'] for r in filtered)
 
@@ -146,7 +146,7 @@ class CACampaignType_Province(CACampaignType):
         return self.data_provider._get_province_executive(location)
 
     def _get_province_representative(self, location, campaign_region=None):
-        reps = self.data_provider.get_representatives(location.latlon)
+        reps = self.data_provider.get_representatives(location)
         # TODO, check "MNA" vs "MLA"
         filtered = self._filter_representatives(reps, "MLA", campaign_region)
         return (r['boundary_key'] for r in filtered)
@@ -182,7 +182,7 @@ class CADataProvider(DataProvider):
         if locate_by == LOCATION_POSTAL:
             return self._geocoder.postal(raw)
         elif locate_by == LOCATION_ADDRESS:
-            return self._geocoder.geocode(raw)
+            return self._geocoder.geocode(raw, country='ca')
         elif locate_by == LOCATION_LATLON:
             return self._geocoder.reverse(raw)
         else:
@@ -207,17 +207,11 @@ class CADataProvider(DataProvider):
         return represent.postcode(code=postcode)
 
 
-    def get_representatives(self, latlon):
-        if type(latlon) == tuple:
-            lat = latlon[0]
-            lon = latlon[1]
-        else:
-            try:
-                (lat, lon) = latlon.split(',')
-            except ValueError:
-                raise ValueError('CAData.get_representatives requires location as lat,lon')
+    def get_representatives(self, location):
+        if not location.latitude and location.longitude:
+            raise LocationError('CADataProvider.get_representatives requires location with lat/lon')
 
-        point = "{},{}".format(lat, lon)
+        point = "{},{}".format(location.latitude, location.longitude)
         reps = represent.representative(point=point)  # add throttle=False here to avoid rate limits
 
         # calculate keys and cache responses

@@ -3,7 +3,7 @@ from sunlight import openstates, response_cache
 
 from . import DataProvider, CampaignType
 
-from ..geocode import Geocoder
+from ..geocode import Geocoder, LocationError
 from ..constants import US_STATES
 from ...campaign.constants import (LOCATION_POSTAL, LOCATION_ADDRESS, LOCATION_LATLON)
 
@@ -88,7 +88,7 @@ class USCampaignType_Congress(USCampaignType):
         return result
 
     def _get_congress_upper(self, location):
-        districts = self.data_provider.get_districts(location.zipcode)
+        districts = self.data_provider.get_districts(location.postal)
         # This is a set because zipcodes may cross states
         states = set(d['state'] for d in districts)
 
@@ -97,7 +97,7 @@ class USCampaignType_Congress(USCampaignType):
                 yield self.data_provider.KEY_BIOGUIDE.format(**senator)
 
     def _get_congress_lower(self, location):
-        districts = self.data_provider.get_districts(location.zipcode)
+        districts = self.data_provider.get_districts(location.postal)
 
         for district in districts:
             rep = self.data_provider.get_house_members(district['state'], district['house_district'])[0]
@@ -163,12 +163,12 @@ class USCampaignType_State(USCampaignType):
         return self.data_provider.get_state_governor(location)
 
     def _get_state_upper(self, location, campaign_region=None):
-        legislators = self.data_provider.get_state_legislators(location.latlon)
+        legislators = self.data_provider.get_state_legislators(location)
         filtered = self._filter_legislators(legislators, campaign_region)
         return (l['leg_id'] for l in filtered if l['chamber'] == 'upper')
 
     def _get_state_lower(self, location, campaign_region=None):
-        legislators = self.data_provider.get_state_legislators(location.latlon)
+        legislators = self.data_provider.get_state_legislators(location)
         filtered = self._filter_legislators(legislators, campaign_region)
         return (l['leg_id'] for l in filtered if l['chamber'] == 'lower')
 
@@ -207,9 +207,9 @@ class USDataProvider(DataProvider):
 
     def get_location(self, locate_by, raw):
         if locate_by == LOCATION_POSTAL:
-            return self._geocoder.zipcode(raw)
+            return self._geocoder.postal(raw)
         elif locate_by == LOCATION_ADDRESS:
-            return self._geocoder.geocode(raw)
+            return self._geocoder.geocode(raw, country='us')
         elif locate_by == LOCATION_LATLON:
             return self._geocoder.reverse(raw)
         else:
@@ -342,17 +342,11 @@ class USDataProvider(DataProvider):
         key = self.KEY_GOVERNOR.format(state=state)
         return self.cache_get(key)
 
-    def get_state_legislators(self, latlon):
-        if type(latlon) == tuple:
-            lat = latlon[0]
-            lon = latlon[1]
-        else:
-            try:
-                (lat, lon) = latlon.split(',')
-            except ValueError:
-                raise ValueError('USData.get_state_legislators requires location as lat,lon')
-
-        legislators = openstates.legislator_geo_search(lat, lon)
+    def get_state_legislators(self, location):
+        if not location.latitude and location.longitude:
+            raise LocationError('USDataProvider.get_state_legislators requires location with lat/lon')
+            
+        legislators = openstates.legislator_geo_search(location.latitude, location.longitude)
 
         # save results individually in local cache
         for l in legislators:
