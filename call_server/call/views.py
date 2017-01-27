@@ -11,7 +11,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from ..extensions import csrf, db
 
 from .models import Call, Session
-from ..campaign.constants import ORDER_SHUFFLE, LOCATION_POSTAL, LOCATION_DISTRICT
+from ..campaign.constants import ORDER_SHUFFLE, LOCATION_POSTAL, LOCATION_DISTRICT, SEGMENT_BY_LOCATION
 from ..campaign.models import Campaign, Target
 from ..political_data.lookup import locate_targets
 
@@ -155,12 +155,16 @@ def make_calls(params, campaign):
     """
     resp = twilio.twiml.Response()
 
-    # check if campaign target_set specified
-    if not params['targetIds'] and campaign.target_set:
-        params['targetIds'] = [t.uid for t in campaign.target_set]
+    if not params['targetIds']:
+        # check if campaign target_set specified
+        if campaign.target_set:
+            params['targetIds'] = [t.uid for t in campaign.target_set]
+        elif campaign.segment_by == SEGMENT_BY_LOCATION:
+            # lookup targets for campaign type by segment, put in desired order
+            params['targetIds'] = locate_targets(params['userLocation'], campaign=campaign)
     else:
-        # lookup targets for campaign type by segment, put in desired order
-        params['targetIds'] = locate_targets(params['userLocation'], campaign=campaign)
+        # targetIds already set by /create
+        pass
 
     if not params['targetIds']:
         play_or_say(resp, campaign.audio('msg_invalid_location'), location=params['userLocation'])
@@ -284,7 +288,9 @@ def connection():
     if not params or not campaign:
         return abortJSON(404)
 
-    if campaign.locate_by in [LOCATION_POSTAL, LOCATION_DISTRICT] and not params['userLocation']:
+    if (campaign.segment_by == SEGMENT_BY_LOCATION and
+        campaign.locate_by in [LOCATION_POSTAL, LOCATION_DISTRICT] and
+        not params['userLocation']):
         return intro_location_gather(params, campaign)
     else:
         return intro_wait_human(params, campaign)
@@ -308,7 +314,7 @@ def incoming():
     # pull user phone from Twilio incoming request
     params['userPhone'] = request.values.get('From')
 
-    if campaign.locate_by in [LOCATION_POSTAL, LOCATION_DISTRICT]:
+    if campaign.segment_by == SEGMENT_BY_LOCATION and campaign.locate_by in [LOCATION_POSTAL, LOCATION_DISTRICT]:
         return intro_location_gather(params, campaign)
     else:
         return intro_wait_human(params, campaign)
