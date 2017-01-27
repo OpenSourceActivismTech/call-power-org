@@ -28,13 +28,15 @@ class TestData(BaseTestCase):
             target_ordering='in-order',
             locate_by='latlon')
 
+        self.mock_location = Location('Oakland, CA', (37.804417,-122.267747),
+            {'components':{'state':'CA','zipcode':'94612'}})
+
     def test_cache(self):
         self.assertIsNotNone(self.mock_cache)
         self.assertIsNotNone(self.us_data)
 
     def test_locate_targets(self):
-        location = "37.804417,-122.267747"
-        uids = locate_targets(location, self.STATE_CAMPAIGN, self.mock_cache)
+        uids = locate_targets(self.mock_location, self.STATE_CAMPAIGN, self.mock_cache)
         # returns a list of uids (openstates leg_id)
         self.assertEqual(len(uids), 2)
 
@@ -49,9 +51,8 @@ class TestData(BaseTestCase):
         self.assertEqual(senator['active'], True)
 
     def test_locate_targets_lower_only(self):
-        location = "37.804417,-122.267747"
         self.STATE_CAMPAIGN.campaign_subtype = 'lower'
-        uids = locate_targets(location, self.STATE_CAMPAIGN, self.mock_cache)
+        uids = locate_targets(self.mock_location, self.STATE_CAMPAIGN, self.mock_cache)
         self.assertEqual(len(uids), 1)
 
         print uids
@@ -62,12 +63,9 @@ class TestData(BaseTestCase):
         self.assertEqual(house_rep['active'], True)
 
     def test_locate_targets_upper_only(self):
-        location = "37.804417,-122.267747"
         self.STATE_CAMPAIGN.campaign_subtype = 'upper'
-        uids = locate_targets(location, self.STATE_CAMPAIGN, self.mock_cache)
+        uids = locate_targets(self.mock_location, self.STATE_CAMPAIGN, self.mock_cache)
         self.assertEqual(len(uids), 1)
-
-        print uids
 
         senator = self.us_data.get_state_legid(uids[0])
         self.assertEqual(senator['chamber'], 'upper')
@@ -75,10 +73,9 @@ class TestData(BaseTestCase):
         self.assertEqual(senator['active'], True)
 
     def test_locate_targets_ordered_lower_first(self):
-        location = "37.804417,-122.267747"
         self.STATE_CAMPAIGN.campaign_subtype = 'both'
         self.STATE_CAMPAIGN.target_ordering = 'lower-first'
-        uids = locate_targets(location, self.STATE_CAMPAIGN, self.mock_cache)
+        uids = locate_targets(self.mock_location, self.STATE_CAMPAIGN, self.mock_cache)
         self.assertEqual(len(uids), 2)
 
         first = self.us_data.get_state_legid(uids[0])
@@ -88,10 +85,9 @@ class TestData(BaseTestCase):
         self.assertEqual(second['chamber'], 'upper')
 
     def test_locate_targets_ordered_upper_first(self):
-        location = "37.804417,-122.267747"
         self.STATE_CAMPAIGN.campaign_subtype = 'both'
         self.STATE_CAMPAIGN.target_ordering = 'upper-first'
-        uids = locate_targets(location, self.STATE_CAMPAIGN, self.mock_cache)
+        uids = locate_targets(self.mock_location, self.STATE_CAMPAIGN, self.mock_cache)
         self.assertEqual(len(uids), 2)
 
         first = self.us_data.get_state_legid(uids[0])
@@ -102,9 +98,11 @@ class TestData(BaseTestCase):
 
     def test_locate_targets_incorrect_state(self):
         self.STATE_CAMPAIGN.campaign_state = 'CA'
-        location = "42.355662,-71.065483"  # location in Boston
+
+        other_location = Location('Boston, MA', (42.355662,-71.065483),
+            {'components':{'state':'MA','zipcode':'02111'}})
         
-        uids = locate_targets(location, self.STATE_CAMPAIGN, self.mock_cache)
+        uids = locate_targets(other_location, self.STATE_CAMPAIGN, self.mock_cache)
         self.assertEqual(len(uids), 0)
 
     def test_50_governors(self):

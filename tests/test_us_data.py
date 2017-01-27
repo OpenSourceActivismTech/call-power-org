@@ -20,6 +20,7 @@ class TestData(BaseTestCase):
         cls.us_data = USDataProvider(cls.mock_cache, 'localmem')
         cls.us_data.load_data()
 
+
     def setUp(self):
         self.CONGRESS_CAMPAIGN = Campaign(
             country_code='us',
@@ -27,6 +28,10 @@ class TestData(BaseTestCase):
             campaign_subtype='both',
             target_ordering='in-order',
             locate_by='postal')
+
+        # avoid geocoding round-trip
+        self.mock_location = Location('Boston, MA', (42.355662,-71.065483),
+            {'components':{'state':'MA','zipcode':'02111'}})
 
     def test_cache(self):
         self.assertIsNotNone(self.mock_cache)
@@ -70,27 +75,25 @@ class TestData(BaseTestCase):
         self.assertEqual(rep['district'], '0')
 
     def test_locate_targets(self):
-        location = Location({'zipcode': '05055'})
-        uids = locate_targets(location, self.CONGRESS_CAMPAIGN, self.mock_cache)
+        uids = locate_targets(self.mock_location, self.CONGRESS_CAMPAIGN, self.mock_cache)
         # returns a list of target uids
         self.assertEqual(len(uids), 3)
 
         house_rep = self.us_data.get_uid(uids[0])[0]
         self.assertEqual(house_rep['chamber'], 'house')
-        self.assertEqual(house_rep['state'], 'VT')
+        self.assertEqual(house_rep['state'], 'MA')
 
         senator_0 = self.us_data.get_uid(uids[1])[0]
         self.assertEqual(senator_0['chamber'], 'senate')
-        self.assertEqual(senator_0['state'], 'VT')
+        self.assertEqual(senator_0['state'], 'MA')
 
         senator_1 = self.us_data.get_uid(uids[2])[0]
         self.assertEqual(senator_1['chamber'], 'senate')
-        self.assertEqual(senator_1['state'], 'VT')
+        self.assertEqual(senator_1['state'], 'MA')
 
     def locate_targets_house_only(self):
         self.CONGRESS_CAMPAIGN.campaign_subtype = 'lower'
-        location = Location({'zipcode': '05055'})
-        uids = locate_targets(location, self.CONGRESS_CAMPAIGN, self.mock_cache)
+        uids = locate_targets(self.mock_location, self.CONGRESS_CAMPAIGN, self.mock_cache)
         self.assertEqual(len(uids), 1)
 
         first = self.us_data.get_uid(uids[0])[0]
@@ -98,9 +101,8 @@ class TestData(BaseTestCase):
 
     def locate_targets_senate_only(self):
         self.CONGRESS_CAMPAIGN.campaign_subtype = 'upper'
-        location = Location({'zipcode': '05055'})
 
-        uids = locate_targets(location, self.CONGRESS_CAMPAIGN, self.mock_cache)
+        uids = locate_targets(self.mock_location, self.CONGRESS_CAMPAIGN, self.mock_cache)
         self.assertEqual(len(uids), 2)
 
         first = self.us_data.get_uid(uids[0])[0]
@@ -112,9 +114,8 @@ class TestData(BaseTestCase):
     def test_locate_targets_both_ordered_house_first(self):
         self.CONGRESS_CAMPAIGN.campaign_subtype = 'both'
         self.CONGRESS_CAMPAIGN.target_ordering = 'lower-first'
-        location = Location({'zipcode': '05055'})
 
-        uids = locate_targets(location, self.CONGRESS_CAMPAIGN, self.mock_cache)
+        uids = locate_targets(self.mock_location, self.CONGRESS_CAMPAIGN, self.mock_cache)
         self.assertEqual(len(uids), 3)
 
         first = self.us_data.get_uid(uids[0])[0]
@@ -129,9 +130,8 @@ class TestData(BaseTestCase):
     def test_locate_targets_both_ordered_senate_first(self):
         self.CONGRESS_CAMPAIGN.campaign_subtype = 'both'
         self.CONGRESS_CAMPAIGN.target_ordering = 'upper-first'
-        location = Location({'zipcode': '05055'})
 
-        uids = locate_targets(location, self.CONGRESS_CAMPAIGN, self.mock_cache)
+        uids = locate_targets(self.mock_location, self.CONGRESS_CAMPAIGN, self.mock_cache)
         self.assertEqual(len(uids), 3)
 
         first = self.us_data.get_uid(uids[0])[0]
