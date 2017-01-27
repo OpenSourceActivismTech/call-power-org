@@ -13,6 +13,13 @@ class Location(geopy.Location):
     which can return properties from the raw address_components 
     """
 
+    def __init__(self, *args, **kwargs):
+        if type(args[0]) == type(geopy.Location):
+            wrapped = args[0]
+            super(Location, self).__init__(wrapped.address, wrapped.point, wrapped.raw)
+        else:
+            super(Location, self).__init__(*args, **kwargs)
+
     def _find_in_raw(self, field):
         """
         finds a component by type name in raw address_components
@@ -125,12 +132,14 @@ class Geocoder(object):
 
         if service is GOOGLE_SERVICE:
             # bias responses to region/country (2-letter TLD)
-            result = self.client.geocode(address, region=self.country)
+            result = Location(self.client.geocode(address, region=self.country))
         if service is NOMINATIM_SERVICE:
             # nominatim won't return metadata unless we ask
-            result = self.client.geocode(address, addressdetails=True)
+            result = Location(self.client.geocode(address, addressdetails=True))
         else:
-            result.service = self.client.geocode(address)
+            result = Location(self.client.geocode(address))
+
+        result.service = service
         return result
 
     def reverse(self, latlon):
@@ -143,4 +152,4 @@ class Geocoder(object):
             except ValueError:
                 raise ValueError('unable to parse latlon as either tuple or comma delimited string')
 
-        return self.client.reverse((lat, lon))
+        return Location(self.client.reverse((lat, lon)))
