@@ -14,11 +14,16 @@ class Location(geopy.Location):
     """
 
     def __init__(self, *args, **kwargs):
-        if type(args[0]) == type(geopy.Location):
-            wrapped = args[0]
-            super(Location, self).__init__(wrapped.address, wrapped.point, wrapped.raw)
-        else:
+        if type(args[0]) == str:
             super(Location, self).__init__(*args, **kwargs)
+        else:
+            self._wrapped_obj = args[0]
+
+    def __getattr__(self, attr):
+        if attr in self.__dict__:
+            return getattr(self, attr)
+        if self._wrapped_obj:
+            return getattr(self._wrapped_obj, attr)
 
     def _find_in_raw(self, field):
         """
