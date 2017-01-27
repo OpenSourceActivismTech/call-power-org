@@ -62,8 +62,12 @@ class Location(geopy.Location):
         elif self.service is SMARTYSTREETS_SERVICE:
             return self._find_in_raw('state_abbreviation')
         elif self.service is NOMINATIM_SERVICE:
-            state_name = self._find_in_raw('state')
-            return US_STATE_NAME_DICT.get(state_name)
+            if self._find_in_raw('country_code') == 'us':
+                state_name = self._find_in_raw('state')
+                return US_STATE_NAME_DICT.get(state_name)
+            elif self._find_in_raw('country_code') == 'ca':
+                province_name = self._find_in_raw('state')
+                return CA_PROVINCE_NAME_DICT.get(province_name)
         else:
             return self._find_in_raw('state')
 
@@ -94,21 +98,24 @@ class Geocoder(object):
     with configurable service name
     """
 
-    def __init__(self, API_NAME=None, API_KEY=None, country='us'):
+    def __init__(self, API_NAME=None, API_KEY=None, country='US'):
         if not API_NAME or API_KEY:
             # get keys from os.environ, because we may not have current_app context
             API_NAME = os.environ.get('GEOCODE_PROVIDER', 'nominatim')  # default to the FOSS provider
             API_KEY = os.environ.get('GEOCODE_API_KEY', None)
 
         service = geopy.geocoders.get_geocoder_for_service(API_NAME)
-        if API_KEY:
+        self.country = country
+
+        if API_NAME == 'nominatim':
+                # nominatim sets country bias at init
+                # and has no API_KEY
+                self.client = service(country_bias=country)
+        elif API_KEY:
             self.client = service(API_KEY)
         else:
-            if API_NAME == 'nominatim':
-                # nominatim sets country bias at init
-                self.client = service(country_bias=country)
-            else: 
-                self.client = service()
+            raise LocationError('configure your geocoder with environment variables GEOCODE_PROVIDER and GEOCODE_API_KEY')
+            
 
     def get_service_name(self):
         "returns geopy.geocoder class name, like GoogleV3, LiveAddress, Nominatim, etc"
@@ -125,7 +132,7 @@ class Geocoder(object):
 
         # fallback to geocoder if cache unavailable
         # or if there were multiple returns
-        return self.geocode(code, country)
+        return self.geocode(code)
 
     def geocode(self, address):
         service = self.get_service_name()

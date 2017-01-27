@@ -176,13 +176,13 @@ class CADataProvider(DataProvider):
     def __init__(self, cache, **kwargs):
         super(CADataProvider, self).__init__(**kwargs)
         self._cache = cache
-        self._geocoder = Geocoder()
+        self._geocoder = Geocoder(country='CA')
 
     def get_location(self, locate_by, raw):
         if locate_by == LOCATION_POSTAL:
             return self._geocoder.postal(raw)
         elif locate_by == LOCATION_ADDRESS:
-            return self._geocoder.geocode(raw, country='ca')
+            return self._geocoder.geocode(raw)
         elif locate_by == LOCATION_LATLON:
             return self._geocoder.reverse(raw)
         else:
