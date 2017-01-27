@@ -13,7 +13,7 @@ class Location(geopy.Location):
     which can return properties from the raw address_components 
     """
 
-    def find_in_address_components(self, field):
+    def _find_in_raw(self, field):
         """
         finds a component by type name in raw address_components
         """
@@ -51,14 +51,14 @@ class Location(geopy.Location):
     @property
     def state(self):
         if self.service is GOOGLE_SERVICE:
-            return self.find_in_address_components('administrative_area_level_1')
+            return self._find_in_raw('administrative_area_level_1')
         elif self.service is SMARTYSTREETS_SERVICE:
-            return self.find_in_address_components('state_abbreviation')
+            return self._find_in_raw('state_abbreviation')
         elif self.service is NOMINATIM_SERVICE:
-            state_name = self.find_in_address_components('state')
+            state_name = self._find_in_raw('state')
             return US_STATE_NAME_DICT.get(state_name)
         else:
-            return self.find_in_address_components('state')
+            return self._find_in_raw('state')
 
     @property
     def latlon(self):
@@ -69,13 +69,13 @@ class Location(geopy.Location):
     @property
     def postal(self):
         if self.service is GOOGLE_SERVICE:
-            return self.find_in_address_components('postal_code')
+            return self._find_in_raw('postal_code')
         elif self.service is SMARTYSTREETS_SERVICE:
-            return self.find_in_address_components('zipcode')
+            return self._find_in_raw('zipcode')
         elif self.service is NOMINATIM_SERVICE:
-            return self.find_in_address_components('postcode')
+            return self._find_in_raw('postcode')
         else:
-            return self.find_in_address_components('zipcode')
+            return self._find_in_raw('zipcode')
 
 
 class LocationError(TypeError):
