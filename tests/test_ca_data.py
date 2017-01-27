@@ -27,6 +27,10 @@ class TestData(BaseTestCase):
             target_ordering='in-order',
             locate_by='address')
 
+        # well, really montreal
+        self.mock_location = Location('North Pole', (45.500577, -73.567427),
+            {'components':{'province':'QC','postal_code':'H0H 0H0'}})
+
     def test_cache(self):
         self.assertIsNotNone(self.mock_cache)
         self.assertIsNotNone(self.ca_data)
@@ -37,12 +41,10 @@ class TestData(BaseTestCase):
         self.assertEqual(riding['city'], 'Mississauga')
 
     def test_locate_targets(self):
-        location_address = "1588 S Service Rd Mississauga, ON, Canada"
-        keys = locate_targets(location_address, self.PARLIAMENT_CAMPAIGN, self.mock_cache)
+        keys = locate_targets(self.mock_location, self.PARLIAMENT_CAMPAIGN, self.mock_cache)
         # returns a list of target boundary keys
         self.assertEqual(len(keys), 1)
 
         mp = self.ca_data.get_boundary_key(keys[0])
         self.assertEqual(mp['elected_office'], 'MP')
         self.assertEqual(mp['representative_set_name'], 'House of Commons')
-        self.assertEqual(mp['district_name'].replace(u"\u2014", "-"), 'Mississauga-Lakeshore')
