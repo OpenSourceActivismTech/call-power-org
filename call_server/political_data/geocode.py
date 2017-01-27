@@ -1,7 +1,7 @@
 import geopy
 import os
 
-from constants import US_STATE_NAME_DICT
+from constants import US_STATE_NAME_DICT, CA_PROVINCE_NAME_DICT
 
 GOOGLE_SERVICE = 'GoogleV3'
 SMARTYSTREETS_SERVICE = 'LiveAddress'

@@ -68,11 +68,13 @@ CA_PROVINCES = (
     ('NB', 'New Brunswick'),
     ('NL', 'Newfoundland and Labrador'),
     ('NT', 'Northwest Territories'),
-    ('NS', 'Nova Scoti'),
+    ('NS', 'Nova Scotia'),
     ('NU', 'Nunavut'),
     ('ON', 'Ontario'),
     ('PE', 'Prince Edward Island'),
-    ('QC', 'Quebec'),
+    ('QC', u'Qu\xe9bec'),
     ('SK', 'Saskatchewan'),
     ('YT', 'Yukon'),
 )
+CA_PROVINCE_ABBR_DICT = {abbr: name for (abbr, name) in CA_PROVINCES}
+CA_PROVINCE_NAME_DICT = {name: abbr for (abbr, name) in CA_PROVINCES}
