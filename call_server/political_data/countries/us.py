@@ -207,7 +207,7 @@ class USDataProvider(DataProvider):
     def __init__(self, cache, api_cache=None, **kwargs):
         super(USDataProvider, self).__init__(**kwargs)
         self._cache = cache
-        self._geocoder = Geocoder()
+        self._geocoder = Geocoder(country='US')
         if api_cache is not None:
             response_cache.enable(api_cache)
 
@@ -215,7 +215,7 @@ class USDataProvider(DataProvider):
         if locate_by == LOCATION_POSTAL:
             return self._geocoder.postal(raw)
         elif locate_by == LOCATION_ADDRESS:
-            return self._geocoder.geocode(raw, country='us')
+            return self._geocoder.geocode(raw)
         elif locate_by == LOCATION_LATLON:
             return self._geocoder.reverse(raw)
         else:
