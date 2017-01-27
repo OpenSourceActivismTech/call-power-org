@@ -45,6 +45,6 @@ class TestData(BaseTestCase):
         # returns a list of target boundary keys
         self.assertEqual(len(keys), 1)
 
-        mp = self.ca_data.get_boundary_key(keys[0])
+        mp = self.ca_data.cache_get(keys[0])
         self.assertEqual(mp['elected_office'], 'MP')
         self.assertEqual(mp['representative_set_name'], 'House of Commons')

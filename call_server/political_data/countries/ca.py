@@ -79,11 +79,11 @@ class CACampaignType_Parliament(CACampaignType):
     def _get_member_of_parliament(self, location):
         reps = self.data_provider.get_representatives(location)
         filtered = self._filter_representatives(reps, "MP")
-        return (r['boundary_key'] for r in filtered)
+        return (r['cache_key'] for r in filtered)
 
     def _filter_representatives(self, representatives, elected_office="MP", campaign_region=None):
-        for boundary_key in representatives:
-            rep = self.data_provider.get_boundary_key(boundary_key)
+        for key in representatives:
+            rep = self.data_provider.cache_get(key, {})
             correct_office = rep['elected_office'].upper() == elected_office
             in_region = campaign_region is None or rep['district_name'].upper() == campaign_region.upper()
             if correct_office and in_region:
@@ -149,11 +149,11 @@ class CACampaignType_Province(CACampaignType):
         reps = self.data_provider.get_representatives(location)
         # TODO, check "MNA" vs "MLA"
         filtered = self._filter_representatives(reps, "MLA", campaign_region)
-        return (r['boundary_key'] for r in filtered)
+        return (r['cache_key'] for r in filtered)
 
     def _filter_representatives(self, representatives, elected_office="MP", campaign_region=None):
-        for boundary_key in representatives:
-            rep = self.data_provider.get_boundary_key(boundary_key)
+        for key in representatives:
+            rep = self.data_provider.cache_get(key, {})
             correct_office = rep['elected_office'].upper() == elected_office
             in_region = campaign_region is None or rep['district_name'].upper() == campaign_region.upper()
             if correct_office and in_region:
@@ -220,8 +220,9 @@ class CADataProvider(DataProvider):
             boundary_key = self.boundary_url_to_key(rep['related']['boundary_url'])
             cache_key = self.KEY_OPENNORTH.format(boundary=boundary_key)
             rep['boundary_key'] = boundary_key
+            rep['cache_key'] = cache_key
             self.cache_set(cache_key, rep)
-            keys.append(boundary_key)
+            keys.append(cache_key)
 
         return keys
 

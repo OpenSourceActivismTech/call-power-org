@@ -11,7 +11,7 @@ def adapt_to_target(data, key_prefix):
     elif key_prefix == "us_state:governor":
         adapter = GovernorAdapter()
         return adapter.adapt(data)
-    elif key_prefix == "ca:opennorth":
+    elif key_prefix.startswith("ca:opennorth"):
         adapter = OpenNorthAdapter()
         return adapter.adapt(data)
     else:
@@ -69,6 +69,6 @@ class OpenNorthAdapter(object):
             mapped['number'] = data['offices'][0]['tel']
         else:
             mapped['number'] = None
-        mapped['uid'] = data['boundary_key']
+        mapped['uid'] = data['cache_key']
 
         return mapped
