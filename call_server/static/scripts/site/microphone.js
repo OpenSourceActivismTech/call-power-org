@@ -311,8 +311,13 @@
       // create file from blob
       if (this.audioBlob) {
         formData.append('file_storage', this.audioBlob);
+        formData.append('file_type', 'mp3');
       } else if (this.filename) {
-        formData.append('file_storage', $('input[type="file"]')[0].files[0]);
+        var fileName = $('input[type="file"]')[0].files[0];
+        formData.append('file_storage', filename);
+        
+        var fileType = fileName.split('.').pop(-1);
+        formData.append('file_type', fileType);
       }
 
       var self = this;
