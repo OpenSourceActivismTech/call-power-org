@@ -188,6 +188,7 @@ class USCampaignType_State(USCampaignType):
 
 class USDataProvider(DataProvider):
     country_name = "United States"
+    country_code = "us"
 
     campaign_types = [
         ('executive', USCampaignType_Executive),

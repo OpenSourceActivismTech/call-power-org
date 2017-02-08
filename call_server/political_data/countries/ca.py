@@ -162,6 +162,7 @@ class CACampaignType_Province(CACampaignType):
 
 class CADataProvider(DataProvider):
     country_name = "Canada"
+    country_code = "ca"
 
     campaign_types = [
         ('executive', CACampaignType_Executive),

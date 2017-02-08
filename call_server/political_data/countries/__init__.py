@@ -93,6 +93,10 @@ class CampaignType(object):
         return self.data_provider.country_name
 
     @property
+    def country_code(self):
+        return self.data_provider.country_code
+
+    @property
     def subtype_choices(self):
         return CampaignType.subtypes + self.subtypes
 

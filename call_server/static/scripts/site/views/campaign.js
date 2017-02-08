@@ -65,6 +65,7 @@
       // updates campaign_type with available choices from data-attr
       var country = $('select#campaign_country').val();
       var nested_field = $('select#campaign_type');
+      var nested_val = nested_field.val();
 
       var type_choices = nested_field.data('nested-choices');
       var selected_choices = type_choices[country];
@@ -75,7 +76,9 @@
 
       // append new ones
       $(selected_choices).each(function() {
-        nested_field.append('<option value="'+this[0]+'">'+this[1]+'</option>');
+        var option = $('<option value="'+this[0]+'">'+this[1]+'</option>');
+        if (option.val() === nested_val) { option.attr('selected', true); }
+        nested_field.append(option);
       });
     },
 

@@ -57,7 +57,6 @@ def country_type(campaign_id=None):
         campaign = None
 
     form = CountryTypeForm()
-
     form.campaign_country.choices = choice_items(COUNTRY_CHOICES)
 
     # set up a list for all campaign types in each country
@@ -76,7 +75,7 @@ def country_type(campaign_id=None):
         campaign_type = form.campaign_type.data
 
         if campaign and country_code and campaign_type:
-            campaign.campaign_country = country_code
+            campaign.country_code = country_code
             campaign.campaign_type = campaign_type
             db.session.add(campaign)
             db.session.commit()
@@ -87,6 +86,10 @@ def country_type(campaign_id=None):
             return redirect(
                 url_for('campaign.form', country_code=country_code, campaign_type=campaign_type)
             )
+
+    if edit:
+        form.campaign_country.data = campaign.country_code
+        form.campaign_type.data = campaign.campaign_type
 
     return render_template('campaign/country_type.html',
         form=form, country_types=country_type_choices)
@@ -100,12 +103,11 @@ def form(country_code=None, campaign_type=None, campaign_id=None):
 
     if edit:
         campaign = Campaign.query.filter_by(id=campaign_id).first_or_404()
-        campaign_id = campaign.id
         campaign_data = campaign.get_campaign_data()
         form = CampaignForm(obj=campaign, campaign_data=campaign_data)
+        form.campaign_country.data = campaign_data.country_code
     else:
         campaign = Campaign()
-        campaign_id = None
         campaign.country_code = country_code
         campaign.campaign_type = campaign_type
         campaign_data = campaign.get_campaign_data()
@@ -177,7 +179,7 @@ def form(country_code=None, campaign_type=None, campaign_id=None):
             flash('Campaign created.', 'success')
         return redirect(url_for('campaign.audio', campaign_id=campaign.id))
 
-    return render_template('campaign/form.html', form=form, edit=edit, campaign_id=campaign_id,
+    return render_template('campaign/form.html', form=form, edit=edit, campaign_id=campaign.id,
                            campaign_data=campaign_data,
                            descriptions=current_app.config.CAMPAIGN_FIELD_DESCRIPTIONS)
 
