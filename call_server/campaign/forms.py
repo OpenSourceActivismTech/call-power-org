@@ -120,6 +120,7 @@ class CampaignLaunchForm(Form):
 
     test_call_number = TextField(_('Call Me'))
     test_call_location = TextField(_('Test Location'))
+    test_call_country = SelectField(_('Country'), [Optional()], choices=COUNTRY_CHOICES+[('', "Other")])
 
     # standard embed fields
     embed_script = TextField(_('Display Script'), widget=TextArea(), description=True)

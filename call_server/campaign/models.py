@@ -110,7 +110,7 @@ class Campaign(db.Model):
         "Phone numbers for this campaign, can be limited to a specified region code (ISO-2)"
         if region_code:
             # convert region_code to country_code for comparison
-            country_code = phone_number.phonenumbers.country_code_for_region(region_code)
+            country_code = phone_number.phonenumbers.country_code_for_region(region_code.upper())
             return [n.number.e164 for n in self.phone_number_set if n.number.country_code == country_code]
         else:
             # return all numbers in set

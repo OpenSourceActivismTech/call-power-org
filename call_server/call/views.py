@@ -60,7 +60,7 @@ def parse_params(r, inbound=False):
         'sessionId': r.values.get('sessionId', None),
         'campaignId': r.values.get('campaignId', None),
         'userPhone': r.values.get('userPhone', None),
-        'userCountry': r.values.get('userCountry', 'US'),
+        'userCountry': r.values.get('userCountry', '').upper(),
         'userLocation': r.values.get('userLocation', None),
         'targetIds': r.values.getlist('targetIds'),
     }

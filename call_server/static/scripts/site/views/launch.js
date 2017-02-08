@@ -5,6 +5,7 @@
     el: $('#launch'),
 
     events: {
+      'change select#test_call_country': 'changeTestCallCountry',
       'click .test-call': 'makeTestCall',
       'change #embed_type': 'toggleCustomEmbedPanel',
       'blur #custom_embed_options input': 'updateEmbedCode',
@@ -14,6 +15,16 @@
       this.campaignId = $('#campaignId').val();
       $('.readonly').attr('readonly', 'readonly');
       this.toggleCustomEmbedPanel();
+    },
+
+    changeTestCallCountry: function() {
+      var country = $('#test_call_country').val();
+      if (!country) {
+        $('#test_call_country_other').removeClass('hidden')
+        country = $('#test_call_country_other').val();
+      } else {
+        $('#test_call_country_other').addClass('hidden').val('');
+      }
     },
 
     makeTestCall: function(event) {
@@ -33,22 +44,27 @@
       phone = phone.replace("+", "").replace(/\-/g, ''); // remove plus, dash
 
       var location = $('#test_call_location').val();
+      var country = $('#test_call_country').val() || $('#test_call_country_other').val();
 
       $.ajax({
         url: '/call/create',
-        data: {campaignId: this.campaignId, userPhone: phone, userLocation: location},
+        data: {campaignId: this.campaignId, userPhone: phone, userLocation: location, userCountry: country},
         success: function(data) {
-          console.log(data);
           alert('Calling you at '+$('#test_call_number').val()+' now!');
           if (data.message == 'queued') {
             statusIcon.removeClass('active').addClass('success');
+            $('.form-group.test_call .controls .help-block').removeClass('has-error').text('');
           } else {
-            console.error(data.message);
+            console.error(data);
             statusIcon.addClass('error');
+            $('.form-group.test_call .controls .help-block').addClass('has-error').text(data.responseText);
           }
         },
         error: function(err) {
           console.error(err);
+          statusIcon.addClass('error');
+          var errMessage = err.responseJSON.error || 'unknown error';
+          $('.form-group.test_call .controls .help-block').addClass('has-error').text(errMessage);
         }
       });
     },
