@@ -235,7 +235,8 @@ class TwilioPhoneNumber(db.Model):
     call_in_campaign = db.relationship('Campaign', foreign_keys=[call_in_campaign_id])
 
     def __unicode__(self):
-        return self.number.__unicode__()
+        # use e164 for external apis, but international formatting for display
+        return self.number.international
 
     @classmethod
     def available_numbers(*args, **kwargs):
