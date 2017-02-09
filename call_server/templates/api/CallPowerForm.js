@@ -119,8 +119,18 @@ CallPowerForm.prototype = function($) {
     }
 
     if (this.scriptDisplay === 'replace') {
-      // replace form with script content
-      this.form.html(response.script);
+      // hide form and show script contents
+
+      // start new empty hidden div
+      var scriptDiv = $('<div style="display: none;"></div>');
+      // copy existing form classes and styling
+      scriptDiv.addClass(this.form.attr('class'));
+      // insert response contents
+      scriptDiv.html(response.script);
+
+      scriptDiv.insertAfter(this.form);
+      this.form.slideUp();
+      scriptDiv.slideUp();
     }
 
     // run custom js function 
