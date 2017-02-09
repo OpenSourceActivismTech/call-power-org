@@ -59,20 +59,17 @@ CallPowerForm.prototype = function($) {
     else { return this.locationField.val(); }
   };
 
-  var cleanPhone = function() {
-    // removes whitespace, parents, plus, dashes from phoneField
-    if (this.phoneField.length === 0) { return undefined; }
-    var num = this.phoneField.val()
-      .replace(/\s/g, '').replace(/\(/g, '').replace(/\)/g, '')
-      .replace("+", "").replace(/\-/g, '');
-    return num;
-  };
-
   // very simple country specific length validators
   // override with eg: google libphonenumber
   var validatePhone = function() {
     var countryCode = this.country();
-    var num = cleanPhone();
+    
+    if (this.phoneField.length === 0) { return undefined; }
+    // removes whitespace, parents, plus, dashes from phoneField
+    var num = this.phoneField.val()
+      .replace(/\s/g, '').replace(/\(/g, '').replace(/\)/g, '')
+      .replace("+", "").replace(/\-/g, '');
+    return num;
 
     var isValid = false;
     if (countryCode === 'US' || countryCode === 'CA') {
