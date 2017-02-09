@@ -42,24 +42,55 @@ CallPowerForm.prototype = function($) {
     return isValid ? this.locationField.val() : false;
   };
 
-  var cleanUSPhone = function() {
-    if (this.phoneField.length === 0) { return undefined; }
-    var num = this.phoneField.val();
-    // remove whitespace, parens
-    num = num.replace(/\s/g, '').replace(/\(/g, '').replace(/\)/g, '');
-    // plus, dashes
-        num = num.replace("+", "").replace(/\-/g, '');
-        // leading 1
-        if (num.charAt(0) == "1")
-            num = num.substr(1);
-        var isValid = (num.length == 10); // ensure just 10 digits remain 
-
-    return isValid ? num : false;
+  var cleanCAPostal = function() {
+      if (this.locationField.length === 0) { return undefined; }
+      var postalVal = this.locationField.val().replace(/\W+/g, '');
+      var isValid = /([ABCEGHJKLMNPRSTVXY]\d)([ABCEGHJKLMNPRSTVWXYZ]\d){2}/i.test(postalVal);
+      return isValid ? postalVal : false;
   };
 
-  // default to US validators
-  var cleanPhone = cleanUSPhone;
-  var cleanLocation = cleanUSZipcode;
+  // very simple country specific validators
+  // override with eg google places autocomplete
+  var validateLocation = function() {
+    var countryCode = this.country();
+    var isValid = false;
+    if (countryCode === 'US') { return cleanUSZipcode(); }
+    else if (countryCode === 'CA') { return cleanCAPostal(); }
+    else { return this.locationField.val(); }
+  };
+
+  var cleanPhone = function() {
+    // removes whitespace, parents, plus, dashes from phoneField
+    if (this.phoneField.length === 0) { return undefined; }
+    var num = this.phoneField.val()
+      .replace(/\s/g, '').replace(/\(/g, '').replace(/\)/g, '')
+      .replace("+", "").replace(/\-/g, '');
+    return num;
+  };
+
+  // very simple country specific length validators
+  // override with eg: google libphonenumber
+  var validatePhone = function() {
+    var countryCode = this.country();
+    var num = this.cleanPhone();
+
+    var isValid = false;
+    if (countryCode === 'US' || countryCode === 'CA') {
+        // strip leading 1 prefix
+        if (num.charAt(0) == "1") {
+          num = num.substr(1);
+        }
+        isValid = (num.length == 10); // ensure just 10 digits remain 
+    }
+    else if (countryCode === 'GB') {
+        isValid = (num.length >= 10); // ensure at least 10 digits remain 
+    }
+    else { 
+      isValid = (num.length > 8); // ensure at least a few digits remain
+    }
+    return isValid ?  num : false;
+  };
+
 
   var onSuccess = function(response) {
     if (response.campaign === 'archived') { return onError(this.form, 'This campaign is no longer active.'); }
@@ -130,8 +161,8 @@ CallPowerForm.prototype = function($) {
   // public method interface
   return {
     country: getCountry,
-    location: cleanLocation,
-    phone: cleanPhone,
+    location: validateLocation,
+    phone: validatePhone,
     onError: onError,
     onSuccess: onSuccess,
     makeCall: makeCall
