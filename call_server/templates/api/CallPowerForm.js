@@ -72,7 +72,7 @@ CallPowerForm.prototype = function($) {
   // override with eg: google libphonenumber
   var validatePhone = function() {
     var countryCode = this.country();
-    var num = this.cleanPhone();
+    var num = cleanPhone();
 
     var isValid = false;
     if (countryCode === 'US' || countryCode === 'CA') {
