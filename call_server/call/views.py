@@ -260,9 +260,11 @@ def create():
 
         if campaign.embed:
             script = campaign.embed.get('script')
+            redirect = campaign.embed.get('redirect')
         else:
             script = ''
-        result = jsonify(campaign=campaign.status, call=call.status, script=script)
+            redirect = ''
+        result = jsonify(campaign=campaign.status, call=call.status, script=script, redirect=redirect)
         result.status_code = 200 if call.status != 'failed' else 500
     except TwilioRestException, err:
         twilio_error = stripANSI(err.msg)

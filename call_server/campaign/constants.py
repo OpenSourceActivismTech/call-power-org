@@ -34,8 +34,9 @@ EMBED_FORM_CHOICES = (
 
 EMBED_SCRIPT_DISPLAY = (
     ('', 'None'),
-    ('overlay', 'Overlay'),
+    ('overlay', 'Show Overlay'),
     ('replace', 'Replace Form'),
+    ('redirect', 'Redirect URL'),
     ('custom', 'Custom')
 )
 

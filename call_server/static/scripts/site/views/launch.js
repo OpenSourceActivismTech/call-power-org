@@ -9,6 +9,8 @@
       'click .test-call': 'makeTestCall',
       'change #embed_type': 'toggleCustomEmbedPanel',
       'blur #custom_embed_options input': 'updateEmbedCode',
+      'blur #custom_embed_options select': 'updateEmbedCode',
+      'change #embed_script_display': 'updateEmbedScriptDisplay',
     },
 
     initialize: function() {
@@ -89,7 +91,9 @@
         $('#custom_embed_options h3').text('Custom Embed Options');
         $('#custom_embed_options .form-group').show();
       }
+
       this.updateEmbedCode();
+      this.updateEmbedScriptDisplay();
     },
 
     updateEmbedCode: function(event) {
@@ -108,7 +112,16 @@
           $('textarea#embed_code').val(html);
         }
       });
-    }
+    },
+
+    updateEmbedScriptDisplay: function(event) {
+      var formType = $('#embed_type').val();
+      var scriptDisplay = $('#embed_script_display').val();
+      
+      $('#custom_embed_options .form-group.redirect').toggle(scriptDisplay === 'redirect');
+      $('#custom_embed_options .form-group.custom').toggle(scriptDisplay === 'custom');
+      $('#custom_embed_options .form-group.iframe').toggle(formType === 'iframe');
+    },
 
   });
 
