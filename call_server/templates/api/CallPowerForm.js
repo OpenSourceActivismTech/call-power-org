@@ -138,7 +138,6 @@ CallPowerForm.prototype = function($) {
       this.redirectAfter = response.redirect;
     }
 
-
     // run custom js function 
     if(this.customJS !== undefined) { eval(this.customJS); }
 
@@ -160,6 +159,10 @@ CallPowerForm.prototype = function($) {
 
     options = options || {};
     if (options.call_started) {
+      // redirect after original form submission is complete
+      if (this.redirectAfter) {
+        window.location.replace(this.redirectAfter);
+      }
       return true;
     }
 
@@ -182,12 +185,7 @@ CallPowerForm.prototype = function($) {
       error: $.proxy(this.onError, this, this.form, 'Please fill out the form completely')
     }).then(function() {
       // run previous default event without this callback
-      $(event.currentTarget).trigger(event.type, { 'call_started': true })
-
-      // redirect after original form submission is complete
-      if (this.redirectAfter) {
-        window.location.replace(this.redirectAfter);
-      }
+      $(event.currentTarget).trigger(event.type, { 'call_started': true });
     }).fail(this.onError);
   };
 
