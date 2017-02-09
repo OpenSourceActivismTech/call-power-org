@@ -182,12 +182,12 @@ CallPowerForm.prototype = function($) {
       error: $.proxy(this.onError, this, this.form, 'Please fill out the form completely')
     }).then(function() {
       // run previous default event without this callback
-      $(event.currentTarget).trigger(event.type, { 'call_started': true }).then(function() {
-        // redirect after original form submission is complete
-        if (this.redirectAfter) {
-          window.location.replace(this.redirectAfter);
-        }
-      });
+      $(event.currentTarget).trigger(event.type, { 'call_started': true })
+
+      // redirect after original form submission is complete
+      if (this.redirectAfter) {
+        window.location.replace(this.redirectAfter);
+      }
     }).fail(this.onError);
   };
 
