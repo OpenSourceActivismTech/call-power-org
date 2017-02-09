@@ -10,6 +10,7 @@
   * (c) Spacedog.xyz 2015, license AGPLv3
   */
 
+// revealing module pattern
 var CallPowerForm = function (formSelector, $) {
   // instance variables
   this.form = $(formSelector);
@@ -32,38 +33,39 @@ CallPowerForm.prototype = function($) {
   var createCallURL = '{{url_for("call.create", _external=True)}}';
   var campaignId = "{{campaign.id}}";
 
-  var getCountry = function() {
+  var simpleGetCountry = function() {
     return "{{campaign.country|default('US')}}";
   };
 
-  var cleanUSZipcode = function() {
-    if (this.locationField.length === 0) { return undefined; }
-    var isValid = /(\d{5}([\-]\d{4})?)/.test(this.locationField.val());
-    return isValid ? this.locationField.val() : false;
+  var cleanUSZipcode = function(val) {
+    if (val.length === 0) { return undefined; }
+    var isValid = /(\d{5}([\-]\d{4})?)/.test(val);
+    return isValid ? val : false;
   };
 
-  var cleanCAPostal = function() {
-      if (this.locationField.length === 0) { return undefined; }
-      var postalVal = this.locationField.val().replace(/\W+/g, '');
-      var isValid = /([ABCEGHJKLMNPRSTVXY]\d)([ABCEGHJKLMNPRSTVWXYZ]\d){2}/i.test(postalVal);
-      return isValid ? postalVal : false;
+  var cleanCAPostal = function(val) {
+      if (val === 0) { return undefined; }
+      var valNospace = val.replace(/\W+/g, '');
+      var isValid = /([ABCEGHJKLMNPRSTVXY]\d)([ABCEGHJKLMNPRSTVWXYZ]\d){2}/i.test(valNospace);
+      return isValid ? valNospace : false;
   };
 
   // very simple country specific validators
   // override with eg google places autocomplete
-  var validateLocation = function() {
-    var countryCode = this.country();
+  var simpleValidateLocation = function() {
+    countryCode = this.country();
+
     var isValid = false;
-    if (countryCode === 'US') { return cleanUSZipcode(); }
-    else if (countryCode === 'CA') { return cleanCAPostal(); }
+    if (countryCode === 'US') { return cleanUSZipcode(this.locationField.val()); }
+    else if (countryCode === 'CA') { return cleanCAPostal(this.locationField.val()); }
     else { return this.locationField.val(); }
   };
 
   // very simple country specific length validators
   // override with eg: google libphonenumber
-  var validatePhone = function() {
-    var countryCode = this.country();
-    
+  var simpleValidatePhone = function(countryCode) {
+    countryCode = this.country();
+
     if (this.phoneField.length === 0) { return undefined; }
     // remove whitespace, parents, plus, dashes from phoneField
     var num = this.phoneField.val()
@@ -169,12 +171,17 @@ CallPowerForm.prototype = function($) {
   };
 
   // public method interface
-  return {
-    country: $.proxy(getCountry, this),
-    location: $.proxy(validateLocation, this),
-    phone: $.proxy(validatePhone, this),
-    onError: $.proxy(onError, this),
-    onSuccess: $.proxy(onSuccess, this),
-    makeCall: $.proxy(makeCall, this)
+  var public = {
+    getCountry: simpleGetCountry,
+    getLocation: simpleValidateLocation,
+    getPhone: simpleValidatePhone,
+    onError: onError,
+    onSuccess: onSuccess,
+    makeCall: makeCall
   };
+  // let these be overridden, but keep reference to original functions
+  public.country = public.getCountry;
+  public.location = public.getLocation;
+  public.phone = public.getPhone;
+  return public;
 } (jQuery);
