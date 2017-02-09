@@ -170,11 +170,11 @@ CallPowerForm.prototype = function($) {
 
   // public method interface
   return {
-    country: getCountry,
-    location: validateLocation,
-    phone: validatePhone,
-    onError: onError,
-    onSuccess: onSuccess,
-    makeCall: makeCall
+    country: $.proxy(getCountry, this),
+    location: $.proxy(validateLocation, this),
+    phone: $.proxy(validatePhone, this),
+    onError: $.proxy(onError, this),
+    onSuccess: $.proxy(onSuccess, this),
+    makeCall: $.proxy(makeCall, this)
   };
 } (jQuery);
