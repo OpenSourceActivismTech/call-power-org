@@ -65,25 +65,38 @@ CallPowerForm.prototype = function($) {
     var countryCode = this.country();
     
     if (this.phoneField.length === 0) { return undefined; }
-    // removes whitespace, parents, plus, dashes from phoneField
+    // remove whitespace, parents, plus, dashes from phoneField
     var num = this.phoneField.val()
       .replace(/\s/g, '').replace(/\(/g, '').replace(/\)/g, '')
-      .replace("+", "").replace(/\-/g, '');
+      .replace('+', '').replace(/\-/g, '');
     return num;
 
     var isValid = false;
+    var prefix;
     if (countryCode === 'US' || countryCode === 'CA') {
-        // strip leading 1 prefix
-        if (num.charAt(0) == "1") {
+        prefix = "1";
+        // strip leading prefix
+        if (num.charAt(0) === prefix) {
           num = num.substr(1);
         }
-        isValid = (num.length == 10); // ensure just 10 digits remain 
+        isValid = (num.length == 10); // ensure just 10 digits remain
     }
     else if (countryCode === 'GB') {
-        isValid = (num.length >= 10); // ensure at least 10 digits remain 
+        prefix = "44";
+        // strip leading prefix
+        if (num.slice(0,2) === prefix) {
+          num = num.substr(2);
+        }
+        isValid = (num.length >= 9); // ensure at least 9 digits remain 
     }
-    else { 
+    else {
+      prefix = '';
       isValid = (num.length > 8); // ensure at least a few digits remain
+    }
+
+    // re-append prefix and plus sign, for e164 dialing
+    if (prefix || prefix === '') {
+      num = "+"+prefix+num;
     }
     return isValid ?  num : false;
   };
