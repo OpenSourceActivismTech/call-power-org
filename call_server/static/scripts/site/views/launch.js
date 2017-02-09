@@ -9,7 +9,7 @@
       'click .test-call': 'makeTestCall',
       'change #embed_type': 'toggleCustomEmbedPanel',
       'blur #custom_embed_options input': 'updateEmbedCode',
-      'blur #custom_embed_options select': 'updateEmbedCode',
+      'change #custom_embed_options select': 'updateEmbedCode',
       'change #embed_script_display': 'updateEmbedScriptDisplay',
     },
 

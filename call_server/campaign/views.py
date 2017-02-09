@@ -362,7 +362,8 @@ def launch(campaign_id):
                 'location_sel': form.embed_location_sel.data,
                 'custom_css': form.embed_custom_css.data,
                 'custom_js': form.embed_custom_js.data,
-                'script_display': form.embed_script_display.data
+                'script_display': form.embed_script_display.data,
+                'redirect': form.embed_redirect.data
             }
         elif form.embed_type.data == 'iframe':
             campaign.embed = {
@@ -392,6 +393,7 @@ def launch(campaign_id):
                 form.embed_custom_css.data = campaign.embed.get('custom_css')
                 form.embed_custom_js.data = campaign.embed.get('custom_js')
                 form.embed_script_display.data = campaign.embed.get('script_display')
+                form.embed_redirect.data = campaign.embed.get('redirect')
 
             if campaign.embed.get('script'):
                 form.embed_script.data = campaign.embed.get('script')
