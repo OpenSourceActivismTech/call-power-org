@@ -135,7 +135,8 @@ CallPowerForm.prototype = function($) {
 
     if (this.scriptDisplay === 'redirect') {
       // save response url to redirect after original form callback
-      this.redirectAfter = response.redirect;
+      // save to global namespace, because default event is run without this context
+      window.redirectAfter = response.redirect;
     }
 
     // run custom js function 
@@ -160,7 +161,7 @@ CallPowerForm.prototype = function($) {
     options = options || {};
     if (options.call_started) {
       // redirect after original form submission is complete
-      if (this.redirectAfter) {
+      if (window.redirectAfter) {
         window.location.replace(this.redirectAfter);
       }
       return true;
