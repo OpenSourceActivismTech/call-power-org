@@ -96,12 +96,12 @@ CallPowerForm.prototype = function($) {
   };
 
   var makeCall = function(event, options) {
-    if (event !== undefined) { event.preventDefault(); }
-    // stop default submit event
-
     options = options || {};
     if (options.call_started) {
       return true;
+    } else {
+      // stop default form submit event
+      if (event !== undefined) { event.preventDefault(); }
     }
 
     if (this.locationField.length && !this.location()) {
@@ -122,7 +122,7 @@ CallPowerForm.prototype = function($) {
       success: $.proxy(this.onSuccess, this),
       error: $.proxy(this.onError, this, this.form, 'Please fill out the form completely')
     }).then(window.setTimeout(function() {
-      // run previous default event without this callback
+      // re-trigger event to run without this callback
       $(event.currentTarget).trigger(event.type, { 'call_started': true });
       // after optional delay
     }, this.submitDelay || 0)).fail($.proxy(this.onError, this, this.form, 'Sorry, there was an error making the call'));
