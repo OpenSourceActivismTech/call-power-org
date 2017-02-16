@@ -96,6 +96,7 @@ EMBED_FORM_CHOICES = (
 EMBED_SCRIPT_DISPLAY = (
     ('', 'None'),
     ('overlay', 'Overlay'),
+    ('alert', 'Alert'),
     ('replace', 'Replace Form'),
     ('custom', 'Custom')
 )

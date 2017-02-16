@@ -80,6 +80,12 @@ CallPowerForm.prototype = function($) {
       this.form.html(response.script);
     }
 
+    if (this.scriptDisplay === 'alert') {
+      // popup alert with response.script text
+      var message = $(response.script);
+      alert(message.text());
+    }
+
     // run custom js function 
     if(this.customJS !== undefined) { eval(this.customJS); }
 
