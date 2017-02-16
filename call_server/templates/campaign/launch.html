@@ -61,9 +61,9 @@
 
         {{ render_field_default(form.embed_code, group_class='hidden', control_class='col-sm-8 col-xs-12', field_class='medium readonly') }}
 
-        <div class="panel panel-info collapse {% if form.embed_type.data == 'custom' %}in{%else%}out{%endif%}" id="custom_embed_options">
+        <div class="panel panel-info collapse {% if form.embed_type.data == 'custom' %}in{%else%}out{%endif%}" id="embed_options">
             <div class="panel-heading">
-                <h3 class="panel-title">Custom Embed Options</h3>
+                <h3 class="panel-title">Javascript Embed Options</h3>
             </div>
 
             <div class="panel-body">
