@@ -121,10 +121,11 @@ CallPowerForm.prototype = function($) {
       },
       success: $.proxy(this.onSuccess, this),
       error: $.proxy(this.onError, this, this.form, 'Please fill out the form completely')
-    }).then(function() {
+    }).then(window.setTimeout(function() {
       // run previous default event without this callback
       $(event.currentTarget).trigger(event.type, { 'call_started': true });
-    }).fail(this.onError);
+      // after optional delay
+    }, this.submitDelay || 0)).fail($.proxy(this.onError, this, this.form, 'Sorry, there was an error making the call'));
   };
 
   // public method interface
