@@ -376,21 +376,24 @@ def make_single():
         play_or_say(resp, campaign.audio('msg_invalid_location'))
         return str(resp)
 
-    target_phone = current_target.number.e164  # use full E164 syntax here
+    
     play_or_say(resp, campaign.audio('msg_target_intro'),
         title=current_target.title, name=current_target.name)
 
-    if current_app.debug:
-        current_app.logger.debug('Call #{}, {} ({}) from {} in call.make_single()'.format(
-            i, current_target.name, target_phone, params['userPhone']))
-
     userPhone = PhoneNumber(params['userPhone'], params['userCountry'])
 
-    resp.dial(target_phone, callerId=userPhone.e164,
+    # sending a twiml.Number to dial init will not nest properly
+    # have to add it after creation
+    resp.dial(callerId=userPhone.e164,
               timeLimit=current_app.config['TWILIO_TIME_LIMIT'],
               timeout=current_app.config['TWILIO_TIMEOUT'], hangupOnStar=True,
-              action=url_for('call.complete', **params))
+              action=url_for('call.complete', **params)) \
+        .number(current_target.number.e164, sendDigits=current_target.number.extension)
 
+    if current_app.debug:
+        current_app.logger.debug('Call #{}, {} ({}) from {} in call.make_single()'.format(
+            i, current_target.name, current_target.number, params['userPhone']))
+        
     return str(resp)
 
 
