@@ -107,6 +107,7 @@ def init_extensions(app):
     if app.config.get('DEBUG'):
         from flask_debugtoolbar import DebugToolbarExtension
         DebugToolbarExtension(app)
+        app.debug = True
 
 
 def register_blueprints(app, blueprints):
