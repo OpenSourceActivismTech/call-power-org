@@ -34,7 +34,7 @@ CallPowerForm.prototype = function($) {
   var campaignId = "{{campaign.id}}";
 
   var simpleGetCountry = function() {
-    return "{{campaign.country|default('US')}}";
+    return "{{campaign.country_code|default('US')}}";
   };
 
   var cleanUSZipcode = function(val) {
