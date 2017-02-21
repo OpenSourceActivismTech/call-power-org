@@ -17,9 +17,12 @@ var CallPowerForm = function (formSelector, $) {
   this.phoneField = $('{{campaign.embed.get("phone_sel","#phone_id")}}');
   this.scriptDisplay = 'overlay';
   
-  // allow options override
+  // allow options to override settings
   for (var option in window.CallPowerOptions || []) {
-    this[option] = CallPowerOptions[option];
+    var setting = CallPowerOptions[option];
+    // accept jquery selectors for form and fields
+    var selectorFields = ['form', 'locationField', 'phoneField'];
+    this[option] = (selectorFields[option] && typeof setting === 'string') ? $(setting) : setting;
   }
 
   this.form.on("submit", $.proxy(this.makeCall, this));
