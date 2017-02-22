@@ -132,7 +132,7 @@ class USCampaignType_State(USCampaignType):
     def get_subtype_display(self, subtype, campaign_region=None):
         display = super(USCampaignType_State, self).get_subtype_display(subtype, campaign_region)
         if display:
-            return "{} - {}".format(campaign_region, display)
+            return u'{} - {}'.format(campaign_region, display)
         else:
             return display
 
@@ -240,7 +240,7 @@ class USDataProvider(DataProvider):
                     continue # don't get too historical
 
                 if term.get("phone") is None:
-                    log.error("term does not have field phone {type} {name}{last}".format(term, info))
+                    log.error(u"term does not have field phone {type} {name}{last}".format(term, info))
                     continue
 
                 district = str(term["district"]) if term.has_key("district") else None

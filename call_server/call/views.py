@@ -337,7 +337,7 @@ def location_parse():
     target_ids = locate_targets(location, campaign)
 
     if current_app.debug:
-        current_app.logger.debug('entered = {}'.format(location))
+        current_app.logger.debug(u'entered = {}'.format(location))
 
     if not target_ids:
         resp = twilio.twiml.Response()
@@ -379,7 +379,7 @@ def make_single():
         title=current_target.title, name=current_target.name)
 
     if current_app.debug:
-        current_app.logger.debug('Call #{}, {} ({}) from {} in call.make_single()'.format(
+        current_app.logger.debug(u'Call #{}, {} ({}) from {} in call.make_single()'.format(
             i, current_target.name, target_phone, params['userPhone']))
 
     userPhone = PhoneNumber(params['userPhone'], params['userCountry'])

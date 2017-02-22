@@ -115,7 +115,7 @@ class CACampaignType_Province(CACampaignType):
     def get_subtype_display(self, subtype, campaign_region=None):
         display = super(CACampaignType_Province, self).get_subtype_display(subtype, campaign_region)
         if display:
-            return "{} - {}".format(campaign_region, display)
+            return u'{} - {}'.format(campaign_region, display)
         else:
             return display
 
