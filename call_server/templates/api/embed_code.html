@@ -12,8 +12,8 @@ window.CallPowerOptions = {
     phoneField: jQuery("{{campaign.embed.phone_sel|default('#phone_id', True)}}"),
     locationField: jQuery("{{campaign.embed.location_sel|default('#location_id', True)}}"),
     scriptDisplay: "{{campaign.embed.script_display|default('overlay', True)}}",
-    {% if campaign.embed.custom_css%}customCSS: "{{campaign.embed.custom_css}}",{%endif%}
-    {% if campaign.embed.custom_js%}CallPowerOptions.customJS: "{{campaign.embed.custom_js|safe}}",{%endif%}
+    {% if campaign.embed.custom_css %}customCSS: "{{campaign.embed.custom_css}}",{%endif%}
+    {% if campaign.embed.custom_js %}customJS: "{{campaign.embed.custom_js|safe}}",{%endif%}
 };</script>
 <script type="text/javascript" src="{{url_for('api.campaign_embed_js', campaign_id=campaign.id, _external=True)}}"></script>
 {% endif %}
