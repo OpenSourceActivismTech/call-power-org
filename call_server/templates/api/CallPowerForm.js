@@ -102,12 +102,12 @@ CallPowerForm.prototype = function($) {
   };
 
   var makeCall = function(event, options) {
+    // stop default form submit event
+    if (event !== undefined) { event.preventDefault(); }
+
     options = options || {};
     if (options.call_started) {
       return true;
-    } else {
-      // stop default form submit event
-      if (event !== undefined) { event.preventDefault(); }
     }
 
     if (this.locationField.length && !this.location()) {
