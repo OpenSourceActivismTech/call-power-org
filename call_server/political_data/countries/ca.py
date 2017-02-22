@@ -89,18 +89,18 @@ class CACampaignType_Province(CACampaignType):
 
     # as available at http://represent.opennorth.ca/data/
     provincial_legislatures = {
-        'AB': 'alberta-legislature',
-        'BC': 'bc-legislature',
-        'MB': 'manitoba-legislature',
-        'NB': 'new-brunswick-legislature',
-        'NL': 'newfoundland-labrador-legislature',
+        'AB': {'body': 'alberta-legislature', 'office': 'MLA'},
+        'BC': {'body': 'bc-legislature', 'office': 'MLA'},
+        'MB': {'body': 'manitoba-legislature', 'office': 'MLA'},
+        'NB': {'body': 'new-brunswick-legislature', 'office': 'MLA'},
+        'NL': {'body': 'newfoundland-labrador-legislature', 'office': 'MHA'},
         #'NT': 'Northwest Territories',
-        'NS': 'nova-scotia-legislature',
+        'NS': {'body': 'nova-scotia-legislature', 'office': 'MLA'},
         #'NU': 'Nunavut',
-        'ON': 'ontario-legislature',
-        'PE': 'pei-legislature',
-        'QC': 'quebec-assemblee-nationale',
-        'SK': 'saskatchewan-legislature',
+        'ON': {'body': 'ontario-legislature', 'office': 'MPP'},
+        'PE': {'body': 'pei-legislature', 'office': 'MLA'},
+        'QC': {'body': 'quebec-assemblee-nationale', 'office': 'MNA'},
+        'SK': {'body': 'saskatchewan-legislature', 'office': 'MLA'},
         #'YT': 'Yukon',
    }
    
@@ -133,9 +133,18 @@ class CACampaignType_Province(CACampaignType):
         return result
 
     def _get_province_representative(self, location, campaign_region=None):
-        body_name = self.provincial_legislatures.get(campaign_region)
-        reps = self.data_provider.get_representatives(location, repr_set=body_name)
+        legislature = self.provincial_legislatures.get(campaign_region)
+        reps = self.data_provider.get_representatives(location, legislature['body'])
+        filtered = self._filter_representatives(reps, legislature['office'])
         return (r['cache_key'] for r in filtered)
+
+    def _filter_representatives(self, representatives, elected_office="MLA", district_name=None):
+        for key in representatives:
+            rep = self.data_provider.cache_get(key, {})
+            correct_office = rep['elected_office'].upper() == elected_office
+            in_region = district_name is None or rep['district_name'].upper() == district_name.upper()
+            if correct_office and in_region:
+                yield rep
 
 class CADataProvider(DataProvider):
     country_name = "Canada"
@@ -185,12 +194,13 @@ class CADataProvider(DataProvider):
         return represent.postcode(code=postcode)
 
 
-    def get_representatives(self, location):
+    def get_representatives(self, location, body_name='house-of-commons'):
         if not location.latitude and location.longitude:
             raise LocationError('CADataProvider.get_representatives requires location with lat/lon')
 
         point = "{},{}".format(location.latitude, location.longitude)
-        reps = represent.representative(point=point)  # add throttle=False here to avoid rate limits
+        reps = represent.representative(point=point, repr_set=body_name)
+        # add throttle=False here to avoid rate limits
 
         # calculate keys and cache responses
         keys = []

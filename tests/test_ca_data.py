@@ -26,6 +26,12 @@ class TestData(BaseTestCase):
             campaign_subtype='lower',
             target_ordering='in-order',
             locate_by='address')
+        self.PROVINCE_CAMPAIGN = Campaign(
+            country_code='ca',
+            campaign_type='province',
+            campaign_state='QC',
+            campaign_subtype='lower',
+            locate_by='address')
 
         # well, really montreal
         self.mock_location = Location('North Pole', (45.500577, -73.567427),
@@ -48,3 +54,11 @@ class TestData(BaseTestCase):
         mp = self.ca_data.cache_get(keys[0])
         self.assertEqual(mp['elected_office'], 'MP')
         self.assertEqual(mp['representative_set_name'], 'House of Commons')
+
+    def test_locate_targets_province_quebec(self):
+        keys = locate_targets(self.mock_location, self.PROVINCE_CAMPAIGN, self.mock_cache)
+        self.assertEqual(len(keys), 1)
+        mha = self.ca_data.cache_get(keys[0])
+        self.assertEqual(mha['elected_office'], 'MNA')
+        # compare on the url, not the representative_set_name, to avoid unicode comparison issues
+        self.assertEqual(mha['related']['representative_set_url'], '/representative-sets/quebec-assemblee-nationale/')
