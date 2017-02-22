@@ -44,34 +44,21 @@ class CACampaignType_Parliament(CACampaignType):
     type_name = "Parliament"
 
     subtypes = [
-        #('both', _("Both Bodies")),
-        #('upper', _("Senate")),
         ('lower', _("House of Commons"))
     ]
     target_orders = [
-        #('upper-first', _("Senate First")),
         ('lower-first', _("House of Commons"))
     ]
 
     def all_targets(self, location, campaign_region=None):
         return {
-            #'upper': self._get_senator(location),
             'lower': self._get_member_of_parliament(location)
         }
 
     def sort_targets(self, targets, subtype, order):
         result = []
 
-        if subtype == 'both':
-            if order == 'upper-first':
-                result.extend(targets.get('upper'))
-                result.extend(targets.get('lower'))
-            else:
-                result.extend(targets.get('lower'))
-                result.extend(targets.get('upper'))
-        elif subtype == 'upper':
-            result.extend(targets.get('upper'))
-        elif subtype == 'lower':
+        if subtype == 'lower':
             result.extend(targets.get('lower'))
 
         return result
@@ -94,7 +81,6 @@ class CACampaignType_Province(CACampaignType):
     type_name = "Province"
 
     subtypes = [
-        ('exec', _("Premier")),
         ('lower', _("Legislature"))
     ]
     target_orders = [
@@ -135,7 +121,6 @@ class CACampaignType_Province(CACampaignType):
 
     def all_targets(self, location, campaign_region=None):
         return {
-            'exec': self._get_state_governor(location, campaign_region),
             'lower': self._get_province_representative(location, campaign_region),
         }
 
@@ -146,9 +131,6 @@ class CACampaignType_Province(CACampaignType):
             result.extend(targets.get('lower'))
 
         return result
-
-    def _get_province_executive(self, location, campaign_region=None):
-        return self.data_provider._get_province_executive(location)
 
     def _get_province_representative(self, location, campaign_region=None):
         body_name = self.provincial_legislatures.get(campaign_region)
