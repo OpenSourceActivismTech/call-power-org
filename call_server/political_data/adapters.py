@@ -63,8 +63,7 @@ class OpenNorthAdapter(object):
     def adapt(self, data):
         mapped = {}
         mapped['name'] = '{first_name} {last_name}'.format(**data)
-        if data['elected_office'] == "MP":
-            mapped['title'] = "MP"
+        mapped['title'] = data['elected_office']
         if type(data['offices']) == list and 'tel' in data['offices'][0]:
             mapped['number'] = data['offices'][0]['tel']
         else:

@@ -4,7 +4,7 @@ import represent
 from . import DataProvider, CampaignType
 
 from ..geocode import Geocoder
-from ..constants import CA_PROVINCES
+from ..constants import CA_PROVINCE_ABBR_DICT
 from ...campaign.constants import (LOCATION_POSTAL, LOCATION_ADDRESS, LOCATION_LATLON)
 
 import random
@@ -95,19 +95,36 @@ class CACampaignType_Province(CACampaignType):
 
     subtypes = [
         ('exec', _("Premier")),
-        # ('both', _("Legislature - Both Bodies")),
-        # ('upper', _("Legislature - Upper Body")),
-        ('lower', _("Legislature - Lower Body"))
+        ('lower', _("Legislature"))
     ]
     target_orders = [
-        # ('shuffle', _("Shuffle")),
-        # ('upper-first', _("Upper First")),
-        ('lower-first', _("Lower First"))
+        ('lower-first', _("Legislature"))
     ]
+
+    # as available at http://represent.opennorth.ca/data/
+    provincial_legislatures = {
+        'AB': 'alberta-legislature',
+        'BC': 'bc-legislature',
+        'MB': 'manitoba-legislature',
+        'NB': 'new-brunswick-legislature',
+        'NL': 'newfoundland-labrador-legislature',
+        #'NT': 'Northwest Territories',
+        'NS': 'nova-scotia-legislature',
+        #'NU': 'Nunavut',
+        'ON': 'ontario-legislature',
+        'PE': 'pei-legislature',
+        'QC': 'quebec-assemblee-nationale',
+        'SK': 'saskatchewan-legislature',
+        #'YT': 'Yukon',
+   }
+   
 
     @property
     def region_choices(self):
-        return CA_PROVINCES
+        province_choices = {'': ''}
+        for abbr in self.provincial_legislatures:
+            province_choices[abbr] = CA_PROVINCE_ABBR_DICT.get(abbr)
+        return province_choices
 
     def get_subtype_display(self, subtype, campaign_region=None):
         display = super(CACampaignType_Province, self).get_subtype_display(subtype, campaign_region)
@@ -125,20 +142,8 @@ class CACampaignType_Province(CACampaignType):
     def sort_targets(self, targets, subtype, order):
         result = []
 
-        if subtype == 'both':
-            if order == 'upper-first':
-                result.extend(targets.get('upper'))
-                result.extend(targets.get('lower'))
-            else:
-                result.extend(targets.get('lower'))
-                result.extend(targets.get('upper'))
-        elif subtype == 'upper':
-            result.extend(targets.get('upper'))
-        elif subtype == 'lower':
+        if subtype == 'lower':
             result.extend(targets.get('lower'))
-
-        if order == 'shuffle':
-            random.shuffle(result)
 
         return result
 
@@ -146,19 +151,9 @@ class CACampaignType_Province(CACampaignType):
         return self.data_provider._get_province_executive(location)
 
     def _get_province_representative(self, location, campaign_region=None):
-        reps = self.data_provider.get_representatives(location)
-        # TODO, check "MNA" vs "MLA"
-        filtered = self._filter_representatives(reps, "MLA", campaign_region)
+        body_name = self.provincial_legislatures.get(campaign_region)
+        reps = self.data_provider.get_representatives(location, repr_set=body_name)
         return (r['cache_key'] for r in filtered)
-
-    def _filter_representatives(self, representatives, elected_office="MP", campaign_region=None):
-        for key in representatives:
-            rep = self.data_provider.cache_get(key, {})
-            correct_office = rep['elected_office'].upper() == elected_office
-            in_region = campaign_region is None or rep['district_name'].upper() == campaign_region.upper()
-            if correct_office and in_region:
-                yield rep
-
 
 class CADataProvider(DataProvider):
     country_name = "Canada"
