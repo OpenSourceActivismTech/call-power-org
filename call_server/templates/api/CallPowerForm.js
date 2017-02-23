@@ -22,7 +22,11 @@ var CallPowerForm = function (formSelector, $) {
     var setting = CallPowerOptions[option];
     // accept jquery selectors for form and fields
     var selectorFields = ['form', 'locationField', 'phoneField'];
-    this[option] = (selectorFields[option] && typeof setting === 'string') ? $(setting) : setting;
+    if ($.inArray(option, selectorFields) != -1 && typeof setting === 'string') {
+      this[option] = $(setting);
+    } else { 
+      this[option] = setting;
+    }
   }
 
   this.form.on("submit", $.proxy(this.makeCall, this));
