@@ -90,7 +90,8 @@ CallPowerForm.prototype = function($) {
     }
 
     // run custom js function 
-    if(this.customJS !== undefined) { eval(this.customJS); }
+    if(typeof this.customJS === 'string' ) { eval(this.customJS); }
+    else if (typeof this.customJS === 'function') { this.customJS(); }
 
     return true;
   };
