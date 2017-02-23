@@ -2,7 +2,7 @@
   * CallPowerForm.js
   * Connects embedded action form to CallPower campaign
   * Requires jQuery >= 1.7.0
-  *    proxy (1.4), deferred (1.5), on (1.7)
+  *    proxy (1.4), deferred (1.5), promises (1.6), on (1.7)
   *
   * Displays call script in overlay or by replacing form
   * Override functions onSuccess or onError in CallPowerOptions
@@ -29,7 +29,8 @@ var CallPowerForm = function (formSelector, $) {
     }
   }
 
-  this.form.on("submit", $.proxy(this.makeCall, this));
+  // bind our submit event to makeCall
+  this.form.on("submit.CallPower", $.proxy(this.makeCall, this));
   // include custom css
   if(this.customCSS !== undefined) { $('head').append('<link rel="stylesheet" href="'+this.customCSS+'" />'); }
 };
@@ -113,11 +114,6 @@ CallPowerForm.prototype = function($) {
     // stop default form submit event
     if (event !== undefined) { event.preventDefault(); }
 
-    options = options || {};
-    if (options.call_started) {
-      return true;
-    }
-
     if (this.locationField.length && !this.location()) {
       return this.onError(this.locationField, 'Invalid location');
     }
@@ -132,14 +128,17 @@ CallPowerForm.prototype = function($) {
         userLocation: this.location(),
         userPhone: this.phone(),
         userCountry: this.country()
-      },
-      success: $.proxy(this.onSuccess, this),
-      error: $.proxy(this.onError, this, this.form, 'Please fill out the form completely')
-    }).then(window.setTimeout(function() {
-      // re-trigger event to run without this callback
-      $(event.currentTarget).trigger(event.type, { 'call_started': true });
-      // after optional delay
-    }, this.submitDelay || 0)).fail($.proxy(this.onError, this, this.form, 'Sorry, there was an error making the call'));
+      }
+    })
+    .done($.proxy(this.onSuccess, this))
+    .fail($.proxy(this.onError, this, this.form, 'Please fill out the form completely'))
+    .then(function() {
+      // turn off our submit event
+      this.form.off('submit.CallPower');
+      // re-trigger original submit event after optional delay
+      window.setTimeout(function() { this.form.triggerAll('submit'); }, this.submitDelay || 0);
+    })
+    .fail($.proxy(this.onError, this, this.form, 'Sorry, there was an error making the call'));
   };
 
   // public method interface
