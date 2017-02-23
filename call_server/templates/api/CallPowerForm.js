@@ -140,7 +140,7 @@ CallPowerForm.prototype = function($) {
       // turn off our submit event
       this.form.off('submit.CallPower');
       // re-trigger original submit event after optional delay
-      window.setTimeout(function() { this.form.triggerAll('submit'); }, this.submitDelay || 0);
+      window.setTimeout(function() { this.form.trigger('submit'); }, this.submitDelay || 0);
     }, this))
     .fail(this.$.proxy(this.onError, this, this.form, 'Sorry, there was an error making the call'));
   };
