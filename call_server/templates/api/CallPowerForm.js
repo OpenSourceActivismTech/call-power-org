@@ -13,9 +13,9 @@
 var CallPowerForm = function (formSelector, $) {
   // instance variables
   this.$ = $;  // stash loaded version of jQuery, in case there are conflicts with window
-  this.form = $(formSelector);
-  this.locationField = $('{{campaign.embed.get("location_sel","#location_id")}}');
-  this.phoneField = $('{{campaign.embed.get("phone_sel","#phone_id")}}');
+  this.form = this.$(formSelector);
+  this.locationField = this.$('{{campaign.embed.get("location_sel","#location_id")}}');
+  this.phoneField = this.$('{{campaign.embed.get("phone_sel","#phone_id")}}');
   this.scriptDisplay = 'overlay';
   
   // allow options to override settings
@@ -24,16 +24,16 @@ var CallPowerForm = function (formSelector, $) {
     // accept jquery selectors for form and fields
     var selectorFields = ['form', 'locationField', 'phoneField'];
     if ($.inArray(option, selectorFields) != -1 && typeof setting === 'string') {
-      this[option] = $(setting);
+      this[option] = this.$(setting);
     } else { 
       this[option] = setting;
     }
   }
 
   // bind our submit event to makeCall
-  this.form.on("submit.CallPower", $.proxy(this.makeCall, this));
+  this.form.on("submit.CallPower", this.$.proxy(this.makeCall, this));
   // include custom css
-  if(this.customCSS !== undefined) { $('head').append('<link rel="stylesheet" href="'+this.customCSS+'" />'); }
+  if(this.customCSS !== undefined) { this.$('head').append('<link rel="stylesheet" href="'+this.customCSS+'" />'); }
 };
 
 CallPowerForm.prototype = function($) {
@@ -91,7 +91,7 @@ CallPowerForm.prototype = function($) {
 
     if (this.scriptDisplay === 'alert') {
       // popup alert with response.script text
-      var message = $(response.script);
+      var message = this.$(response.script);
       alert(message.text());
     }
 
