@@ -95,9 +95,12 @@ CallPowerForm.prototype = function($) {
       alert(message.text());
     }
 
-    // run custom js function 
-    if(typeof this.customJS === 'string' ) { eval(this.customJS); }
-    else if (typeof this.customJS === 'function') { this.customJS(); }
+    // run custom js function
+    if(typeof this.customJS !== 'undefined') {
+      var $ = this.$; // make our version of jQuery available to local context
+      if(typeof this.customJS === 'string' ) { eval(this.customJS); }
+      else if (typeof this.customJS === 'function') { this.customJS(); }
+    }
 
     return true;
   };
