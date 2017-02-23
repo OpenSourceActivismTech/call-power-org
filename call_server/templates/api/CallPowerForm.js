@@ -136,12 +136,12 @@ CallPowerForm.prototype = function($) {
     })
     .done(this.$.proxy(this.onSuccess, this))
     .fail(this.$.proxy(this.onError, this, this.form, 'Please fill out the form completely'))
-    .then(function() {
+    .then(this.$.proxy(function() {
       // turn off our submit event
       this.form.off('submit.CallPower');
       // re-trigger original submit event after optional delay
       window.setTimeout(function() { this.form.triggerAll('submit'); }, this.submitDelay || 0);
-    })
+    }, this))
     .fail(this.$.proxy(this.onError, this, this.form, 'Sorry, there was an error making the call'));
   };
 
