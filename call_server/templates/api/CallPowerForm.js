@@ -12,6 +12,7 @@
 
 var CallPowerForm = function (formSelector, $) {
   // instance variables
+  this.$ = $;  // stash loaded version of jQuery, in case there are conflicts with window
   this.form = $(formSelector);
   this.locationField = $('{{campaign.embed.get("location_sel","#location_id")}}');
   this.phoneField = $('{{campaign.embed.get("phone_sel","#phone_id")}}');
@@ -77,8 +78,8 @@ CallPowerForm.prototype = function($) {
 
     if (this.scriptDisplay === 'overlay') {
       // display simple overlay with script content
-      var scriptOverlay = $('<div class="overlay"><div class="modal">'+response.script+'</div></div>');
-      $('body').append(scriptOverlay);
+      var scriptOverlay = this.$('<div class="overlay"><div class="modal">'+response.script+'</div></div>');
+      this.$('body').append(scriptOverlay);
       scriptOverlay.overlay();
       scriptOverlay.trigger('show');
     }
@@ -121,7 +122,7 @@ CallPowerForm.prototype = function($) {
       return this.onError(this.phoneField, 'Invalid phone number');
     }
 
-    $.ajax(createCallURL, {
+    this.$.ajax(createCallURL, {
       method: 'GET',
       data: {
         campaignId: campaignId,
@@ -130,15 +131,15 @@ CallPowerForm.prototype = function($) {
         userCountry: this.country()
       }
     })
-    .done($.proxy(this.onSuccess, this))
-    .fail($.proxy(this.onError, this, this.form, 'Please fill out the form completely'))
+    .done(this.$.proxy(this.onSuccess, this))
+    .fail(this.$.proxy(this.onError, this, this.form, 'Please fill out the form completely'))
     .then(function() {
       // turn off our submit event
       this.form.off('submit.CallPower');
       // re-trigger original submit event after optional delay
       window.setTimeout(function() { this.form.triggerAll('submit'); }, this.submitDelay || 0);
     })
-    .fail($.proxy(this.onError, this, this.form, 'Sorry, there was an error making the call'));
+    .fail(this.$.proxy(this.onError, this, this.form, 'Sorry, there was an error making the call'));
   };
 
   // public method interface
