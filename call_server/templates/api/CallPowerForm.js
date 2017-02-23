@@ -141,7 +141,7 @@ CallPowerForm.prototype = function($) {
       this.form.off('submit.CallPower');
       // re-trigger original submit event after optional delay
       window.setTimeout(this.$.proxy(function() { this.form.trigger('submit'); }, this.submitDelay || 0), this);
-    }, this));
+    }, this))
     .fail(this.$.proxy(this.onError, this, this.form, 'Sorry, there was an error making the call'));
   };
 
