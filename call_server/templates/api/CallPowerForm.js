@@ -144,15 +144,16 @@ CallPowerForm.prototype = function($) {
         // bind overlay hide to original form submit
         $('.overlay').on('hide', this.$.proxy(this.formSubmit, this));
       } else {
-        // re-trigger original submit event after optional delay
-        window.setTimeout(this.$.proxy(this.formSubmit, this), this.submitDelay || 0);
+        // re-trigger original form submit
+        this.formSubmit();
       }
     }, this))
     .fail(this.$.proxy(this.onError, this, this.form, 'Sorry, there was an error making the call'));
   };
 
   var formSubmit = function() {
-    this.form.trigger('submit');
+    // trigger form submit event after optional delay
+    window.setTimeout(this.$.proxy(function() { this.form.trigger('submit'); }, this), this.submitDelay || 0);
   };
 
   // public method interface
