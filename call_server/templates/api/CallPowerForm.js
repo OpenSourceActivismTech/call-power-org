@@ -139,12 +139,20 @@ CallPowerForm.prototype = function($) {
     .then(this.$.proxy(function() {
       // turn off our submit event
       this.form.off('submit.CallPower');
-      // re-trigger original submit event after optional delay
-      window.setTimeout(this.$.proxy(function() {
-        this.form.trigger('submit'); }, this),
-      this.submitDelay || 0);
+
+      if (this.scriptDisplay === 'overlay') {
+        // bind overlay hide to original form submit
+        $('.overlay').on('hide', this.formSubmit);
+      } else {
+        // re-trigger original submit event after optional delay
+        window.setTimeout(this.formSubmit, this.submitDelay || 0);
+      }
     }, this))
     .fail(this.$.proxy(this.onError, this, this.form, 'Sorry, there was an error making the call'));
+  };
+
+  var formSubmit = function() {
+    this.form.trigger('submit');
   };
 
   // public method interface
@@ -154,6 +162,7 @@ CallPowerForm.prototype = function($) {
     phone: cleanPhone,
     onError: onError,
     onSuccess: onSuccess,
-    makeCall: makeCall
+    makeCall: makeCall,
+    formSubmit: formSubmit
   };
 } (jQuery);
