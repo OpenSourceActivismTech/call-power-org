@@ -153,6 +153,9 @@ CallPowerForm.prototype = function($) {
       if (this.scriptDisplay === 'overlay') {
         // bind overlay hide to original form submit
         $('.overlay').on('hide', this.$.proxy(this.formSubmit, this));
+      } else if (this.scriptDisplay === 'replace') {
+        // original form still exists, but is hidden
+        // do nothing
       } else {
         // re-trigger original form submit
         this.formSubmit();
