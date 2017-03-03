@@ -23,7 +23,7 @@ csrf.exempt(call)
 call.errorhandler(400)(abortJSON)
 
 
-def play_or_say(r, audio, **kwds):
+def play_or_say(r, audio, voice='alice', lang='en', **kwargs):
     """
     Take twilio response and play or say message from an AudioRecording
     Can use mustache templates to render keyword arguments
@@ -31,23 +31,23 @@ def play_or_say(r, audio, **kwds):
 
     if audio:
         if (hasattr(audio, 'text_to_speech') and not (audio.text_to_speech == '')):
-            msg = pystache.render(audio.text_to_speech, kwds)
-            r.say(msg)
+            msg = pystache.render(audio.text_to_speech, kwargs)
+            r.say(msg, voice=voice, language=lang)
         elif (hasattr(audio, 'file_storage') and (audio.file_storage.fp is not None)):
             r.play(audio.file_url())
         elif type(audio) == str:
             try:
-                msg = pystache.render(audio, kwds)
-                r.say(msg)
+                msg = pystache.render(audio, kwargs)
+                r.say(msg, voice=voice, language=lang)
             except Exception:
                 current_app.logger.error('Unable to render pystache template %s' % audio)
-                r.say(audio)
+                r.say(audio, voice=voice, language=lang)
         else:
             current_app.logger.error('Unknown audio type %s' % type(audio))
     else:
         r.say('Error: no recording defined')
         current_app.logger.error('Missing audio recording')
-        current_app.logger.error(kwds)
+        current_app.logger.error(kwargs)
 
 
 def parse_params(r, inbound=False):

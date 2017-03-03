@@ -309,7 +309,10 @@ def campaign_count(campaign_id):
 # must be publicly accessible to post
 @api.route('/twilio/text-to-speech', methods=['POST'])
 def twilio_say():
+    voice = request.values.get('voice', 'alice')
+    lang = request.values.get('lang', 'en')
+
     resp = twilio.twiml.Response()
-    resp.say(request.values.get('text'))
+    resp.say(request.values.get('text'), voice=voice, language=lang)
     resp.hangup()
     return str(resp)

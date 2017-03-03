@@ -120,7 +120,11 @@ $(document).ready(function () {
             //connect twilio API to read text-to-speech
             twilio = Twilio.Device.setup(CallPower.Config.TWILIO_CAPABILITY, 
               {"rtc": (navigator.getUserMedia !== undefined), "debug":true});
-            twilio.connect({'text': recording });
+            twilio.connect({
+              'text': recording,
+              'voice': 'alice',
+              'lang': 'en',
+            });
             twilio.disconnect(self.onPlayEnded);
           } else {
             return false;
