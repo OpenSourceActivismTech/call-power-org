@@ -24,6 +24,7 @@ class Campaign(db.Model):
     campaign_type = db.Column(db.String(STRING_LEN))
     campaign_state = db.Column(db.String(STRING_LEN))
     campaign_subtype = db.Column(db.String(STRING_LEN))
+    campaign_language = db.Column(db.String(STRING_LEN))
 
     segment_by = db.Column(db.String(STRING_LEN))
     locate_by = db.Column(db.String(STRING_LEN))
@@ -97,6 +98,10 @@ class Campaign(db.Model):
             return campaign_data.get_subtype_display(self.campaign_subtype, campaign_region=self.campaign_state)
         else:
             return None
+
+    @property
+    def language_code(self):
+        return '{}-{}'.format('en', self.country_code.uppercase())
 
     def order_display(self):
         "Display method for this campaign's ordering"

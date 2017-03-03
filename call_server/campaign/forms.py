@@ -9,7 +9,7 @@ from wtforms_components import PhoneNumberField, read_only
 from wtforms.widgets import TextArea
 from wtforms.validators import Required, Optional, AnyOf, NumberRange, ValidationError
 
-from .constants import (SEGMENT_BY_CHOICES, LOCATION_CHOICES,
+from .constants import (SEGMENT_BY_CHOICES, LOCATION_CHOICES, LANGUAGE_CHOICES,
                         CAMPAIGN_STATUS, EMBED_FORM_CHOICES, EMBED_SCRIPT_DISPLAY)
 
 from .models import Campaign, TwilioPhoneNumber
@@ -27,6 +27,7 @@ class DisabledSelectField(SelectField):
 class CountryTypeForm(Form):
     campaign_country = SelectField(_('Country'), validators=[Required()])
     campaign_type = SelectField(_('Type'), validators=[Required()])
+    campaign_language = SelectField(_('Language'), [Required()], choices=LANGUAGE_CHOICES)
     submit = SubmitField(_('Next'))
 
 
