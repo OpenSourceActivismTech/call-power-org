@@ -209,6 +209,7 @@ def create():
         userCountry (defaults to US)
         userLocation (zipcode)
         targetIds
+        record (boolean)
     """
     # parse the info needed to make the call
     params, campaign = parse_params(request)
@@ -256,7 +257,8 @@ def create():
             url=url_for('call.connection', _external=True, **params),
             timeLimit=current_app.config['TWILIO_TIME_LIMIT'],
             timeout=current_app.config['TWILIO_TIMEOUT'],
-            status_callback=url_for("call.complete_status", _external=True, **params))
+            status_callback=url_for("call.complete_status", _external=True, **params),
+            record=request.values.get('record', False))
 
         if campaign.embed:
             script = campaign.embed.get('script')

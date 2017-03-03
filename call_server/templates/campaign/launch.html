@@ -45,6 +45,7 @@
                 <input class="form-control inline" id="{{form.test_call_location.id}}" name="{{form.test_call_location.id}}" type="text" {% if current_user.location%}value="{{current_user.location}}"{%endif%} placeholder="{{form.test_call_location.label.text}}">
                 {{form.test_call_country(class_="form-control inline", value=campaign_data.country_name)}}
                 <input class="form-control inline hidden" id="test_call_country_other" name="test_call_country_other" type="text" placeholder="ISO-2 Code" size="8" maxlength="2">
+                <label class="control-label"><input class="form-control inline" type="checkbox" name="record" id="test_call_record" value="true" /> Record</label>
                 <span class="help-block"></span>
             </div>
 

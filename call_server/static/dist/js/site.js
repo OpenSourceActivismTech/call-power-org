@@ -688,13 +688,19 @@ $(document).ready(function () {
 
       var location = $('#test_call_location').val();
       var country = $('#test_call_country').val() || $('#test_call_country_other').val();
+      var record = $('#test_call_record').val();
 
       $.ajax({
         url: '/call/create',
-        data: {campaignId: this.campaignId, userPhone: phone, userLocation: location, userCountry: country},
+        data: {campaignId: this.campaignId,
+          userPhone: phone,
+          userLocation: location,
+          userCountry: country,
+          record: record
+        },
         success: function(data) {
           alert('Calling you at '+$('#test_call_number').val()+' now!');
-          if (data.message == 'queued') {
+          if (data.call == 'queued') {
             statusIcon.removeClass('active').addClass('success');
             $('.form-group.test_call .controls .help-block').removeClass('has-error').text('');
           } else {
