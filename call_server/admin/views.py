@@ -63,7 +63,7 @@ def dashboard():
 
 @admin.route('/statistics')
 def statistics():
-    campaigns = Campaign.query.all()
+    campaigns = Campaign.query.order_by(desc(Campaign.status_code)).all()
     today = datetime.today()
     month_start = today.replace(day=1)  # first day of the current month
     next_month = today.replace(day=28) + timedelta(days=4)  # a day in next month (for months with 28,29,30,31)
