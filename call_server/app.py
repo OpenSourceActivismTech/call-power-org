@@ -107,6 +107,7 @@ def init_extensions(app):
     if app.config.get('DEBUG'):
         from flask_debugtoolbar import DebugToolbarExtension
         DebugToolbarExtension(app)
+        app.debug = True
 
 
 def register_blueprints(app, blueprints):
@@ -198,6 +199,10 @@ def context_processors(app):
     # json filter
     app.jinja_env.filters['json'] = json_markup
     app.jinja_env.add_extension('call_server.jinja.SelectiveHTMLCompress')
+
+    # cleanup template whitespace
+    app.jinja_env.trim_blocks = True
+    app.jinja_env.lstrip_blocks = True
 
 
 def instance_defaults(app):

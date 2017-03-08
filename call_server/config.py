@@ -124,7 +124,7 @@ class HerokuConfig(ProductionConfig):
 
 class DevelopmentConfig(DefaultConfig):
     DEBUG = True
-    DEBUG_INFO = False
+    DEBUG_INFO = True
     TESTING = False
 
     ENVIRONMENT = "Development"

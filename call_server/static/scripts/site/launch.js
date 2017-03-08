@@ -6,14 +6,14 @@
 
     events: {
       'click .test-call': 'makeTestCall',
-      'change #embed_type': 'toggleCustomEmbedPanel',
-      'blur #custom_embed_options input': 'updateEmbedCode',
+      'change #embed_type': 'toggleEmbedPanel',
+      'blur #embed_options input': 'updateEmbedCode',
     },
 
     initialize: function() {
       this.campaignId = $('#campaignId').val();
       $('.readonly').attr('readonly', 'readonly');
-      this.toggleCustomEmbedPanel();
+      this.toggleEmbedPanel();
     },
 
     makeTestCall: function(event) {
@@ -53,7 +53,7 @@
       });
     },
 
-    toggleCustomEmbedPanel: function(event) {
+    toggleEmbedPanel: function(event) {
       var formType = $('#embed_type').val();
       if (formType) {
         $('.form-group.embed_code').removeClass('hidden');
@@ -62,16 +62,16 @@
       }
 
       if (formType === 'custom' || formType === 'iframe') {
-        $('#custom_embed_options').collapse('show');
+        $('#embed_options').collapse('show');
       } else {
-        $('#custom_embed_options').collapse('hide');
+        $('#embed_options').collapse('hide');
       }
       if (formType === 'iframe') {
-        $('#custom_embed_options h3').text('iFrame Embed Options');
-        $('#custom_embed_options .form-group').hide().filter('.iframe').show();
+        $('#embed_options h3').text('iFrame Embed Options');
+        $('#embed_options .form-group').hide().filter('.iframe').show();
       } else {
-        $('#custom_embed_options h3').text('Custom Embed Options');
-        $('#custom_embed_options .form-group').show();
+        $('#embed_options h3').text('Javascript Embed Options');
+        $('#embed_options .form-group').show();
       }
       this.updateEmbedCode();
     },
