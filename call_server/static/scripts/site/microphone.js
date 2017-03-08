@@ -352,7 +352,7 @@
           },
           error: function(xhr, status, error) {
             console.error(status, error);
-            window.flashMessage(response.errors, 'error');
+            window.flashMessage(error, 'error');
           }
         });
         this.delegateEvents(); // re-bind the submit handler
