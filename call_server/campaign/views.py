@@ -118,12 +118,17 @@ def form(campaign_id=None):
             flash('Campaign updated.', 'success')
         else:
             flash('Campaign created.', 'success')
-        return redirect(url_for('campaign.audio', campaign_id=campaign.id))
+
+        if form.submit_skip_audio.data:
+            return redirect(url_for('campaign.launch', campaign_id=campaign.id))
+        else:
+            return redirect(url_for('campaign.audio', campaign_id=campaign.id))
 
     return render_template('campaign/form.html', form=form, edit=edit, campaign_id=campaign_id,
                            descriptions=current_app.config.CAMPAIGN_FIELD_DESCRIPTIONS,
                            CAMPAIGN_NESTED_CHOICES=CAMPAIGN_NESTED_CHOICES,
-                           CUSTOM_CAMPAIGN_CHOICES=CUSTOM_CAMPAIGN_CHOICES)
+                           CUSTOM_CAMPAIGN_CHOICES=CUSTOM_CAMPAIGN_CHOICES,
+                           campaign_has_audio=campaign.has_audio())
 
 
 @campaign.route('/<int:campaign_id>/copy', methods=['GET', 'POST'])

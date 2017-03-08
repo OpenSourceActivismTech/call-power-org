@@ -52,6 +52,7 @@ class CampaignForm(Form):
     allow_call_in = BooleanField(_('Allow Call In'))
 
     submit = SubmitField(_('Edit Audio'))
+    submit_skip_audio = SubmitField(_('Save and Test'))
 
     def validate(self):
         # check default validation
