@@ -87,16 +87,33 @@ $(document).ready(function () {
     onRecord: function(event) {
       event.preventDefault();
 
+
       // pull modal info from related fields
       var inputGroup = $(event.target).parents('.input-group');
       var modal = { name: inputGroup.prev('label').text(),
                     key: inputGroup.prev('label').attr('for'),
                     description: inputGroup.find('.description .help-inline').text(),
                     example_text: inputGroup.find('.description .example-text').text(),
-                    campaign_id: this.campaign_id
+                    campaign_id: this.campaign_id,
                   };
-      this.microphoneView = new CallPower.Views.MicrophoneModal();
-      this.microphoneView.render(modal);
+      // and api
+      var self = this;
+      $.getJSON('/api/campaign/'+this.campaign_id,
+          function(data) {
+            var recording = data.audio_msgs[modal.key];
+
+            if (recording === undefined) {
+              return false;
+            }
+            if (recording.substring(0,4) == 'http') {
+              modal.filename = recording;
+            } else {
+              modal.text_to_speech = recording;
+          }
+        }).then(function() {
+          self.microphoneView = new CallPower.Views.MicrophoneModal();
+          self.microphoneView.render(modal);
+        });
     },
 
     onPlay: function(event) {
