@@ -79,7 +79,7 @@
       <p class="text-muted"><span class="navbar-left">
       <a href="https://www.gnu.org/licenses/agpl.html" target="_blank">&copy; AGPL</a> 2015-{{now.year}}
       </span>
-      <span class="navbar-right">v{{version}}</span></footer>
+      {% if version %}<span class="navbar-right">v{{version}}</span>{% endif %}
       </p>
     </div>
     </footer>

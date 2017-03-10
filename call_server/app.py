@@ -206,6 +206,8 @@ def context_processors(app):
         version = os.environ.get('VERSION')
         if not version:
             version = app.config.get('VERSION')
+        if not version:
+            version = os.environ.get('HEROKU_SLUG_DESCRIPTION')
         return {'version': version}
 
     # json filter
