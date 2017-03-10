@@ -75,6 +75,7 @@ $(document).ready(function () {
       });
 
       this.campaign_id = $('input[name="campaign_id"]').val();
+      this.campaign_language = $('input[name="campaign_language"]').val();
 
       $('audio', this.el).on('ended', this.onPlayEnded);
       _.bindAll(this, 'onPlayEnded');
@@ -89,7 +90,8 @@ $(document).ready(function () {
                     key: inputGroup.prev('label').attr('for'),
                     description: inputGroup.find('.description .help-inline').text(),
                     example_text: inputGroup.find('.description .example-text').text(),
-                    campaign_id: this.campaign_id
+                    campaign_id: this.campaign_id,
+                    campaign_language: this.campaign_language,
                   };
       this.microphoneView = new CallPower.Views.MicrophoneModal();
       this.microphoneView.render(modal);
@@ -123,7 +125,7 @@ $(document).ready(function () {
             twilio.connect({
               'text': recording,
               'voice': 'alice',
-              'lang': 'en',
+              'lang': self.campaign_language,
             });
             twilio.disconnect(self.onPlayEnded);
           } else {

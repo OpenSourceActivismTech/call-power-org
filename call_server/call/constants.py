@@ -12,3 +12,33 @@ TWILIO_CALL_STATUS = (
     'unknown'       # Not an official twilio status, but our default before we get one
 )
 # from https://www.twilio.com/docs/api/twiml/twilio_request#request-parameters-call-status
+
+TWILIO_TTS_LANGUAGES = (
+	'da-DK',
+	'de-DE',
+	'en-AU',
+	'en-CA',
+	'en-GB',
+	'en-IN',
+	'en-US',
+	'ca-ES',
+	'es-ES',
+	'es-MX',
+	'fi-FI',
+	'fr-CA',
+	'fr-FR',
+	'it-IT',
+	'ja-JP',
+	'ko-KR',
+	'nb-NO',
+	'nl-NL',
+	'pl-PL',
+	'pt-BR',
+	'pt-PT',
+	'ru-RU',
+	'sv-SE',
+	'zh-CN',
+	'zh-HK',
+	'zh-TW'
+)
+# from https://www.twilio.com/docs/api/twiml/say#attributes-alice

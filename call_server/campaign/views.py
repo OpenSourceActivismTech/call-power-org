@@ -77,6 +77,7 @@ def country_type(campaign_id=None):
         if campaign and country_code and campaign_type:
             campaign.country_code = country_code
             campaign.campaign_type = campaign_type
+            campaign.campaign_language = form.campaign_language.data
             db.session.add(campaign)
             db.session.commit()
             return redirect(

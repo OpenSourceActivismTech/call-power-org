@@ -11,6 +11,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from ..extensions import csrf, db
 
 from .models import Call, Session
+from .constants import TWILIO_TTS_LANGUAGES
 from ..campaign.constants import LOCATION_POSTAL, LOCATION_DISTRICT
 from ..campaign.models import Campaign, Target
 from ..political_data.lookup import locate_targets
@@ -30,6 +31,13 @@ def play_or_say(r, audio, voice='alice', lang='en-US', **kwargs):
     """
 
     if audio:
+        # check to ensure lang is in list of valid locales
+        if lang not in TWILIO_TTS_LANGUAGES:
+            if '-' in lang:
+                lang, country = lang.split('-')
+            else:
+                lang = 'en'
+
         if (hasattr(audio, 'text_to_speech') and not (audio.text_to_speech == '')):
             msg = pystache.render(audio.text_to_speech, kwargs)
             r.say(msg, voice=voice, language=lang)
@@ -39,7 +47,7 @@ def play_or_say(r, audio, voice='alice', lang='en-US', **kwargs):
             try:
                 msg = pystache.render(audio, kwargs)
                 r.say(msg, voice=voice, language=lang)
-            except Exception:
+            except pystache.common.PystacheError:
                 current_app.logger.error('Unable to render pystache template %s' % audio)
                 r.say(audio, voice=voice, language=lang)
         else:

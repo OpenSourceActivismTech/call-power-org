@@ -9,7 +9,7 @@ from ..extensions import db, cache
 from ..utils import convert_to_dict
 from ..political_data.adapters import adapt_to_target
 from ..political_data import get_country_data
-from .constants import (STRING_LEN, TWILIO_SID_LENGTH,
+from .constants import (STRING_LEN, TWILIO_SID_LENGTH, LANGUAGE_CHOICES,
                         CAMPAIGN_STATUS, STATUS_PAUSED, SEGMENT_BY_CHOICES, LOCATION_CHOICES)
 
 
@@ -101,7 +101,10 @@ class Campaign(db.Model):
 
     @property
     def language_code(self):
-        return '{}-{}'.format('en', self.country_code.uppercase())
+        return u"{}-{}".format(self.campaign_language.lower(), self.country_code.upper())
+
+    def language_display(self):
+        return dict(LANGUAGE_CHOICES).get(self.campaign_language, '?')
 
     def order_display(self):
         "Display method for this campaign's ordering"
