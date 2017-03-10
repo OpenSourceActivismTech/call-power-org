@@ -12,7 +12,7 @@ from ..extensions import csrf, db
 
 from .models import Call, Session
 from .constants import TWILIO_TTS_LANGUAGES
-from ..campaign.constants import LOCATION_POSTAL, LOCATION_DISTRICT
+from ..campaign.constants import LOCATION_POSTAL, LOCATION_DISTRICT, SEGMENT_BY_LOCATION
 from ..campaign.models import Campaign, Target
 from ..political_data.lookup import locate_targets
 
@@ -167,12 +167,16 @@ def make_calls(params, campaign):
     """
     resp = twilio.twiml.Response()
 
-    # check if campaign target_set specified
-    if not params['targetIds'] and campaign.target_set:
-        params['targetIds'] = [t.uid for t in campaign.target_set]
+    if not params['targetIds']:
+        # check if campaign target_set specified
+        if campaign.target_set:
+            params['targetIds'] = [t.uid for t in campaign.target_set]
+        elif campaign.segment_by == SEGMENT_BY_LOCATION:
+            # lookup targets for campaign type by segment, put in desired order
+            params['targetIds'] = locate_targets(params['userLocation'], campaign=campaign)
     else:
-        # lookup targets for campaign type by segment, put in desired order
-        params['targetIds'] = locate_targets(params['userLocation'], campaign=campaign)
+        # targetIds already set by /create
+        pass
 
     if not params['targetIds']:
         play_or_say(resp, campaign.audio('msg_invalid_location'),
@@ -306,7 +310,9 @@ def connection():
     if not params or not campaign:
         return abortJSON(404)
 
-    if campaign.locate_by in [LOCATION_POSTAL, LOCATION_DISTRICT] and not params['userLocation']:
+    if (campaign.segment_by == SEGMENT_BY_LOCATION and
+        campaign.locate_by in [LOCATION_POSTAL, LOCATION_DISTRICT] and
+        not params['userLocation']):
         return intro_location_gather(params, campaign)
     else:
         return intro_wait_human(params, campaign)
@@ -330,7 +336,7 @@ def incoming():
     # pull user phone from Twilio incoming request
     params['userPhone'] = request.values.get('From')
 
-    if campaign.locate_by in [LOCATION_POSTAL, LOCATION_DISTRICT]:
+    if campaign.segment_by == SEGMENT_BY_LOCATION and campaign.locate_by in [LOCATION_POSTAL, LOCATION_DISTRICT]:
         return intro_location_gather(params, campaign)
     else:
         return intro_wait_human(params, campaign)
@@ -394,7 +400,7 @@ def make_single():
             lang=campaign.language_code)
         return str(resp)
 
-    target_phone = current_target.number.e164  # use full E164 syntax here
+    
     play_or_say(resp, campaign.audio('msg_target_intro'),
         title=current_target.title,
         name=current_target.name,
@@ -406,11 +412,15 @@ def make_single():
 
     userPhone = PhoneNumber(params['userPhone'], params['userCountry'])
 
-    resp.dial(target_phone, callerId=userPhone.e164,
+    # sending a twiml.Number to dial init will not nest properly
+    # have to add it after creation
+    resp.dial(callerId=userPhone.e164,
               timeLimit=current_app.config['TWILIO_TIME_LIMIT'],
               timeout=current_app.config['TWILIO_TIMEOUT'], hangupOnStar=True,
-              action=url_for('call.complete', **params))
+              action=url_for('call.complete', **params)) \
+        .number(current_target.number.e164, sendDigits=current_target.number.extension)
 
+        
     return str(resp)
 
 
@@ -456,8 +466,10 @@ def complete():
     else:
         # call the next target
         params['call_index'] = i + 1  # increment the call counter
+        calls_left = len(params['targetIds']) - i - 1
 
         play_or_say(resp, campaign.audio('msg_between_calls'),
+            calls_left=calls_left,
             lang=campaign.language_code)
 
         resp.redirect(url_for('call.make_single', **params))

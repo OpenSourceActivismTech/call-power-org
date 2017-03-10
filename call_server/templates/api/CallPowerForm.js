@@ -2,7 +2,7 @@
   * CallPowerForm.js
   * Connects embedded action form to CallPower campaign
   * Requires jQuery >= 1.7.0
-  *    proxy (1.4), deferred (1.5), on (1.7)
+  *    proxy (1.4), deferred (1.5), promises (1.6), on (1.7)
   *
   * Displays call script in overlay or by replacing form
   * Override functions onSuccess or onError in CallPowerOptions
@@ -13,25 +13,28 @@
 // revealing module pattern
 var CallPowerForm = function (formSelector, $) {
   // instance variables
-  this.form = $(formSelector);
-  this.locationField = $('{{campaign.embed.get("location_sel","#location_id")}}');
-  this.phoneField = $('{{campaign.embed.get("phone_sel","#phone_id")}}');
+  this.$ = $;  // stash loaded version of jQuery, in case there are conflicts with window
+  this.form = this.$(formSelector);
+  this.locationField = this.$('{{campaign.embed.get("location_sel","#location_id")}}');
+  this.phoneField = this.$('{{campaign.embed.get("phone_sel","#phone_id")}}');
   this.scriptDisplay = 'overlay';
   
   // allow options to override settings
   for (var option in window.CallPowerOptions || []) {
     var setting = CallPowerOptions[option];
-    if ((option.toLowerCase().indexOf('field') > 0) && (typeof setting === 'string')) {
-      // accept jquery selectors for fields
-      this[option] = $(setting);
-    } else {
+    // accept jquery selectors for form and fields
+    var selectorFields = ['form', 'locationField', 'phoneField'];
+    if ($.inArray(option, selectorFields) != -1 && typeof setting === 'string') {
+      this[option] = this.$(setting);
+    } else { 
       this[option] = setting;
     }
   }
 
-  this.form.on("submit", $.proxy(this.makeCall, this));
+  // bind our submit event to makeCall
+  this.form.on("submit.CallPower", this.$.proxy(this.makeCall, this));
   // include custom css
-  if(this.customCSS !== undefined) { $('head').append('<link rel="stylesheet" href="'+this.customCSS+'" />'); }
+  if(this.customCSS !== undefined) { this.$('head').append('<link rel="stylesheet" href="'+this.customCSS+'" />'); }
 };
 
 CallPowerForm.prototype = function($) {
@@ -118,8 +121,8 @@ CallPowerForm.prototype = function($) {
 
     if (this.scriptDisplay === 'overlay') {
       // display simple overlay with script content
-      var scriptOverlay = $('<div class="overlay"><div class="modal">'+response.script+'</div></div>');
-      $('body').append(scriptOverlay);
+      var scriptOverlay = this.$('<div class="overlay"><div class="modal">'+response.script+'</div></div>');
+      this.$('body').append(scriptOverlay);
       scriptOverlay.overlay();
       scriptOverlay.trigger('show');
     }
@@ -141,12 +144,21 @@ CallPowerForm.prototype = function($) {
 
     if (this.scriptDisplay === 'redirect') {
       // save response url to redirect after original form callback
-      // save to global namespace, because default event is run without this context
-      window.redirectAfter = response.redirect;
+      this.redirectAfter = response.redirect;
     }
 
-    // run custom js function 
-    if(this.customJS !== undefined) { eval(this.customJS); }
+    if (this.scriptDisplay === 'alert') {
+      // popup alert with response.script text
+      var message = this.$(response.script);
+      alert(message.text());
+    }
+
+    // run custom js function
+    if(typeof this.customJS !== 'undefined') {
+      var $ = this.$; // make our version of jQuery available to local context
+      if(typeof this.customJS === 'string' ) { eval(this.customJS); }
+      else if (typeof this.customJS === 'function') { this.customJS(); }
+    }
 
     return true;
   };
@@ -161,17 +173,8 @@ CallPowerForm.prototype = function($) {
   };
 
   var makeCall = function(event, options) {
-    options = options || {};
-    if (options.call_started) {
-      // redirect after original form submission is complete
-      if (window.redirectAfter) {
-        window.location.replace(this.redirectAfter);
-      }
-      return true;
-    } else {
-      // stop default form submit event
-      if (event !== undefined) { event.preventDefault(); }
-    }
+    // stop default form submit event
+    if (event !== undefined) { event.preventDefault(); }
 
     if (this.locationField.length && !this.location()) {
       return this.onError(this.locationField, 'Invalid location');
@@ -180,20 +183,42 @@ CallPowerForm.prototype = function($) {
       return this.onError(this.phoneField, 'Invalid phone number');
     }
 
-    $.ajax(createCallURL, {
+    this.$.ajax(createCallURL, {
       method: 'GET',
       data: {
         campaignId: campaignId,
         userLocation: this.location(),
         userPhone: this.phone(),
         userCountry: this.country()
-      },
-      success: $.proxy(this.onSuccess, this),
-      error: $.proxy(this.onError, this, this.form, 'Please fill out the form completely')
-    }).then(function() {
-      // re-trigger event to run without this callback
-      $(event.currentTarget).trigger(event.type, { 'call_started': true });
-    }).fail(this.onError);
+      }
+    })
+    .done(this.$.proxy(this.onSuccess, this))
+    .fail(this.$.proxy(this.onError, this, this.form, 'Please fill out the form completely'))
+    .then(this.$.proxy(function() {
+      // turn off our submit event
+      this.form.off('submit.CallPower');
+
+      // redirect after original form submission is complete
+      
+      if (this.scriptDisplay === 'overlay') {
+        // bind overlay hide to original form submit
+        $('.overlay').on('hide', this.$.proxy(this.formSubmit, this));
+      } else if (this.scriptDisplay === 'replace') {
+        // original form still exists, but is hidden
+        // do nothing
+      } else if (this.scriptDisplay === 'redirect' && this.redirectAfter) {
+          window.location.replace(this.redirectAfter);
+      } else {
+        // re-trigger original form submit
+        this.formSubmit();
+      }
+    }, this))
+    .fail(this.$.proxy(this.onError, this, this.form, 'Sorry, there was an error making the call'));
+  };
+
+  var formSubmit = function() {
+    // trigger form submit event after optional delay
+    window.setTimeout(this.$.proxy(function() { this.form.trigger('submit'); }, this), this.submitDelay || 0);
   };
 
   // public method interface
@@ -203,7 +228,8 @@ CallPowerForm.prototype = function($) {
     getPhone: simpleValidatePhone,
     onError: onError,
     onSuccess: onSuccess,
-    makeCall: makeCall
+    makeCall: makeCall,
+    formSubmit: formSubmit
   };
   // let these be overridden, but keep reference to original functions
   public.country = public.getCountry;

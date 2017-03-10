@@ -64,6 +64,7 @@ class CampaignForm(Form):
     allow_call_in = BooleanField(_('Allow Call In'))
 
     submit = SubmitField(_('Edit Audio'))
+    submit_skip_audio = SubmitField(_('Save and Test'))
 
     def __init__(self, campaign_data, *args, **kwargs):
         super(CampaignForm, self).__init__(*args, **kwargs)
@@ -112,6 +113,7 @@ class CampaignAudioForm(Form):
 class AudioRecordingForm(Form):
     key = TextField(_('Key'), [Required()])
     file_storage = FileField(_('File'), [Optional()])
+    file_type = TextField(_('Type'), [Optional()])
     text_to_speech = FileField(_('Text to Speech'), [Optional()])
     description = TextField(_('Description'), [Optional()])
 

@@ -7,7 +7,7 @@
     events: {
       'change select#test_call_country': 'changeTestCallCountry',
       'click .test-call': 'makeTestCall',
-      'change #embed_type': 'toggleCustomEmbedPanel',
+      'change #embed_type': 'toggleEmbedPanel',
       'blur #custom_embed_options input': 'updateEmbedCode',
       'change #custom_embed_options select': 'updateEmbedCode',
       'change #embed_script_display': 'updateEmbedScriptDisplay',
@@ -16,7 +16,7 @@
     initialize: function() {
       this.campaignId = $('#campaignId').val();
       $('.readonly').attr('readonly', 'readonly');
-      this.toggleCustomEmbedPanel();
+      this.toggleEmbedPanel();
     },
 
     changeTestCallCountry: function() {
@@ -77,7 +77,7 @@
       });
     },
 
-    toggleCustomEmbedPanel: function(event) {
+    toggleEmbedPanel: function(event) {
       var formType = $('#embed_type').val();
       if (formType) {
         $('.form-group.embed_code').removeClass('hidden');
@@ -86,16 +86,16 @@
       }
 
       if (formType === 'custom' || formType === 'iframe') {
-        $('#custom_embed_options').collapse('show');
+        $('#embed_options').collapse('show');
       } else {
-        $('#custom_embed_options').collapse('hide');
+        $('#embed_options').collapse('hide');
       }
       if (formType === 'iframe') {
-        $('#custom_embed_options h3').text('iFrame Embed Options');
-        $('#custom_embed_options .form-group').hide().filter('.iframe').show();
+        $('#embed_options h3').text('iFrame Embed Options');
+        $('#embed_options .form-group').hide().filter('.iframe').show();
       } else {
-        $('#custom_embed_options h3').text('Custom Embed Options');
-        $('#custom_embed_options .form-group').show();
+        $('#embed_options h3').text('Javascript Embed Options');
+        $('#embed_options .form-group').show();
       }
 
       this.updateEmbedCode();
@@ -124,9 +124,9 @@
       var formType = $('#embed_type').val();
       var scriptDisplay = $('#embed_script_display').val();
       
-      $('#custom_embed_options .form-group.redirect').toggle(scriptDisplay === 'redirect');
-      $('#custom_embed_options .form-group.custom').toggle(scriptDisplay === 'custom');
-      $('#custom_embed_options .form-group.iframe').toggle(formType === 'iframe');
+      $('#embed_options .form-group.redirect').toggle(scriptDisplay === 'redirect');
+      $('#embed_options .form-group.custom').toggle(scriptDisplay === 'custom');
+      $('#embed_options .form-group.iframe').toggle(formType === 'iframe');
     },
 
   });

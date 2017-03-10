@@ -29,12 +29,13 @@ CAMPAIGN_STATUS = {
 EMBED_FORM_CHOICES = (
     ('', 'None'),
     ('iframe', 'iFrame'),
-    ('custom', 'Custom'),
+    ('custom', 'Javascript'),
 )
 
 EMBED_SCRIPT_DISPLAY = (
     ('', 'None'),
-    ('overlay', 'Show Overlay'),
+    ('overlay', 'Overlay'),
+    ('alert', 'Alert'),
     ('replace', 'Replace Form'),
     ('redirect', 'Redirect URL'),
     ('custom', 'Custom')
