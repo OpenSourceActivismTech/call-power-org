@@ -87,7 +87,6 @@ $(document).ready(function () {
     onRecord: function(event) {
       event.preventDefault();
 
-
       // pull modal info from related fields
       var inputGroup = $(event.target).parents('.input-group');
       var modal = { name: inputGroup.prev('label').text(),
@@ -160,12 +159,15 @@ $(document).ready(function () {
 
               button.children('.glyphicon').removeClass('glyphicon-play').addClass('glyphicon-pause');
               button.children('.text').html('Pause');
-            } else if (CallPower.Config.TWILIO_CAPABILITY) {
+            } else if (self.twilio) {
               console.log('twilio text-to-speech',recording);
               self.twilio.connect({'text': recording });
 
               button.children('.glyphicon').removeClass('glyphicon-play').addClass('glyphicon-bullhorn');
               button.children('.text').html('Speak');
+          } else {
+            button.addClass('disabled');
+            return false;
           }
         });
       }
@@ -179,7 +181,15 @@ $(document).ready(function () {
 
     setupTwilioClient: function(capability) {
       //connect twilio API to read text-to-speech
-      this.twilio = Twilio.Device.setup(capability, {"debug":false});
+      try {
+        this.twilio = Twilio.Device.setup(capability, {"debug":false});
+      } catch (e) {
+        console.error(e);
+        msg = 'Sorry, your browser does not support WebRTC, Text-to-Speech playback may not work.<br/>' +
+              'Check the list of compatible browsers at <a href="https://support.twilio.com/hc/en-us/articles/223180848-Which-browsers-support-WebRTC-">Twilio support</a>.';
+        window.flashMessage(msg, 'warning');
+        return false;
+      }
 
       this.twilio.incoming(function(connection) {
         connection.accept();
