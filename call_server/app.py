@@ -7,6 +7,7 @@ from flask_sslify import SSLify
 
 from utils import json_markup, OrderedDictYAMLLoader
 import yaml
+from datetime import datetime
 
 import config
 
@@ -195,6 +196,17 @@ def context_processors(app):
     @app.context_processor
     def inject_sunlight_key():
         return dict(SUNLIGHT_API_KEY=app.config.get('SUNLIGHT_API_KEY', ''))
+    
+    @app.context_processor
+    def inject_now():
+        return {'now': datetime.utcnow()}
+
+    @app.context_processor
+    def inject_version():
+        version = os.environ.get('VERSION')
+        if not version:
+            version = app.config.get('VERSION')
+        return {'version': version}
 
     # json filter
     app.jinja_env.filters['json'] = json_markup
