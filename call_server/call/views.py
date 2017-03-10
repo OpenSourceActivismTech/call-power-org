@@ -436,8 +436,10 @@ def complete():
     else:
         # call the next target
         params['call_index'] = i + 1  # increment the call counter
+        calls_left = len(params['targetIds']) - i - 1
 
-        play_or_say(resp, campaign.audio('msg_between_calls'))
+        play_or_say(resp, campaign.audio('msg_between_calls'),
+            calls_left=calls_left)
 
         resp.redirect(url_for('call.make_single', **params))
 
