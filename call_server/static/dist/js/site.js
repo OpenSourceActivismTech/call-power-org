@@ -69,6 +69,10 @@ $(document).ready(function () {
                        navigator.msGetUserMedia);
       window.URL = window.URL || window.webkitURL;
 
+      if (CallPower.Config.TWILIO_CAPABILITY) {
+        this.setupTwilioClient(CallPower.Config.TWILIO_CAPABILITY);
+      }
+
       // add required fields client-side
       _.each(this.requiredFields, function(f) {
         $('label[for='+f+']').addClass('required');
@@ -89,57 +93,129 @@ $(document).ready(function () {
                     key: inputGroup.prev('label').attr('for'),
                     description: inputGroup.find('.description .help-inline').text(),
                     example_text: inputGroup.find('.description .example-text').text(),
-                    campaign_id: this.campaign_id
+                    campaign_id: this.campaign_id,
                   };
-      this.microphoneView = new CallPower.Views.MicrophoneModal();
-      this.microphoneView.render(modal);
+      // and api
+      var self = this;
+      $.getJSON('/api/campaign/'+this.campaign_id,
+          function(data) {
+            var recording = data.audio_msgs[modal.key];
+
+            if (recording === undefined) {
+              return false;
+            }
+            if (recording.substring(0,4) == 'http') {
+              modal.filename = recording;
+            } else {
+              modal.text_to_speech = recording;
+          }
+        }).then(function() {
+          self.microphoneView = new CallPower.Views.MicrophoneModal();
+          self.microphoneView.render(modal);
+        });
     },
 
     onPlay: function(event) {
       event.preventDefault();
       
-      var button = $(event.target);
+      var button = $(event.currentTarget); //.closest('button.play');
       var inputGroup = button.parents('.input-group');
       var key = inputGroup.prev('label').attr('for');
-      var playback = button.children('audio');
+      var audio = button.children('audio')[0];
+      
+      if (audio.src) {
+        // has src url set, play/pause
 
-      var self = this;
-      $.getJSON('/api/campaign/'+self.campaign_id,
-        function(data) {
-          var recording = data.audio_msgs[key];
+        if (audio.duration > 0 && !audio.paused) {
+          // playing, pause
+          audio.pause();
 
-          if (recording === undefined) {
-            button.addClass('disabled');
-            return false;
-          }
-          if (recording.substring(0,4) == 'http') {
-            // play file url through <audio> object
-            playback.attr('src', data.audio_msgs[key]);
-            playback[0].play();
-          } else if (CallPower.Config.TWILIO_CAPABILITY) {
-            //connect twilio API to read text-to-speech
-            twilio = Twilio.Device.setup(CallPower.Config.TWILIO_CAPABILITY, 
-              {"rtc": (navigator.getUserMedia !== undefined), "debug":true});
-            twilio.connect({
-              'text': recording,
-              'voice': 'alice',
-              'lang': 'en',
-            });
-            twilio.disconnect(self.onPlayEnded);
-          } else {
-            return false;
-          }
+          button.children('.glyphicon').removeClass('glyphicon-pause').addClass('glyphicon-play');
+          button.children('.text').html('Play');
+          return false;
+        } else {
+          // paused, play
+          audio.play();
 
           button.children('.glyphicon').removeClass('glyphicon-play').addClass('glyphicon-pause');
           button.children('.text').html('Pause');
+          return false;
         }
-      );
+      } else {
+        // load src url from campaign
+        var self = this;
+        $.getJSON('/api/campaign/'+self.campaign_id,
+          function(data) {
+            var recording = data.audio_msgs[key];
+
+            if (recording === undefined) {
+              button.addClass('disabled');
+              return false;
+            }
+            if (recording.substring(0,4) == 'http') {
+              // play file url through <audio> object
+              audio.setAttribute('src', data.audio_msgs[key]);
+              audio.play();
+
+              button.children('.glyphicon').removeClass('glyphicon-play').addClass('glyphicon-pause');
+              button.children('.text').html('Pause');
+            } else if (self.twilio) {
+              console.log('twilio text-to-speech',recording);
+              self.twilio.connect({
+                'text': recording,
+                'voice': 'alice',
+                'lang': 'en',
+            });
+
+              button.children('.glyphicon').removeClass('glyphicon-play').addClass('glyphicon-bullhorn');
+              button.children('.text').html('Speak');
+          } else {
+            button.addClass('disabled');
+            return false;
+          }
+        });
+      }
     },
 
     onPlayEnded: function(event) {
       var button = $(event.target).parents('.btn');
       button.children('.glyphicon').removeClass('glyphicon-pause').addClass('glyphicon-play');
       button.children('.text').html('Play');
+    },
+
+    setupTwilioClient: function(capability) {
+      //connect twilio API to read text-to-speech
+      try {
+        this.twilio = Twilio.Device.setup(capability, {"debug":false});
+      } catch (e) {
+        console.error(e);
+        msg = 'Sorry, your browser does not support WebRTC, Text-to-Speech playback may not work.<br/>' +
+              'Check the list of compatible browsers at <a href="https://support.twilio.com/hc/en-us/articles/223180848-Which-browsers-support-WebRTC-">Twilio support</a>.';
+        window.flashMessage(msg, 'warning');
+        return false;
+      }
+
+      this.twilio.incoming(function(connection) {
+        connection.accept();
+        // do awesome ui stuff here
+        // $('#call-status').text("you're on a call!");
+      });
+      this.twilio.error(function(error) {
+        console.error(error);
+        var msg = 'Twilio error';
+        var level = 'warning'
+        if (error.info) {
+          msg = msg+': '+error.info.code+' '+error.info.message;
+        } else if (error.message) {
+          msg = msg + ': ' + error.message;
+          level = 'info'; // yes, this is very counterintuitive
+        }
+        window.flashMessage(msg, level);
+      });
+      this.twilio.connect(function(conn) {
+        console.log('Twilio connection', conn.status());
+      });
+      this.twilio.disconnect(this.onPlayEnded);
     },
 
     onVersion: function(event) {
@@ -648,7 +724,7 @@ $(document).ready(function () {
     events: {
       'change select#test_call_country': 'changeTestCallCountry',
       'click .test-call': 'makeTestCall',
-      'change #embed_type': 'toggleCustomEmbedPanel',
+      'change #embed_type': 'toggleEmbedPanel',
       'blur #custom_embed_options input': 'updateEmbedCode',
       'change #custom_embed_options select': 'updateEmbedCode',
       'change #embed_script_display': 'updateEmbedScriptDisplay',
@@ -657,7 +733,7 @@ $(document).ready(function () {
     initialize: function() {
       this.campaignId = $('#campaignId').val();
       $('.readonly').attr('readonly', 'readonly');
-      this.toggleCustomEmbedPanel();
+      this.toggleEmbedPanel();
     },
 
     changeTestCallCountry: function() {
@@ -718,7 +794,7 @@ $(document).ready(function () {
       });
     },
 
-    toggleCustomEmbedPanel: function(event) {
+    toggleEmbedPanel: function(event) {
       var formType = $('#embed_type').val();
       if (formType) {
         $('.form-group.embed_code').removeClass('hidden');
@@ -727,16 +803,16 @@ $(document).ready(function () {
       }
 
       if (formType === 'custom' || formType === 'iframe') {
-        $('#custom_embed_options').collapse('show');
+        $('#embed_options').collapse('show');
       } else {
-        $('#custom_embed_options').collapse('hide');
+        $('#embed_options').collapse('hide');
       }
       if (formType === 'iframe') {
-        $('#custom_embed_options h3').text('iFrame Embed Options');
-        $('#custom_embed_options .form-group').hide().filter('.iframe').show();
+        $('#embed_options h3').text('iFrame Embed Options');
+        $('#embed_options .form-group').hide().filter('.iframe').show();
       } else {
-        $('#custom_embed_options h3').text('Custom Embed Options');
-        $('#custom_embed_options .form-group').show();
+        $('#embed_options h3').text('Javascript Embed Options');
+        $('#embed_options .form-group').show();
       }
 
       this.updateEmbedCode();
@@ -765,9 +841,9 @@ $(document).ready(function () {
       var formType = $('#embed_type').val();
       var scriptDisplay = $('#embed_script_display').val();
       
-      $('#custom_embed_options .form-group.redirect').toggle(scriptDisplay === 'redirect');
-      $('#custom_embed_options .form-group.custom').toggle(scriptDisplay === 'custom');
-      $('#custom_embed_options .form-group.iframe').toggle(formType === 'iframe');
+      $('#embed_options .form-group.redirect').toggle(scriptDisplay === 'redirect');
+      $('#embed_options .form-group.custom').toggle(scriptDisplay === 'custom');
+      $('#embed_options .form-group.iframe').toggle(formType === 'iframe');
     },
 
   });
@@ -1163,8 +1239,13 @@ $(document).ready(function () {
       // create file from blob
       if (this.audioBlob) {
         formData.append('file_storage', this.audioBlob);
+        formData.append('file_type', 'mp3');
       } else if (this.filename) {
-        formData.append('file_storage', $('input[type="file"]')[0].files[0]);
+        var fileData = $('input[type="file"]')[0].files[0];
+        formData.append('file_storage', fileData);
+        
+        var fileType = fileData.name.split('.').pop(-1);
+        formData.append('file_type', fileType);
       }
 
       var self = this;
@@ -1199,7 +1280,7 @@ $(document).ready(function () {
           },
           error: function(xhr, status, error) {
             console.error(status, error);
-            window.flashMessage(response.errors, 'error');
+            window.flashMessage(error, 'error');
           }
         });
         this.delegateEvents(); // re-bind the submit handler

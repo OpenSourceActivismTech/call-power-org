@@ -23,6 +23,10 @@
                        navigator.msGetUserMedia);
       window.URL = window.URL || window.webkitURL;
 
+      if (CallPower.Config.TWILIO_CAPABILITY) {
+        this.setupTwilioClient(CallPower.Config.TWILIO_CAPABILITY);
+      }
+
       // add required fields client-side
       _.each(this.requiredFields, function(f) {
         $('label[for='+f+']').addClass('required');
@@ -43,57 +47,129 @@
                     key: inputGroup.prev('label').attr('for'),
                     description: inputGroup.find('.description .help-inline').text(),
                     example_text: inputGroup.find('.description .example-text').text(),
-                    campaign_id: this.campaign_id
+                    campaign_id: this.campaign_id,
                   };
-      this.microphoneView = new CallPower.Views.MicrophoneModal();
-      this.microphoneView.render(modal);
+      // and api
+      var self = this;
+      $.getJSON('/api/campaign/'+this.campaign_id,
+          function(data) {
+            var recording = data.audio_msgs[modal.key];
+
+            if (recording === undefined) {
+              return false;
+            }
+            if (recording.substring(0,4) == 'http') {
+              modal.filename = recording;
+            } else {
+              modal.text_to_speech = recording;
+          }
+        }).then(function() {
+          self.microphoneView = new CallPower.Views.MicrophoneModal();
+          self.microphoneView.render(modal);
+        });
     },
 
     onPlay: function(event) {
       event.preventDefault();
       
-      var button = $(event.target);
+      var button = $(event.currentTarget); //.closest('button.play');
       var inputGroup = button.parents('.input-group');
       var key = inputGroup.prev('label').attr('for');
-      var playback = button.children('audio');
+      var audio = button.children('audio')[0];
+      
+      if (audio.src) {
+        // has src url set, play/pause
 
-      var self = this;
-      $.getJSON('/api/campaign/'+self.campaign_id,
-        function(data) {
-          var recording = data.audio_msgs[key];
+        if (audio.duration > 0 && !audio.paused) {
+          // playing, pause
+          audio.pause();
 
-          if (recording === undefined) {
-            button.addClass('disabled');
-            return false;
-          }
-          if (recording.substring(0,4) == 'http') {
-            // play file url through <audio> object
-            playback.attr('src', data.audio_msgs[key]);
-            playback[0].play();
-          } else if (CallPower.Config.TWILIO_CAPABILITY) {
-            //connect twilio API to read text-to-speech
-            twilio = Twilio.Device.setup(CallPower.Config.TWILIO_CAPABILITY, 
-              {"rtc": (navigator.getUserMedia !== undefined), "debug":true});
-            twilio.connect({
-              'text': recording,
-              'voice': 'alice',
-              'lang': 'en',
-            });
-            twilio.disconnect(self.onPlayEnded);
-          } else {
-            return false;
-          }
+          button.children('.glyphicon').removeClass('glyphicon-pause').addClass('glyphicon-play');
+          button.children('.text').html('Play');
+          return false;
+        } else {
+          // paused, play
+          audio.play();
 
           button.children('.glyphicon').removeClass('glyphicon-play').addClass('glyphicon-pause');
           button.children('.text').html('Pause');
+          return false;
         }
-      );
+      } else {
+        // load src url from campaign
+        var self = this;
+        $.getJSON('/api/campaign/'+self.campaign_id,
+          function(data) {
+            var recording = data.audio_msgs[key];
+
+            if (recording === undefined) {
+              button.addClass('disabled');
+              return false;
+            }
+            if (recording.substring(0,4) == 'http') {
+              // play file url through <audio> object
+              audio.setAttribute('src', data.audio_msgs[key]);
+              audio.play();
+
+              button.children('.glyphicon').removeClass('glyphicon-play').addClass('glyphicon-pause');
+              button.children('.text').html('Pause');
+            } else if (self.twilio) {
+              console.log('twilio text-to-speech',recording);
+              self.twilio.connect({
+                'text': recording,
+                'voice': 'alice',
+                'lang': 'en',
+            });
+
+              button.children('.glyphicon').removeClass('glyphicon-play').addClass('glyphicon-bullhorn');
+              button.children('.text').html('Speak');
+          } else {
+            button.addClass('disabled');
+            return false;
+          }
+        });
+      }
     },
 
     onPlayEnded: function(event) {
       var button = $(event.target).parents('.btn');
       button.children('.glyphicon').removeClass('glyphicon-pause').addClass('glyphicon-play');
       button.children('.text').html('Play');
+    },
+
+    setupTwilioClient: function(capability) {
+      //connect twilio API to read text-to-speech
+      try {
+        this.twilio = Twilio.Device.setup(capability, {"debug":false});
+      } catch (e) {
+        console.error(e);
+        msg = 'Sorry, your browser does not support WebRTC, Text-to-Speech playback may not work.<br/>' +
+              'Check the list of compatible browsers at <a href="https://support.twilio.com/hc/en-us/articles/223180848-Which-browsers-support-WebRTC-">Twilio support</a>.';
+        window.flashMessage(msg, 'warning');
+        return false;
+      }
+
+      this.twilio.incoming(function(connection) {
+        connection.accept();
+        // do awesome ui stuff here
+        // $('#call-status').text("you're on a call!");
+      });
+      this.twilio.error(function(error) {
+        console.error(error);
+        var msg = 'Twilio error';
+        var level = 'warning'
+        if (error.info) {
+          msg = msg+': '+error.info.code+' '+error.info.message;
+        } else if (error.message) {
+          msg = msg + ': ' + error.message;
+          level = 'info'; // yes, this is very counterintuitive
+        }
+        window.flashMessage(msg, level);
+      });
+      this.twilio.connect(function(conn) {
+        console.log('Twilio connection', conn.status());
+      });
+      this.twilio.disconnect(this.onPlayEnded);
     },
 
     onVersion: function(event) {

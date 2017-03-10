@@ -130,6 +130,9 @@
             </div>
             <div class="pull-right">
                 {{render_button(form.submit, {'field':'btn-success', 'icon':'arrow-right'}) }}
+                {% if campaign_has_audio %}
+                 {{render_button(form.submit_skip_audio, {'field':'btn-primary', 'icon':'check'}) }}
+                {% endif %}
             </div>
         </div>
     </div>

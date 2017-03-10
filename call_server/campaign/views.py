@@ -177,11 +177,16 @@ def form(country_code=None, campaign_type=None, campaign_id=None):
             flash('Campaign updated.', 'success')
         else:
             flash('Campaign created.', 'success')
-        return redirect(url_for('campaign.audio', campaign_id=campaign.id))
 
-    return render_template('campaign/form.html', form=form, edit=edit, campaign_id=campaign.id,
-                           campaign_data=campaign_data,
-                           descriptions=current_app.config.CAMPAIGN_FIELD_DESCRIPTIONS)
+        if form.submit_skip_audio.data:
+            return redirect(url_for('campaign.launch', campaign_id=campaign.id))
+        else:
+            return redirect(url_for('campaign.audio', campaign_id=campaign.id))
+
+    return render_template('campaign/form.html', form=form, edit=edit, campaign_id=campaign_id,
+                           descriptions=current_app.config.CAMPAIGN_FIELD_DESCRIPTIONS,
+                           campaign_has_audio=campaign.has_audio())
+
 
 
 @campaign.route('/<int:campaign_id>/copy', methods=['GET', 'POST'])
@@ -246,8 +251,9 @@ def upload_recording(campaign_id):
 
         # save uploaded file to storage
         file_storage = request.files.get('file_storage')
+        file_type = form.data.get('file_type', 'mp3')
         if file_storage:
-            file_storage.filename = "campaign_{}_{}_{}.mp3".format(campaign.id, message_key, recording.version)
+            file_storage.filename = "campaign_{}_{}_{}.{}".format(campaign.id, message_key, recording.version, file_type)
             recording.file_storage = file_storage
         else:
             # dummy file storage

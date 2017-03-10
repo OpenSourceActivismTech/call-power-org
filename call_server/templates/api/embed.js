@@ -1,10 +1,10 @@
 {% include "api/CallPowerForm.js" with context %}
 
-var main = function() {
-  callPowerForm = new CallPowerForm('{{campaign.embed.get("form_sel","#call_form")}}', jQuery);
+var main = function($) {
+  callPowerForm = new CallPowerForm('{{campaign.embed.get("form_sel","#call_form")}}', $);
   {% if campaign.embed.get('script_display') == 'overlay' %}
-    jQuery.getScript("{{ url_for('static', filename='embed/overlay.js', _external=True) }}");
-    jQuery('head').append('<link rel="stylesheet" href="{{ url_for("static", filename="embed/overlay.css", _external=True) }}" />');
+    $.getScript("{{ url_for('static', filename='embed/overlay.js', _external=True) }}");
+    $('head').append('<link rel="stylesheet" href="{{ url_for("static", filename="embed/overlay.css", _external=True) }}" />');
   {% endif %}
 }
 
@@ -24,15 +24,41 @@ function versionCmp (a, b) {
     return 0;
 };
 
-if ((typeof jQuery == 'undefined') || (versionCmp(jQuery.fn.jquery, '1.7.0') < 0)) {
+// from https://css-tricks.com/snippets/jquery/load-jquery-only-if-not-present/
+function getScript(url, success) {
+    var script = document.createElement('script');
+    script.src = url;
+    
+    var head = document.getElementsByTagName('head')[0],
+    done = false;
+    
+    // Attach handlers for all browsers
+    script.onload = script.onreadystatechange = function() {
+      if (!done && (!this.readyState || this.readyState == 'loaded' || this.readyState == 'complete')) {
+      
+      done = true;
+      // callback function provided as param
+      success();
+      script.onload = script.onreadystatechange = null;
+      head.removeChild(script);
+    };
+  };  
+  head.appendChild(script);
+};
+
+if (typeof window.jQuery === 'undefined') {
   // load jQuery from cloudflare
-  var scriptElement = document.createElement("script");
-  scriptElement.src = '//cdnjs.cloudflare.com/ajax/libs/jquery/1.11.3/jquery.min.js';
-  scriptElement.type = "text/javascript";
-  var head = document.getElementsByTagName("head")[0] || document.documentElement;
-  head.appendChild(scriptElement);
-  scriptElement.onload = main;
+  getScript('//cdnjs.cloudflare.com/ajax/libs/jquery/1.12.4/jquery.js', function() {
+    return main(jQuery);
+  });
+} else if (versionCmp(window.jQuery.fn.jquery, '1.7.0') < 0) {
+  console.log('jQuery is really old', jQuery.fn.jquery);
+  getScript('//cdnjs.cloudflare.com/ajax/libs/jquery/1.12.4/jquery.min.js', function() {
+    // make sure new version of jQuery plays nice with existing one
+    jQuery.noConflict();
+    return main(jQuery);
+  });
 } else {
-  // use in-page jQuery
+  // in-page jQuery is sufficient, carry on
   jQuery(document).ready(main);
 }

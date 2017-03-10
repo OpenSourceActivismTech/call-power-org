@@ -54,6 +54,11 @@ class Campaign(db.Model):
     def audio(self, key):
         return self.audio_or_default(key)[0]
 
+    def has_audio(self, key='msg_intro'):
+        # returns True if the campaign has non-default audio defined
+        # False if not
+        return not self.audio_or_default(key)[1]
+
     def audio_or_default(self, key):
         """Convenience method for getting selected audio recordings for this campaign by key.
         Returns tuple (audio recording or default message, is default message) """
