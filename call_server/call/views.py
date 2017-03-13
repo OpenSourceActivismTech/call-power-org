@@ -68,10 +68,13 @@ def parse_params(r, inbound=False):
         'sessionId': r.values.get('sessionId', None),
         'campaignId': r.values.get('campaignId', None),
         'userPhone': r.values.get('userPhone', None),
-        'userCountry': r.values.get('userCountry', '').upper(),
+        'userCountry': r.values.get('userCountry', None),
         'userLocation': r.values.get('userLocation', None),
         'targetIds': r.values.getlist('targetIds'),
     }
+
+    if params['userCountry']:
+        params['userCountry'] = params['userCountry'].upper()
 
     if (not params['userPhone']) and not inbound:
         abort(400, 'userPhone required')
@@ -410,17 +413,22 @@ def make_single():
         current_app.logger.debug(u'Call #{}, {} ({}) from {} in call.make_single()'.format(
             i, current_target.name, current_target.number.e164, params['userPhone']))
 
-    userPhone = PhoneNumber(params['userPhone'], params['userCountry'])
+    try:
+        parsed = PhoneNumber(params['userPhone'], params['userCountry'])
+        userPhone = parsed.e164
+    except phonenumbers.NumberParseException:
+        current_app.logger.error('Unable to parse %(userPhone)s for %(userCountry)s' % params)
+        # press onward, but we may not be able to actually dial
+        userPhone = params['userPhone']
 
     # sending a twiml.Number to dial init will not nest properly
     # have to add it after creation
-    resp.dial(callerId=userPhone.e164,
+    resp.dial(callerId=userPhone,
               timeLimit=current_app.config['TWILIO_TIME_LIMIT'],
               timeout=current_app.config['TWILIO_TIMEOUT'], hangupOnStar=True,
               action=url_for('call.complete', **params)) \
         .number(current_target.number.e164, sendDigits=current_target.number.extension)
 
-        
     return str(resp)
 
 
