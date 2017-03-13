@@ -408,7 +408,7 @@ def make_single():
 
     if current_app.debug:
         current_app.logger.debug(u'Call #{}, {} ({}) from {} in call.make_single()'.format(
-            i, current_target.name, target_phone, params['userPhone']))
+            i, current_target.name, current_target.number.e164, params['userPhone']))
 
     userPhone = PhoneNumber(params['userPhone'], params['userCountry'])
 

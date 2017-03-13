@@ -29,10 +29,13 @@ class Location(geopy.Location):
         """
         finds a component by type name in raw address_components
         """
+        if not self.raw:
+            return None
+
         if self.service is GOOGLE_SERVICE:
             # google style, raw.address_components are a list of dicts, with types in list
-            for c in raw['address_components']:
-                if 'field' in c['types']:
+            for c in self.raw['address_components']:
+                if field in c['types']:
                     return c['short_name']
             return None
             
