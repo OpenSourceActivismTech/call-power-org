@@ -67,21 +67,42 @@ function mailSignup() {
 				);
 			});
 
+
+		$('select[name=country]').on('change', function() {
+			var country = $('select[name=country]').val();
+			var locationField = $('input[name=location]');
+
+			if (country === "US") {
+				locationField.show().attr('placeholder', 'Zipcode');
+			} else if (country === "CA") {
+				locationField.show().attr('placeholder', 'Postcode');
+			} else {
+				locationField.hide();
+			}
+		});
+
 		$('form#demoForm').submit(function(event) {
 			event.preventDefault();
 
 	        var phone = $('input[name=phone]').val();
-	        var zipcode = $('input[name=zip]').val();
+	        var location = $('input[name=location]').val();
+	        var country = $('select[name=country]').val();
 
 	        if (!validatePhone(phone)) {
 	        	$('input[name=phone]').addClass('error');
 	            return;
 	        }
 
+	        var campaignIds = {
+	        	'US': 1,
+	        	'CA': 2,
+	        };
+
 			var data = {
-	            campaignId: '1', 
+	            campaignId: campaignIds[country] || 1,
 	            userPhone: validatePhone(phone),
-	            zipcode: zipcode // not required, don't validate
+				userCountry: country,
+	            userLocation: location
 	        };
 
 			$.ajax({
