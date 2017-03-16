@@ -245,32 +245,31 @@ class USDataProvider(DataProvider):
                 id = info['id']['bioguide']
                 offices[id] = info.get('offices', [])
 
-        with open('call_server/political_data/data/us_congress_current.yaml') as f:
-            for info in yaml.load(f, Loader=yamlLoader):
-                term = info["terms"][-1]
-                if term["start"] < "2011-01-01":
+            for info in leg_info:
+                term = info['terms'][-1]
+                if term['start'] < "2011-01-01":
                     continue # don't get too historical
 
-                if term.get("phone") is None:
+                if term.get('phone') is None:
                     log.error(u"term does not have field phone {type} {name}{last}".format(term, info))
                     continue
 
-                district = str(term["district"]) if term.has_key("district") else None
+                district = str(term['district']) if term.has_key('district') else None
 
                 record = {
-                    "first_name":  info["name"]["first"],
-                    "last_name":   info["name"]["last"],
-                    "bioguide_id": info["id"]["bioguide"],
-                    "title":       "Senator" if term["type"] == "sen" else "Representative",
-                    "phone":       term["phone"],
-                    "chamber":     "senate" if term["type"] == "sen" else "house",
-                    "state":       term["state"],
-                    "district":    district
+                    'first_name':  info['name']['first'],
+                    'last_name':   info['name']['last'],
+                    'bioguide_id': info['id']['bioguide'],
+                    'title':       "Senator" if term['type'] == "sen" else "Representative",
+                    'phone':       term['phone'],
+                    'chamber':     "senate" if term['type'] == "sen" else "house",
+                    'state':       term['state'],
+                    'district':    district,
                     'offices':     offices.get(info['id']['bioguide'], [])
                 }
 
                 direct_key = self.KEY_BIOGUIDE.format(**record)
-                if record["chamber"] == "senate":
+                if record['chamber'] == "senate":
                     chamber_key = self.KEY_SENATE.format(**record)
                 else:
                     chamber_key = self.KEY_HOUSE.format(**record)
