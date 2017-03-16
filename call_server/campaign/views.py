@@ -73,11 +73,12 @@ def country_type(campaign_id=None):
     if form.validate_on_submit():
         country_code = form.campaign_country.data
         campaign_type = form.campaign_type.data
+        campaign_language = form.campaign_language.data
 
         if campaign and country_code and campaign_type:
             campaign.country_code = country_code
             campaign.campaign_type = campaign_type
-            campaign.campaign_language = form.campaign_language.data
+            campaign.campaign_language = campaign_language
             db.session.add(campaign)
             db.session.commit()
             return redirect(
@@ -91,6 +92,7 @@ def country_type(campaign_id=None):
     if edit:
         form.campaign_country.data = campaign.country_code
         form.campaign_type.data = campaign.campaign_type
+        form.campaign_language.data = campaign.campaign_language
 
     return render_template('campaign/country_type.html',
         form=form, country_types=country_type_choices)
