@@ -51,10 +51,12 @@ class TestData(BaseTestCase):
         senator_0 = self.us_data.get_senators('CA')[0]
         self.assertEqual(senator_0['chamber'], 'senate')
         self.assertEqual(senator_0['state'], 'CA')
+        self.assertGreater(len(senator_0['offices']), 1)
 
         senator_1 = self.us_data.get_senators('CA')[1]
         self.assertEqual(senator_1['chamber'], 'senate')
         self.assertEqual(senator_1['state'], 'CA')
+        self.assertGreater(len(senator_1['offices']), 1)
 
         # make sure we got two different senators...
         self.assertNotEqual(senator_0['last_name'], senator_1['last_name'])
@@ -64,6 +66,7 @@ class TestData(BaseTestCase):
         self.assertEqual(rep['chamber'], 'house')
         self.assertEqual(rep['state'], 'CA')
         self.assertEqual(rep['district'], '13')
+        self.assertGreater(len(rep['offices']), 1)
 
     def test_dc(self):
         no_senators = self.us_data.get_senators('DC')
@@ -73,6 +76,7 @@ class TestData(BaseTestCase):
         self.assertEqual(rep['chamber'], 'house')
         self.assertEqual(rep['state'], 'DC')
         self.assertEqual(rep['district'], '0')
+        self.assertGreater(len(rep['offices']), 1)
 
     def test_locate_targets(self):
         uids = locate_targets(self.mock_location, self.CONGRESS_CAMPAIGN, self.mock_cache)

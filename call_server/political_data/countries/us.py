@@ -224,14 +224,26 @@ class USDataProvider(DataProvider):
 
     def _load_legislators(self):
         """
-        Load US legislator data from saved file
-        Returns a dictionary keyed by state to cache for fast lookup
+        Load US legislator data from us_congress_current.yaml
+        Merges with district office data from us_congress_offices.yaml by bioguide id
+        Returns a dictionary keyed by state, district and bioguide id
 
         eg us:senate:CA = [{'title':'Sen', 'first_name':'Dianne',  'last_name': 'Feinstein', ...},
                            {'title':'Sen', 'first_name':'Barbara', 'last_name': 'Boxer', ...}]
         or us:house:CA:13 = [{'title':'Rep', 'first_name':'Barbara',  'last_name': 'Lee', ...}]
+        or us:bioguide:F000062 = [{'title':'Sen', 'first_name':'Dianne',  'last_name': 'Feinstein', ...}]
         """
         legislators = collections.defaultdict(list)
+        offices = collections.defaultdict(list)
+
+        with open('call_server/political_data/data/us_congress_current.yaml') as f1, open('call_server/political_data/data/us_congress_offices.yaml') as f2:
+
+            leg_info = yaml.load(f1, Loader=yamlLoader)
+            office_info = yaml.load(f2, Loader=yamlLoader)
+
+            for info in office_info:
+                id = info['id']['bioguide']
+                offices[id] = info.get('offices', [])
 
         with open('call_server/political_data/data/us_congress_current.yaml') as f:
             for info in yaml.load(f, Loader=yamlLoader):
@@ -254,6 +266,7 @@ class USDataProvider(DataProvider):
                     "chamber":     "senate" if term["type"] == "sen" else "house",
                     "state":       term["state"],
                     "district":    district
+                    'offices':     offices.get(info['id']['bioguide'], [])
                 }
 
                 direct_key = self.KEY_BIOGUIDE.format(**record)
