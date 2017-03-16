@@ -4,6 +4,7 @@ locate_by: Determine location by which attribute?
 target_set: Search for target phone numbers, or add them directly.
 target_ordering: |
     Calls will be placed as ordered above. Shuffle is re-done for every caller.
+target_offices: Which office should callers be connected to?
 
 msg_intro: Introduce yourself and the campaign briefly. First thing the caller hears when they start the call.
 msg_intro_confirm: Ask the caller to get started by pressing the star key. Used to screen out voicemails.

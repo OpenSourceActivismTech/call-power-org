@@ -8,7 +8,7 @@ class DefaultConfig(object):
     DEBUG = False
     TESTING = False
     ENVIRONMENT = "Default"
-    VERSION = "1.2-beta1"
+    VERSION = " congress-district-offices WIP"
 
     APP_NAME = "call_server"
     APPLICATION_ROOT = None  # the path where the application is configured

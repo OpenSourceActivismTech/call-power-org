@@ -12,7 +12,8 @@ from ..extensions import csrf, db
 
 from .models import Call, Session
 from .constants import TWILIO_TTS_LANGUAGES
-from ..campaign.constants import LOCATION_POSTAL, LOCATION_DISTRICT, SEGMENT_BY_LOCATION
+from ..campaign.constants import (LOCATION_POSTAL, LOCATION_DISTRICT, SEGMENT_BY_LOCATION,
+    TARGET_OFFICE_DISTRICT, TARGET_OFFICE_BUSY)
 from ..campaign.models import Campaign, Target
 from ..political_data.lookup import locate_targets
 
@@ -403,15 +404,31 @@ def make_single():
             lang=campaign.language_code)
         return str(resp)
 
-    
+    if campaign.target_offices == TARGET_OFFICE_DISTRICT:
+        office = random.choice(current_target.offices)
+        target_phone = office.number
+    elif campaign.target_offices == TARGET_OFFICE_BUSY:
+        # TODO keep track of which ones we have tried
+        undialed_offices = current_target.offices
+        # then pick a random one
+        office = random.choice(undialed_offices)
+        target_phone = office.number
+    #elif campaign.target_offices == TARGET_OFFICE_CLOSEST:
+    #   office = find_closest(current_target.offices, params['userLocation'])
+    #   target_phone = office.phone
+    else:
+        office = None
+        target_phone = current_target.number
+
     play_or_say(resp, campaign.audio('msg_target_intro'),
         title=current_target.title,
         name=current_target.name,
+        office_type = office.name if office else '',
         lang=campaign.language_code)
 
     if current_app.debug:
         current_app.logger.debug(u'Call #{}, {} ({}) from {} in call.make_single()'.format(
-            i, current_target.name, current_target.number.e164, params['userPhone']))
+            i, current_target.name, target_phone.e164, params['userPhone']))
 
     try:
         parsed = PhoneNumber(params['userPhone'], params['userCountry'])
@@ -427,7 +444,7 @@ def make_single():
               timeLimit=current_app.config['TWILIO_TIME_LIMIT'],
               timeout=current_app.config['TWILIO_TIMEOUT'], hangupOnStar=True,
               action=url_for('call.complete', **params)) \
-        .number(current_target.number.e164, sendDigits=current_target.number.extension)
+        .number(target_phone.e164, sendDigits=target_phone.extension)
 
     return str(resp)
 
@@ -464,6 +481,8 @@ def complete():
             title=current_target.title,
             name=current_target.name,
             lang=campaign.language_code)
+
+    # TODO if district offices, try another office number
 
     i = int(request.values.get('call_index', 0))
 

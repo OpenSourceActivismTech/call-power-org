@@ -10,7 +10,8 @@ from ..utils import convert_to_dict
 from ..political_data.adapters import adapt_by_key
 from ..political_data import get_country_data
 from .constants import (STRING_LEN, TWILIO_SID_LENGTH, LANGUAGE_CHOICES,
-                        CAMPAIGN_STATUS, STATUS_PAUSED, SEGMENT_BY_CHOICES, LOCATION_CHOICES)
+                        CAMPAIGN_STATUS, STATUS_PAUSED,
+                        SEGMENT_BY_CHOICES, LOCATION_CHOICES, TARGET_OFFICE_CHOICES)
 
 
 class Campaign(db.Model):
@@ -32,6 +33,7 @@ class Campaign(db.Model):
                                  order_by='campaign_target_sets.c.order',
                                  backref=db.backref('campaigns'))
     target_ordering = db.Column(db.String(STRING_LEN))
+    target_offices = db.Column(db.String(STRING_LEN))
 
     allow_call_in = db.Column(db.Boolean, default=False)
     phone_number_set = db.relationship('TwilioPhoneNumber', secondary='campaign_phone_numbers',
@@ -156,6 +158,11 @@ class Campaign(db.Model):
         else:
             return self.campaign_subtype_display()
 
+    def target_offices_display(self):
+        "Display method for this campaign's target offices"
+        val = dict(TARGET_OFFICE_CHOICES).get(self.target_offices, '')
+        return val
+
     @staticmethod
     def get_campaign_type_choices(country_code, cache=cache):
         country_data = get_country_data(country_code, cache=cache, api_cache='localmem')
@@ -197,6 +204,7 @@ class Target(db.Model):
     title = db.Column(db.String(STRING_LEN), nullable=True)
     name = db.Column(db.String(STRING_LEN), nullable=False, unique=False)
     number = db.Column(phone_number.PhoneNumberType())
+    offices = db.relationship('TargetOffice', backref="target")
 
     def __unicode__(self):
         return self.uid
@@ -222,19 +230,44 @@ class Target(db.Model):
             adapter = adapt_by_key(key)
             if type(cached_obj) is list:
                 data = adapter.target(cached_obj[0])
+                offices = adapter.offices(cached_obj[0])
             elif type(cached_obj) is dict:
                 data = adapter.target(cached_obj)
+                offices = adapter.offices(cached_obj)
             else:
                 # do it live
                 data = cached_obj
+                offices = cached_obj.get('offices', [])
 
-            # create target object and save to db
+            # create target object
             t = Target(**data)
             db.session.add(t)
+            # create office objects, link to target
+            for office in offices:
+                o = TargetOffice(**office)
+                o.target = t
+                db.session.add(o)
+            # save to db
             db.session.commit()
             cached = True
         return t, cached
 
+
+class TargetOffice(db.Model):
+    __tablename__ = 'campaign_target_office'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(STRING_LEN), nullable=True)
+    address = db.Column(db.String(STRING_LEN), nullable=True, unique=False)
+    location = db.Column(db.String(STRING_LEN), nullable=True, unique=False)
+    number = db.Column(phone_number.PhoneNumberType())
+    target_id = db.Column(db.Integer, db.ForeignKey('campaign_target.id'))
+
+    def __unicode__(self):
+        return u"{} {}".format(self.target, self.type)
+
+    def phone_number(self):
+        return self.number.e164
 
 class TwilioPhoneNumber(db.Model):
     __tablename__ = 'campaign_phone'
