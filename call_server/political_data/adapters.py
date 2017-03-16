@@ -1,73 +1,95 @@
-# translate country specific data to campaign.target field names
+# translate country specific data to campaign model field names
 
 
-def adapt_to_target(data, key_prefix):
-    if key_prefix == "us:bioguide":
-        adapter = UnitedStatesData()
-        return adapter.adapt(data)
-    elif key_prefix == "us_state:openstates":
-        adapter = OpenStatesData()
-        return adapter.adapt(data)
-    elif key_prefix == "us_state:governor":
-        adapter = GovernorAdapter()
-        return adapter.adapt(data)
-    elif key_prefix.startswith("ca:opennorth"):
-        adapter = OpenNorthAdapter()
-        return adapter.adapt(data)
+def adapt_by_key(key):
+    if key.startswith("us:bioguide"):
+        return UnitedStatesData()
+    elif key.startswith("us_state:openstates"):
+        return OpenStatesData()
+    elif key.startswith("us_state:governor"):
+        return GovernorAdapter()
+    elif key.startswith("ca:opennorth"):
+        return OpenNorthAdapter()
     else:
         return data
     # TODO add for other countries
 
 
 class UnitedStatesData(object):
-    def adapt(self, data):
-        mapped = {}
-        mapped['name'] = u'{first_name} {last_name}'.format(**data)
-        mapped['number'] = data['phone']
-        mapped['title'] = data['title']
-        mapped['uid'] = data['bioguide_id']
+    def target(self, data):
+        return {       
+            'name': u'{first_name} {last_name}'.format(**data),
+            'number': data['phone'], # DC office number
+            'title': data['title'],
+            'uid': data['bioguide_id']
+        }
 
-        return mapped
+    def offices(self, data):
+        # district office numbers
+        office_list = []
+        for office in data.get('offices', []):
+            office_list.append({
+                'name': office['city'],
+                'address': u'{address} {building} {city} {state}'.format(**office),
+                'location': 'POINT({latitude}, {longitude})'.format(**office),
+                'number': office['phone']
+            })
+        return office_list
 
 
 class OpenStatesData(object):
-    def adapt(self, data):
-        mapped = {}
-        mapped['name'] = data['full_name']
-        if data['chamber'] == "upper":
-            mapped['title'] = "Senator"
-        if data['chamber'] == "lower":
-            mapped['title'] = "Representative"
-        if type(data['offices']) == list and 'phone' in data['offices'][0]:
-            mapped['number'] = data['offices'][0]['phone']
-        elif type(data['offices']) == dict and 'phone' in data['offices']:
-            mapped['number'] = data['offices']['phone']
-        else:
-            mapped['number'] = None
-        mapped['uid'] = data['leg_id']
+    def target(self, data):
+        return {
+            'name': data['full_name'],
+            'title': 'Senator' if data['chamber'] == "upper" else "Represenatative",
+            'number': filter(lambda d: d['type'] == 'capitol', data['offices'])[0].get('phone', None),
+            'uid': data['leg_id']
+        }
 
-        return mapped
+    def offices(self, data):
+        office_list = []
+        for office in data.get('offices', []):
+            if office['type'] == 'capitol':
+                # capitol office is captured in target.number
+                continue
+            office_list.append({
+                'name': office['name'],
+                'address': office['address'],
+                'number': office['phone']
+            })
+        return office_list
 
 
 class GovernorAdapter(object):
-    def adapt(self, data):
-        mapped = {}
-        mapped['name'] = u'{first_name} {last_name}'.format(**data)
-        mapped['title'] = data['title']
-        mapped['number'] = data['phone']
-        mapped['uid'] = data['state']
-        return mapped
+    def target(self, data):
+        return {
+            'name': u'{first_name} {last_name}'.format(**data),
+            'title': data['title'],
+            'number': data['phone'],
+            'uid': data['state'],
+        }
 
 
 class OpenNorthAdapter(object):
-    def adapt(self, data):
-        mapped = {}
-        mapped['name'] = u'{first_name} {last_name}'.format(**data)
-        mapped['title'] = data['elected_office']
-        if type(data['offices']) == list and 'tel' in data['offices'][0]:
-            mapped['number'] = data['offices'][0]['tel']
-        else:
-            mapped['number'] = None
-        mapped['uid'] = data['cache_key']
+    def target(self, data):
+        return {
+            'name': u'{first_name} {last_name}'.format(**data),
+            'title': data['elected_office'],
+            'number': filter(lambda d: d['type'] == 'legislature', data['offices'])[0].get('tel', None),
+            # legislature office number
+            'uid': data['cache_key']
+        }
 
-        return mapped
+    def offices(self, data):
+        office_list = []
+        for office in data.get('offices', []):
+            if office['type'] == 'legislature':
+                # legislature office is captured in target.number
+                continue
+            office_list.append({
+                'name': office['type'],
+                'address': office['postal'],
+                'number': office['tel']
+            })
+        return office_list
+

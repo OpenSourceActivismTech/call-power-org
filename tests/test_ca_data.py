@@ -8,7 +8,7 @@ from call_server.political_data.geocode import Location
 from call_server.campaign.models import Campaign
 
 
-class TestData(BaseTestCase):
+class TestCAData(BaseTestCase):
 
     @classmethod
     def setUpClass(cls):

@@ -1,0 +1,27 @@
+[{"related": {"representative_set_url": "/representative-sets/house-of-commons/",
+	"boundary_url": "/boundaries/federal-electoral-districts/24054/"},
+	"representative_set_name": "House of Commons",
+	"url": "http://www.parl.gc.ca/Parliamentarians/en/members/Thomas-J-Mulcair(26684)",
+	"extra": {},
+	"first_name": "Thomas",
+	"district_name": "Outremont",
+	"last_name": "Mulcair",
+	"personal_url": "",
+	"photo_url": "http://www.parl.gc.ca/Parliamentarians/Images/OfficialMPPhotos/42/MulcairThomas_NDP.jpg",
+	"email": "thomas.mulcair@parl.gc.ca",
+	"gender": "",
+	"party_name": "NDP",
+	"name": "Thomas Mulcair",
+	"offices": [
+		{"type": "legislature",
+		"tel": "1 613 947-0867",
+		"fax": "1 613 947-0868",
+		"postal": "House of Commons\nOttawa ON  K1A 0A6"},
+		{"type": "constituency",
+		"tel": "1 514 736-2727",
+		"fax": "1 514 736-2726",
+		"postal": "154 Laurier Avenue West (Main Office)\nSuite 302\nMontr\u00e9al QC  H2T 2N7"}
+	],
+	"elected_office": "MP",
+	"source_url": "http://www.parl.gc.ca/Parliamentarians/en/members?view=ListAll"
+}]

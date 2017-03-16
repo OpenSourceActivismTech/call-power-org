@@ -7,7 +7,7 @@ from sqlalchemy import UniqueConstraint
 
 from ..extensions import db, cache
 from ..utils import convert_to_dict
-from ..political_data.adapters import adapt_to_target
+from ..political_data.adapters import adapt_by_key
 from ..political_data import get_country_data
 from .constants import (STRING_LEN, TWILIO_SID_LENGTH, LANGUAGE_CHOICES,
                         CAMPAIGN_STATUS, STATUS_PAUSED, SEGMENT_BY_CHOICES, LOCATION_CHOICES)
@@ -219,10 +219,11 @@ class Target(db.Model):
 
         if not t:
             cached_obj = cache.get(key)
+            adapter = adapt_by_key(key)
             if type(cached_obj) is list:
-                data = adapt_to_target(cached_obj[0], prefix)
+                data = adapter.target(cached_obj[0])
             elif type(cached_obj) is dict:
-                data = adapt_to_target(cached_obj, prefix)
+                data = adapter.target(cached_obj)
             else:
                 # do it live
                 data = cached_obj
