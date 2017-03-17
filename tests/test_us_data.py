@@ -200,12 +200,12 @@ class TestUSData(BaseTestCase):
         first = self.us_data.get_uid(uids[0])[0]
         self.assertEqual(first['chamber'], 'house')
         self.assertEqual(first['state'], 'WI')
-        self.assertEqual(first['district'], '3')
+        self.assertEqual(first['district'], '2')
 
         second = self.us_data.get_uid(uids[1])[0]
         self.assertEqual(second['chamber'], 'house')
         self.assertEqual(second['state'], 'WI')
-        self.assertEqual(second['district'], '2')
+        self.assertEqual(second['district'], '3')
 
         third = self.us_data.get_uid(uids[2])[0]
         self.assertEqual(third['chamber'], 'senate')
