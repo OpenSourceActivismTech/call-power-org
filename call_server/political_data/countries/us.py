@@ -309,7 +309,7 @@ class USDataProvider(DataProvider):
         """
         governors = collections.defaultdict(dict)
 
-        with open('call_server/political_data/data/us_states.csv') as f:
+        with open('call_server/political_data/data/us_governors.csv') as f:
             reader = csv.DictReader(f)
 
             for l in reader:
