@@ -33,6 +33,14 @@ class TestUSData(BaseTestCase):
         self.mock_location = Location('Boston, MA', (42.355662,-71.065483),
             {'components':{'state':'MA','zipcode':'02111'}})
 
+       # this zipcode pretty evenly split between KY-2 & TN-7
+        self.mock_location_multiple_states = Location('Fort Campbell, KY', (36.647207, -87.451635),
+            {'components':{'state':'KY','zipcode':'42223'}})
+
+        # this zipcode pretty evenly split between WI-2 & WI-3
+        self.mock_location_multiple_districts = Location('Hazel Green, WI', (42.532498, -90.436727),
+            {'components':{'state':'WI','zipcode':'53811'}})
+
     def test_cache(self):
         self.assertIsNotNone(self.mock_cache)
         self.assertIsNotNone(self.us_data)
@@ -42,10 +50,13 @@ class TestUSData(BaseTestCase):
         self.assertEqual(district['state'], 'CA')
         self.assertEqual(district['house_district'], '13')
 
-    def test_district_multiple_states(self):
+    def test_district_multiple(self):
         districts = self.us_data.get_districts('53811')
-        # apparently this zipcode is in multiple states
-        self.assertEqual(len(districts), 4)
+        self.assertEqual(len(districts), 2)
+
+    def test_district_state_lines(self):
+        districts = self.us_data.get_districts('42223')
+        self.assertEqual(len(districts), 2)
 
     def test_senate(self):
         senator_0 = self.us_data.get_senators('CA')[0]
@@ -146,3 +157,60 @@ class TestUSData(BaseTestCase):
 
         third = self.us_data.get_uid(uids[2])[0]
         self.assertEqual(third['chamber'], 'house')
+
+    def test_locate_targets_multiple_states(self):
+        self.CONGRESS_CAMPAIGN.campaign_subtype = 'both'
+        self.CONGRESS_CAMPAIGN.target_ordering = 'lower-first'
+
+        uids = locate_targets(self.mock_location_multiple_states, self.CONGRESS_CAMPAIGN, self.mock_cache)
+        self.assertEqual(len(uids), 6)
+
+        first = self.us_data.get_uid(uids[0])[0]
+        self.assertEqual(first['chamber'], 'house')
+        self.assertEqual(first['state'], 'KY')
+
+        second = self.us_data.get_uid(uids[1])[0]
+        self.assertEqual(second['chamber'], 'house')
+        self.assertEqual(second['state'], 'TN')
+
+        third = self.us_data.get_uid(uids[2])[0]
+        self.assertEqual(third['chamber'], 'senate')
+        self.assertEqual(third['state'], 'TN')
+
+        fourth = self.us_data.get_uid(uids[3])[0]
+        self.assertEqual(fourth['chamber'], 'senate')
+        self.assertEqual(fourth['state'], 'TN')
+
+        fifth = self.us_data.get_uid(uids[4])[0]
+        self.assertEqual(fifth['chamber'], 'senate')
+        self.assertEqual(fifth['state'], 'KY')
+
+        sixth = self.us_data.get_uid(uids[5])[0]
+        self.assertEqual(sixth['chamber'], 'senate')
+        self.assertEqual(sixth['state'], 'KY')  
+ 
+
+    def test_locate_targets_multiple_districts(self):
+        self.CONGRESS_CAMPAIGN.campaign_subtype = 'both'
+        self.CONGRESS_CAMPAIGN.target_ordering = 'lower-first'
+
+        uids = locate_targets(self.mock_location_multiple_districts, self.CONGRESS_CAMPAIGN, self.mock_cache)
+        self.assertEqual(len(uids), 4)
+
+        first = self.us_data.get_uid(uids[0])[0]
+        self.assertEqual(first['chamber'], 'house')
+        self.assertEqual(first['state'], 'WI')
+        self.assertEqual(first['district'], '3')
+
+        second = self.us_data.get_uid(uids[1])[0]
+        self.assertEqual(second['chamber'], 'house')
+        self.assertEqual(second['state'], 'WI')
+        self.assertEqual(second['district'], '2')
+
+        third = self.us_data.get_uid(uids[2])[0]
+        self.assertEqual(third['chamber'], 'senate')
+        self.assertEqual(third['state'], 'WI')
+
+        fourth = self.us_data.get_uid(uids[3])[0]
+        self.assertEqual(third['chamber'], 'senate')
+        self.assertEqual(fourth['state'], 'WI')

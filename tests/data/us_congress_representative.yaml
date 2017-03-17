@@ -35,30 +35,6 @@
     office: 2267 Rayburn House Office Building
     fax: 202-225-9817
   offices:
-  - address: 1550 Oak St.
-    building: Staff Room
-    city: Alameda
-    fax: ''
-    hours: Every 2nd & 4th Thurs. 3 pm – 5 pm (PST)
-    phone: ''
-    state: CA
-    suite: 2nd Floor
-    zip: '94501'
-    latitude: 37.7667491
-    longitude: -122.2422766
-    id: L000551-alameda
-  - address: 1249 Marin Ave.
-    building: Albany Community Center
-    city: Albany
-    fax: ''
-    hours: Wed 2pm-4pm
-    phone: ''
-    state: CA
-    suite: ''
-    zip: '94706'
-    latitude: 37.8879742
-    longitude: -122.2932172
-    id: L000551-albany
   - address: 1301 Clay St.
     building: ''
     city: Oakland
@@ -71,27 +47,3 @@
     latitude: 37.8052016
     longitude: -122.2745116
     id: L000551-oakland
-  - address: 1470 Fruitvale Ave.
-    building: ''
-    city: Oakland
-    fax: ''
-    hours: Every 1st & 3rd Thurs. 2pm-5pm (PST)
-    phone: ''
-    state: CA
-    suite: ''
-    zip: '94601'
-    latitude: 37.7784791
-    longitude: -122.2250837
-    id: L000551-oakland-1
-  - address: 300 Estudillo Ave.
-    building: Room C
-    city: San Leandro
-    fax: ''
-    hours: 3 pm – 5 pm (PST)
-    phone: ''
-    state: CA
-    suite: ''
-    zip: '94577'
-    latitude: 37.7260242
-    longitude: -122.1540198
-    id: L000551-san_leandro

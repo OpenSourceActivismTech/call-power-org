@@ -39,7 +39,6 @@ class TestDataAdapters(BaseTestCase):
         self.assertEqual(target['title'], 'Representative')
         self.assertEqual(target['number'], data['phone'])
         self.assertEqual(target['offices'][0]['number'], data['offices'][0]['phone'])
-        self.assertEqual(target['offices'][1]['number'], data['offices'][1]['phone'])
     
     def test_usstate_adapter(self):
         f = open('tests/data/openstates_representative.json', 'r')
