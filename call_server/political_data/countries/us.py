@@ -106,8 +106,9 @@ class USCampaignType_Congress(USCampaignType):
         districts = self.data_provider.get_districts(location.postal)
 
         for district in districts:
-            rep = self.data_provider.get_house_members(district['state'], district['house_district'])[0]
-            yield self.data_provider.KEY_BIOGUIDE.format(**rep)
+            rep = self.data_provider.get_house_members(district['state'], district['house_district'])
+            if rep:
+                yield self.data_provider.KEY_BIOGUIDE.format(**rep[0])
 
 
 class USCampaignType_State(USCampaignType):
