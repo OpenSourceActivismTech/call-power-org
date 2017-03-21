@@ -18,6 +18,7 @@ from .user import User, user
 from .call import call
 from .campaign import campaign
 from .api import api, configure_restless, restless_preprocessors
+from .political_data import political_data
 
 from extensions import cache, db, babel, assets, login_manager, csrf, mail, store, rest
 
@@ -28,6 +29,7 @@ DEFAULT_BLUEPRINTS = (
     call,
     campaign,
     api,
+    political_data
 )
 
 

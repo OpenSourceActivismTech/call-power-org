@@ -1367,6 +1367,7 @@ $(document).ready(function () {
       // target search
       'keydown input[name="target-search"]': 'searchKey',
       'focusout input[name="target-search"]': 'searchTab',
+      'click .search-field .dropdown-menu li': 'searchField',
       'click .search': 'doTargetSearch',
       'click .search-results .result': 'selectSearchResult',
       'click .search-results .close': 'closeSearch',
@@ -1386,89 +1387,90 @@ $(document).ready(function () {
       // otherwise, let user select one
     },
 
-    doTargetSearch: function(event) {
-      var self = this;
-      // search the Sunlight API for the named target
-      var query = $('input[name="target-search"]').val();
-
-      var campaign_type = $('select[name="campaign_type"]').val();
-      var campaign_state = $('select[name="campaign_state"]').val();
-      var chamber = $('select[name="campaign_subtype"]').val();
-
-      if (campaign_type === 'congress') {
-        // hit Sunlight OpenCongress v3
-
-        //convert generic chamber names to House / Senate
-        if (chamber === 'lower') {
-          chamber = 'house';
-        }
-        if (chamber === 'upper') {
-          chamber = 'senate';
-        }
-        if (chamber === 'both') {
-          chamber = '';
-        }
-
-        $.ajax({
-          url: CallPower.Config.SUNLIGHT_CONGRESS_URL,
-          data: {
-            apikey: CallPower.Config.SUNLIGHT_API_KEY,
-            in_office: true,
-            chamber: chamber,
-            query: query
-          },
-          beforeSend: function(jqXHR, settings) { console.log(settings.url); },
-          success: self.renderSearchResults,
-          error: self.errorSearchResults,
-        });
-      }
-
-      if (campaign_type === 'state' && chamber === 'exec') {
-        // search scraped us_governors_contact, pass full json to search on client
-        $.ajax({
-          url: 'https://raw.githubusercontent.com/spacedogXYZ/us_governors_contact/master/data.json',
-          dataType: 'json',
-          success: _.bind(self.clientSideSearch, self),
-          error: self.errorSearchResults,
-        });
-
-      } else {
-        // hit Sunlight OpenStates
-
-        // TODO, request state metadata
-        // display latest_json_date to user
-
-        $.ajax({
-          url: CallPower.Config.SUNLIGHT_STATES_URL,
-          data: {
-            apikey: CallPower.Config.SUNLIGHT_API_KEY,
-            state: campaign_state,
-            in_office: true,
-            chamber: chamber,
-            last_name: query // NB, we can't do generic query for OpenStates, let user select field?
-          },
-          success: self.renderSearchResults,
-          error: self.errorSearchResults,
-        });
-      }
+    searchField: function(event) {
+      event.preventDefault();
+      var selectedField = $(event.currentTarget).text();
+      $('.search-field button').html(selectedField+' <span class="caret"></span>');
+      $('input[name=search_field]').val(selectedField.replace(' ', '_').toLowerCase());
     },
 
-    clientSideSearch: function(response) {
-      var query = $('input[name="target-search"]').val();
+    doTargetSearch: function(event) {
+      var self = this;
 
-      results = _.filter(response, function(item) {
-        // simple case insensitive OR search on first, last or state name
-        if (item.first_name.toLowerCase().includes(query.toLowerCase()) ||
-            item.last_name.toLowerCase().includes(query.toLowerCase()) ||
-            item.state_name.toLowerCase().includes(query.toLowerCase())
-           ) {
-          return true;
+      var campaign_country = $('select[name="campaign_country"]').val();
+      var campaign_type = $('select[name="campaign_type"]').val();
+      var campaign_state = $('select[name="campaign_state"]').val();
+      var search_field = $('input[name=search_field]').val();
+
+      // search the political data cache by default
+      var query = $('input[name="target-search"]').val();
+      var searchURL = '/political_data/search';
+      var searchData = {
+        'country': campaign_country,
+        'key': query // default to full text search
+      };
+
+      if (query.length < 2) {
+        return false;
+      }
+
+      if (campaign_country === 'us') {
+        var chamber = $('select[name="campaign_subtype"]').val();
+
+        if (campaign_type === 'congress') {
+          // format key by chamber
+          if (search_field === 'state') {
+            if (chamber === 'lower') {
+                searchData['key'] = 'us:house:'+query;
+            }
+            if (chamber === 'upper') {
+              searchData['key'] = 'us:senate:'+query;
+            }
+            if (chamber === 'both') {
+              // use jQuery param to send multiple values
+              searchData = $.param({ 'key': ['us:house:'+query, 'us:senate:'+query] }, true);
+            }
+          }
+
+          if (search_field === 'last_name') {
+            console.error('TODO, search cache by name');
+            return false;
+          }
         }
+
+        if (campaign_type === 'state') {
+          if (chamber === 'exec') {
+            searchData['key'] = 'us_state:governor:'+query;
+          } else {
+            // hit OpenStates
+            searchURL = CallPower.Config.SUNLIGHT_STATES_URL;
+            searchData = {
+              apikey: CallPower.Config.SUNLIGHT_API_KEY,
+              state: campaign_state,
+            }
+            if (chamber === 'upper' || chamber === 'lower') {
+              searchData['chamber'] = chamber;
+            } // if both, don't limit to a chamber
+            searchData[search_field] = query;
+          }
+        }
+      }
+
+      console.log(searchURL, searchData);
+
+      $.ajax({
+        url: searchURL,
+        data: searchData,
+        beforeSend: function(jqXHR, settings) { console.log(settings.url); },
+        success: self.renderSearchResults,
+        error: self.errorSearchResults,
       });
-      return this.renderSearchResults(results);
+      return true;
     },
 
     renderSearchResults: function(response) {
+      console.log(response);
+
       var results;
       if (response.results) {
         results = response.results;
@@ -1495,16 +1497,21 @@ $(document).ready(function () {
           person.uid = 'us_state:governor:'+person.state
         }
 
-        // if person has multiple phones, use only the first office
-        if (person.phone === undefined && person.offices) {
-          if (person.offices) {
-            person.phone = person.offices[0].phone;
-          }
+        // render the main office
+        if (person.phone) {
+          var li = renderTemplate("#search-results-item-tmpl", person);
+          dropdownMenu.append(li);
         }
 
-        // render display
-        var li = renderTemplate("#search-results-item-tmpl", person);
-        dropdownMenu.append(li);
+        // and all the others
+        _.each(person.offices, function(office) {
+          if (office.phone) {
+            person.phone = office.phone;
+            person.office_name = office.name || office.city;
+            var li = renderTemplate("#search-results-item-tmpl", person);
+            dropdownMenu.append(li);
+          }
+        });
       });
       $('.input-group .search-results').append(dropdownMenu);
     },
