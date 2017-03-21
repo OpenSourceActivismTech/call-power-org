@@ -1380,12 +1380,16 @@ $(document).ready(function () {
       var search_field = $('input[name=search_field]').val();
 
       // search the political data cache by default
+      var query = $('input[name="target-search"]').val();
       var searchURL = '/political_data/search';
       var searchData = {
-        'country': campaign_country
+        'country': campaign_country,
+        'key': query // default to full text search
       };
 
-      var query = $('input[name="target-search"]').val();
+      if (query.length < 2) {
+        return false;
+      }
 
       if (campaign_country === 'us') {
         var chamber = $('select[name="campaign_subtype"]').val();
@@ -1420,9 +1424,10 @@ $(document).ready(function () {
             searchData = {
               apikey: CallPower.Config.SUNLIGHT_API_KEY,
               state: campaign_state,
-              in_office: true,
-              chamber: chamber,
             }
+            if (chamber === 'upper' || chamber === 'lower') {
+              searchData['chamber'] = chamber;
+            } // if both, don't limit to a chamber
             searchData[search_field] = query;
           }
         }
@@ -1479,7 +1484,7 @@ $(document).ready(function () {
         _.each(person.offices, function(office) {
           if (office.phone) {
             person.phone = office.phone;
-            person.office_name = office.city;
+            person.office_name = office.name || office.city;
             var li = renderTemplate("#search-results-item-tmpl", person);
             dropdownMenu.append(li);
           }
