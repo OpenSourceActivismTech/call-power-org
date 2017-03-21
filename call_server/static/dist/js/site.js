@@ -512,10 +512,13 @@ $(document).ready(function () {
           $('#target-search').hide();
           // show custom target search
           $('#set-targets').show();
+          // hide target_offices
+          $('.form-group.target_offices').hide();
         } else {
           // congress
           $('.form-group.segment_by').show();
           $('.form-group.locate_by').show();
+          $('.form-group.target_offices').show();
           $('#target-search').show();
 
           var segment_by = $('input[name="segment_by"]:checked');
@@ -530,27 +533,33 @@ $(document).ready(function () {
     },
 
     changeCampaignSubtype: function(event) {
+      var country = $('select#campaign_country').val();
       var type = $('select#campaign_type').val();
       var subtype = $('select#campaign_subtype').val();
 
-      // state
-      if (type === 'state') {
-        if (subtype === 'exec') {
-          $('#target-search input[name="target-search"]').attr('placeholder', 'search US Governors');
+      if (country === 'us') {
+        // state
+        if (type === 'state') {
+          if (subtype === 'exec') {
+            $('#target-search input[name="target-search"]').attr('placeholder', 'search US Governors');
+          } else {
+            $('#target-search input[name="target-search"]').attr('placeholder', 'search OpenStates');
+          }
+        }
+
+        // congress: show/hide target_ordering values upper_first and lower_first
+        if ((type === 'congress' && subtype === 'both') ||
+            (type === 'state' && subtype === 'both')) {
+          $('input[name="target_ordering"][value="upper-first"]').parent('label').show();
+          $('input[name="target_ordering"][value="lower-first"]').parent('label').show();
         } else {
-          $('#target-search input[name="target-search"]').attr('placeholder', 'search OpenStates');
+          $('input[name="target_ordering"][value="upper-first"]').parent('label').hide();
+          $('input[name="target_ordering"][value="lower-first"]').parent('label').hide();
         }
       }
 
-      // FIXME: US-specific special case.
-      // congress: show/hide target_ordering values upper_first and lower_first
-      if ((type === 'congress' && subtype === 'both') ||
-          (type === 'state' && subtype === 'both')) {
-        $('input[name="target_ordering"][value="upper-first"]').parent('label').show();
-        $('input[name="target_ordering"][value="lower-first"]').parent('label').show();
-      } else {
-        $('input[name="target_ordering"][value="upper-first"]').parent('label').hide();
-        $('input[name="target_ordering"][value="lower-first"]').parent('label').hide();
+      if (country === 'ca') {
+        // TODO, search OpenNorth for MP name
       }
     },
 
@@ -560,15 +569,29 @@ $(document).ready(function () {
     },
 
     changeSegmentBy: function() {
-      var selected = $('input[name="segment_by"]:checked');
+      var segment_by = $('input[name="segment_by"]:checked').val();
 
-      if (selected.val() === 'location') {
+      if (segment_by === 'location') {
         $('.form-group.locate_by').show();
+
+        // target_ordering can be chamber dependent
+        $('input[name="target_ordering"][value="upper-first"]').parent('label').show();
+        $('input[name="target_ordering"][value="lower-first"]').parent('label').show();
+
+        // target_offices can use districts
+        $('.form-group.target_offices').show();
       } else {
         $('.form-group.locate_by').hide();
+
+        // target_ordering can only be 'in order' or 'shuffle'
+        $('input[name="target_ordering"][value="upper-first"]').parent('label').hide();
+        $('input[name="target_ordering"][value="lower-first"]').parent('label').hide();
+
+        // target_offices will be default
+        $('.form-group.target_offices').hide();
       }
 
-      if (selected.val() === 'custom') {
+      if (segment_by === 'custom') {
         $('#set-targets').show();
       } else {
         $('#set-targets').hide();
