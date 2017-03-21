@@ -1,4 +1,6 @@
 from flask.ext.babel import gettext as _
+import werkzeug.contrib.cache
+import pickle
 
 class DataProvider(object):
     country_name = None
@@ -54,6 +56,31 @@ class DataProvider(object):
             self._cache.update(mapping)
         else:
             raise AttributeError('cache does not appear to be dict-like')
+
+    def cache_search(self, key_prefix):
+        """
+        Searches for keys starting with prefix
+        Handles difference between flask-cache and mock-dictionary
+        May be slow in production, until we do ZRANGEBYLEX for sorted indexes
+        """
+        result = []
+        if isinstance(self._cache.cache, werkzeug.contrib.cache.RedisCache):
+            # it is redis, we can scan
+            redis = self._cache._client
+            for r in r.scan_iter(match=key_prefix+'*'):
+                result.append(r)
+        if isinstance(self._cache.cache, werkzeug.contrib.cache.SimpleCache):
+            # naively search across all the keys
+            for (k,v) in self._cache.cache._cache.items():
+                if k.startswith(key_prefix):
+                    wet_value = pickle.loads(v[1])
+                    if isinstance(wet_value, list):
+                        result.extend(wet_value)
+                    else:
+                        result.append(wet_value)
+        else:
+            raise AttributeError('cannot search cache. it should be a redis connection or a dict')
+        return result
 
 class CampaignType(object):
     type_name = None

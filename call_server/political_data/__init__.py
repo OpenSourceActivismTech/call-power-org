@@ -46,3 +46,6 @@ def _get_data_provider_class(country_code):
         return data_provider_class
     except (ImportError, AttributeError) as e:
         raise NoDataProviderError(country_code)
+
+# import this at the end, because it depends on get_country_data above
+from .views import political_data
