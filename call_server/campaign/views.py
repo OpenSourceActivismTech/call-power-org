@@ -136,9 +136,26 @@ def copy(campaign_id):
     orig_campaign = Campaign.query.filter_by(id=campaign_id).first_or_404()
     new_campaign = duplicate_object(orig_campaign)
     new_campaign.name = orig_campaign.name + " (copy)"
-
     db.session.add(new_campaign)
     db.session.commit()
+
+    # duplicate_object skips sets
+    # recreate m2m objects manually
+    if orig_campaign.target_set:
+
+        for target in orig_campaign.target_set:
+            # update or create CampaignTarget membership
+            try:
+                campaign_target = CampaignTarget.query.filter_by(campaign=new_campaign, target=target).one()
+            except sqlalchemy.orm.exc.NoResultFound:
+                # create a new one
+                campaign_target = CampaignTarget()
+                campaign_target.campaign = new_campaign
+                campaign_target.target = target
+            db.session.add(campaign_target)
+        new_campaign.target_set = orig_campaign.target_set
+        db.session.add(new_campaign)
+        db.session.commit()
 
     flash('Campaign copied.', 'success')
     return redirect(url_for('campaign.form', campaign_id=new_campaign.id))
