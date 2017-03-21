@@ -88,7 +88,7 @@ CallPowerForm.prototype = function($) {
       // hide form and show script contents
 
       // start new empty hidden div
-      var scriptDiv = $('<div style="display: none;"></div>');
+      var scriptDiv = this.$('<div style="display: none;"></div>');
       // copy existing form classes and styling
       scriptDiv.addClass(this.form.attr('class'));
       // insert response contents
@@ -152,7 +152,7 @@ CallPowerForm.prototype = function($) {
 
       if (this.scriptDisplay === 'overlay') {
         // bind overlay hide to original form submit
-        $('.overlay').on('hide', this.$.proxy(this.formSubmit, this));
+        this.$('.overlay').on('hide', this.$.proxy(this.formSubmit, this));
       } else if (this.scriptDisplay === 'replace') {
         // original form still exists, but is hidden
         // do nothing
