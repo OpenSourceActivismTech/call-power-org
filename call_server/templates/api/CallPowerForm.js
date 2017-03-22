@@ -14,8 +14,13 @@ var CallPowerForm = function (formSelector, $) {
   // instance variables
   this.$ = $;  // stash loaded version of jQuery, in case there are conflicts with window
   this.form = this.$(formSelector);
+  {% if campaign.embed %}
   this.locationField = this.$('{{campaign.embed.get("location_sel","#location_id")}}');
   this.phoneField = this.$('{{campaign.embed.get("phone_sel","#phone_id")}}');
+  {% else %}
+  this.locationField = this.$("#location_id");
+  this.phoneField = this.$("#phone_id");
+  {% endif %}
   this.scriptDisplay = 'overlay';
   
   // allow options to override settings
