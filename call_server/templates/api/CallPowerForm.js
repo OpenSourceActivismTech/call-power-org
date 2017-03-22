@@ -38,7 +38,11 @@ var CallPowerForm = function (formSelector, $) {
   // bind our submit event to makeCall
   this.form.on("submit.CallPower", this.$.proxy(this.makeCall, this));
   // include custom css
-  if(this.customCSS !== undefined) { this.$('head').append('<link rel="stylesheet" href="'+this.customCSS+'" />'); }
+  if(this.customCSS !== undefined) {
+    var link_elem = 'link rel="stylesheet" href="';
+    // one weird trick to create the element without it rendering in browsers
+    this.$('head').append('<'+link_elem+this.customCSS+'" />');
+  }
 };
 
 CallPowerForm.prototype = function($) {
