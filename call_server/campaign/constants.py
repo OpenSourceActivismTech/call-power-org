@@ -17,6 +17,16 @@ LOCATION_CHOICES = (
     (LOCATION_DISTRICT, 'District')
 )
 
+TARGET_OFFICE_DISTRICT = 'district'
+TARGET_OFFICE_BUSY = 'busy'
+# TARGET_OFFICE_CLOSEST = 'closest'
+TARGET_OFFICE_CHOICES = (
+    ('', 'Default'),
+    (TARGET_OFFICE_DISTRICT, 'District'),
+    # (TARGET_OFFICE_BUSY, 'Main Busy'),
+    # (TARGET_OFFICE_CLOSEST, 'Closest'),
+)
+
 STATUS_ARCHIVED = 0
 STATUS_PAUSED = 1
 STATUS_LIVE = 2

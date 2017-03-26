@@ -225,40 +225,52 @@ class USDataProvider(DataProvider):
 
     def _load_legislators(self):
         """
-        Load US legislator data from saved file
-        Returns a dictionary keyed by state to cache for fast lookup
+        Load US legislator data from us_congress_current.yaml
+        Merges with district office data from us_congress_offices.yaml by bioguide id
+        Returns a dictionary keyed by state, district and bioguide id
 
         eg us:senate:CA = [{'title':'Sen', 'first_name':'Dianne',  'last_name': 'Feinstein', ...},
                            {'title':'Sen', 'first_name':'Barbara', 'last_name': 'Boxer', ...}]
         or us:house:CA:13 = [{'title':'Rep', 'first_name':'Barbara',  'last_name': 'Lee', ...}]
+        or us:bioguide:F000062 = [{'title':'Sen', 'first_name':'Dianne',  'last_name': 'Feinstein', ...}]
         """
         legislators = collections.defaultdict(list)
+        offices = collections.defaultdict(list)
 
-        with open('call_server/political_data/data/us_congress_current.yaml') as f:
-            for info in yaml.load(f, Loader=yamlLoader):
-                term = info["terms"][-1]
-                if term["start"] < "2011-01-01":
+        with open('call_server/political_data/data/us_congress_current.yaml') as f1, open('call_server/political_data/data/us_congress_offices.yaml') as f2:
+
+            leg_info = yaml.load(f1, Loader=yamlLoader)
+            office_info = yaml.load(f2, Loader=yamlLoader)
+
+            for info in office_info:
+                id = info['id']['bioguide']
+                offices[id] = info.get('offices', [])
+
+            for info in leg_info:
+                term = info['terms'][-1]
+                if term['start'] < "2011-01-01":
                     continue # don't get too historical
 
-                if term.get("phone") is None:
+                if term.get('phone') is None:
                     log.error(u"term does not have field phone {type} {name}{last}".format(term, info))
                     continue
 
-                district = str(term["district"]) if term.has_key("district") else None
+                district = str(term['district']) if term.has_key('district') else None
 
                 record = {
-                    "first_name":  info["name"]["first"],
-                    "last_name":   info["name"]["last"],
-                    "bioguide_id": info["id"]["bioguide"],
-                    "title":       "Senator" if term["type"] == "sen" else "Representative",
-                    "phone":       term["phone"],
-                    "chamber":     "senate" if term["type"] == "sen" else "house",
-                    "state":       term["state"],
-                    "district":    district
+                    'first_name':  info['name']['first'],
+                    'last_name':   info['name']['last'],
+                    'bioguide_id': info['id']['bioguide'],
+                    'title':       "Senator" if term['type'] == "sen" else "Representative",
+                    'phone':       term['phone'],
+                    'chamber':     "senate" if term['type'] == "sen" else "house",
+                    'state':       term['state'],
+                    'district':    district,
+                    'offices':     offices.get(info['id']['bioguide'], [])
                 }
 
                 direct_key = self.KEY_BIOGUIDE.format(**record)
-                if record["chamber"] == "senate":
+                if record['chamber'] == "senate":
                     chamber_key = self.KEY_SENATE.format(**record)
                 else:
                     chamber_key = self.KEY_HOUSE.format(**record)
@@ -271,7 +283,7 @@ class USDataProvider(DataProvider):
     def _load_districts(self):
         """
         Load US congressional district data from saved file
-        Returns a dictionary keyed by zipcode to cache for fast lookup
+        Returns a list of dictionaries keyed by zipcode to cache for fast lookup
 
         eg us:zipcode:94612 = [{'state':'CA', 'house_district': 13}]
         or us:zipcode:54409 = [{'state':'WI', 'house_district': 7}, {'state':'WI', 'house_district': 8}]
@@ -279,10 +291,14 @@ class USDataProvider(DataProvider):
         districts = collections.defaultdict(list)
 
         with open('call_server/political_data/data/us_districts.csv') as f:
-            reader = csv.DictReader(
-                f, fieldnames=['zipcode', 'state', 'house_district'])
+            reader = csv.DictReader(f)
 
-            for d in reader:
+            for row in reader:
+                d = {
+                    'state': row['state_abbr'],
+                    'zipcode': row['zcta'],
+                    'house_district': row['cd']
+                }
                 cache_key = self.KEY_ZIPCODE.format(**d)
                 districts[cache_key].append(d)
 
@@ -297,7 +313,7 @@ class USDataProvider(DataProvider):
         """
         governors = collections.defaultdict(dict)
 
-        with open('call_server/political_data/data/us_states.csv') as f:
+        with open('call_server/political_data/data/us_governors.csv') as f:
             reader = csv.DictReader(f)
 
             for l in reader:

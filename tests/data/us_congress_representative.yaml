@@ -1,0 +1,49 @@
+- id:
+    bioguide: L000551
+    thomas: '01501'
+    govtrack: 400237
+    opensecrets: N00008046
+    votesmart: 8315
+    fec:
+    - H8CA09060
+    cspan: 54579
+    house_history: 17282
+    wikipedia: Barbara Lee
+    maplight: 337
+    icpsr: 29778
+    wikidata: Q289317
+    google_entity_id: kg:/m/024sjy
+  name:
+    first: Barbara
+    last: Lee
+    official_full: Barbara Lee
+  bio:
+    birthday: '1946-07-16'
+    gender: F
+    religion: Baptist
+  terms:
+  - type: rep
+    start: '2017-01-03'
+    end: '2019-01-03'
+    state: CA
+    district: 13
+    party: Democrat
+    phone: 202-225-2661
+    url: https://lee.house.gov
+    rss_url: http://lee.house.gov/rss.xml
+    address: 2267 Rayburn HOB; Washington DC 20515-0513
+    office: 2267 Rayburn House Office Building
+    fax: 202-225-9817
+  offices:
+  - address: 1301 Clay St.
+    building: ''
+    city: Oakland
+    fax: 510-763-6538
+    hours: ''
+    phone: 510-763-0370
+    state: CA
+    suite: Suite 1000-N
+    zip: '94612'
+    latitude: 37.8052016
+    longitude: -122.2745116
+    id: L000551-oakland
