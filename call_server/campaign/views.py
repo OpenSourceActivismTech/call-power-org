@@ -219,7 +219,7 @@ def copy(campaign_id):
         db.session.commit()
 
     flash('Campaign copied.', 'success')
-    return redirect(url_for('campaign.edit_form', campaign_id=new_campaign.id))
+    return redirect(url_for('campaign.form', campaign_id=new_campaign.id))
 
 
 @campaign.route('/<int:campaign_id>/audio', methods=['GET', 'POST'])

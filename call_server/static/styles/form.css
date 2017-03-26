@@ -113,7 +113,7 @@ span.status.valid, span.status.success {
 span.status.error {
     color: red;
 }
-span.help-block.has-error {
+span.help-block.has-error, span.help-block.error {
     color: red;
 }
 
