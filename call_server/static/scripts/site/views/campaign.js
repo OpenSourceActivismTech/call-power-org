@@ -9,6 +9,7 @@
       'click a.clear': 'clearRadioChoices',
 
       // campaign targets
+      'change select#campaign_country':  'changeCampaignCountry',
       'change select#campaign_type':  'changeCampaignType',
       'change select#campaign_subtype':  'changeCampaignSubtype',
       'change input[name="segment_by"]': 'changeSegmentBy',
@@ -25,6 +26,7 @@
 
     initialize: function() {
       // init child views
+
       this.searchForm = new CallPower.Views.TargetSearch();
       this.targetListView = new CallPower.Views.TargetList();
 
@@ -33,6 +35,7 @@
 
       // trigger change to targeting fields
       // so defaults show properly
+      this.changeCampaignCountry();
       this.changeCampaignType();
       this.changeSegmentBy();
 
@@ -53,70 +56,65 @@
       this.checkForCallInCollisions();
     },
 
-    changeCampaignType: function() {
-      // updates campaign_subtype with available choices from data-attr
-      var field = $('select#campaign_type');
-      var val = field.val();
+    changeCampaignCountry: function() {
+      if ($('select#campaign_country').attr('disabled')) {
+        // country already set, no need to update type
+        return false;
+      }
 
-      var nested_field = $('select#campaign_subtype');
-      var nested_choices = nested_field.data('nested-choices');
-      var nested_val = nested_field.data('nested-selected');
+      // updates campaign_type with available choices from data-attr
+      var country = $('select#campaign_country').val();
+      var nested_field = $('select#campaign_type');
+      var nested_val = nested_field.val();
+
+      var type_choices = nested_field.data('nested-choices');
+      var selected_choices = type_choices[country];
+      
+      // clear existing choices
       nested_field.empty();
+      nested_field.append('<option val=""></option>');
 
-      // fill in new choices from data attr
-      // - handle weird obj layout from constants
-      var avail = _.find(nested_choices, function(v) { return v[0] == val; })[1];
-      _.each(avail, function(v) {
-        var option = $('<option value="'+v[0]+'">'+v[1]+'</option>');
+      // append new ones
+      $(selected_choices).each(function() {
+        var option = $('<option value="'+this[0]+'">'+this[1]+'</option>');
+        if (option.val() === nested_val) { option.attr('selected', true); }
         nested_field.append(option);
       });
-      var nested_avail = _.find(avail, function(v) { return v[0] === nested_val; });
+    },
 
-      // reset initial choice if still valid
-      if (nested_avail) {
-        nested_field.val(nested_val);
-      } else {
-        nested_field.val('');
-      }
+    changeCampaignType: function() {
+      // show/hide target segmenting based on campaign country and type
+      var country = $('select#campaign_country').val();
+      var type = $('select#campaign_type').val();
 
-      // hide field if no choices present
-      if (avail.length === 0) {
-        nested_field.hide();
-      } else {
-        nested_field.show();
-      }
+      if (country ==='us') {
+        if (type === "congress") {
+          // hide campaign_state form-group
+          $('.form-group.campaign_state').hide();
+        }
 
-      // special cases
+        // local or custom: no segment, location or search, show custom target_set
+        if (type === "custom" || type === "local" || type === "executive") {
+          // set default values
+          $('.form-group.locate_by input[name="locate_by"][value=""]').click();
+          $('.form-group.segment_by input[name="segment_by"][value="custom"]').click();
+          // hide fields
+          $('.form-group.segment_by').hide();
+          $('.form-group.locate_by').hide();
+          $('#target-search').hide();
+          // show custom target search
+          $('#set-targets').show();
+        } else {
+          // congress
+          $('.form-group.segment_by').show();
+          $('.form-group.locate_by').show();
+          $('#target-search').show();
 
-      // state: show/hide campaign_state select
-      if (val === 'state') {
-        $('select[name="campaign_state"]').show();
-        $('#target-search input[name="target-search"]').attr('placeholder', 'search OpenStates');
-      } else {
-        $('select[name="campaign_state"]').hide();
-        $('#target-search input[name="target-search"]').attr('placeholder', 'search Sunlight');
-      }
-
-      // local or custom: no segment, location or search, show custom target_set
-      if (val === "custom" || val === "local" || val === "executive") {
-        // set default values
-        $('.form-group.locate_by input[name="locate_by"][value=""]').click();
-        $('.form-group.segment_by input[name="segment_by"][value="custom"]').click();
-        // hide fields
-        $('.form-group.segment_by').hide();
-        $('.form-group.locate_by').hide();
-        $('#target-search').hide();
-        // show custom target search
-        $('#set-targets').show();
-      } else {
-        $('.form-group.segment_by').show();
-        $('.form-group.locate_by').show();
-        $('#target-search').show();
-
-        var segment_by = $('input[name="segment_by"]:checked');
-        // unless segment_by is custom
-        if (segment_by.val() !== 'custom') {
-          $('#set-targets').hide();
+          var segment_by = $('input[name="segment_by"]:checked');
+          // unless segment_by is custom
+          if (segment_by.val() !== 'custom') {
+            $('#set-targets').hide();
+          }
         }
       }
 
@@ -130,12 +128,13 @@
       // state
       if (type === 'state') {
         if (subtype === 'exec') {
-          $('#target-search input[name="target-search"]').attr('placeholder', 'search US NGA');
+          $('#target-search input[name="target-search"]').attr('placeholder', 'search US Governors');
         } else {
           $('#target-search input[name="target-search"]').attr('placeholder', 'search OpenStates');
         }
       }
 
+      // FIXME: US-specific special case.
       // congress: show/hide target_ordering values upper_first and lower_first
       if ((type === 'congress' && subtype === 'both') ||
           (type === 'state' && subtype === 'both')) {
@@ -145,7 +144,6 @@
         $('input[name="target_ordering"][value="upper-first"]').parent('label').hide();
         $('input[name="target_ordering"][value="lower-first"]').parent('label').hide();
       }
-
     },
 
     clearRadioChoices: function(event) {
@@ -254,6 +252,11 @@
     },
 
     validateField: function(formGroup, validator, message) {
+      // first check to see if formGroup is present
+      if (!!formGroup) {
+        return true;
+      }
+
       // run validator for formGroup
       var isValid = validator(formGroup);
 
@@ -265,6 +268,7 @@
       // toggle error states
       formGroup.parents('fieldset').find('legend').toggleClass('has-error', !isValid);
       formGroup.toggleClass('has-error', !isValid);
+
       return isValid;
     },
 
@@ -272,9 +276,12 @@
     validateForm: function() {
       var isValid = true;
 
-      // campaign type
-      isValid = this.validateField($('.form-group.campaign_type'), this.validateState, 'Select a state') && isValid;
-      isValid = this.validateField($('.form-group.campaign_type'), this.validateNestedSelect, 'Select a sub-type') && isValid;
+      // campaign country and type
+      isValid = this.validateField($('.form-group.campaign_country'), this.validateSelected, 'Select a country') && isValid;
+      isValid = this.validateField($('.form-group.campaign_type'), this.validateNestedSelect, 'Select a type') && isValid;
+
+      // campaign sub-type
+      isValid = this.validateField($('.form-group.campaign_subtype'), this.validateState, 'Select a sub-type') && isValid;
 
       // campaign segmentation
       isValid = this.validateField($('.form-group.segment_by'), this.validateSegmentBy, 'Campaign type requires custom targeting') && isValid;

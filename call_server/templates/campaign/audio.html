@@ -20,6 +20,7 @@
 <form class="form-horizontal" id="audio" method="POST" action="" >
     {{ form.hidden_tag() }}
     <input type="hidden" value="{{campaign.id}}" name="campaign_id" />
+    <input type="hidden" value="{{campaign.language_code}}" name="campaign_language" />
     <fieldset class="border">
         <legend>Record</legend>
 
@@ -27,8 +28,13 @@
             <label class="col-sm-2 text-right">Campaign Name</label>
             <div class="col-sm-2" id="campaign_name">{{campaign.name}}</div>
 
-            <label class="col-sm-2">Campaign ID</label>
-            <div class="col-sm-2" id="campaign_name">{{campaign.id}}</div>
+            <div class="col-sm-2">
+                <label>ID</label>
+                <span id="campaign_name">{{campaign.id}}</span><br>
+
+                <label>Language</label>
+                <span id="campaign_language">{{campaign.language_display()}}</span>
+            </div>
         </div>
 
         {{ render_audio_default(form.msg_intro) }}

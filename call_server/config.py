@@ -8,7 +8,7 @@ class DefaultConfig(object):
     DEBUG = False
     TESTING = False
     ENVIRONMENT = "Default"
-    VERSION = "1.1.5"
+    VERSION = "1.2"
 
     APP_NAME = "call_server"
     APPLICATION_ROOT = None  # the path where the application is configured
@@ -154,5 +154,5 @@ class TestingConfig(DefaultConfig):
     TESTING = True
     WTF_CSRF_ENABLED = False
     SQLALCHEMY_DATABASE_URI = 'sqlite://'  # keep testing db in memory
-    CACHE_TYPE = 'null'
+    CACHE_TYPE = 'simple'
     CACHE_NO_NULL_WARNING = True

@@ -79,6 +79,7 @@ $(document).ready(function () {
       });
 
       this.campaign_id = $('input[name="campaign_id"]').val();
+      this.campaign_language = $('input[name="campaign_language"]').val();
 
       $('audio', this.el).on('ended', this.onPlayEnded);
       _.bindAll(this, 'onPlayEnded');
@@ -94,6 +95,7 @@ $(document).ready(function () {
                     description: inputGroup.find('.description .help-inline').text(),
                     example_text: inputGroup.find('.description .example-text').text(),
                     campaign_id: this.campaign_id,
+                    campaign_language: this.campaign_language,
                   };
       // and api
       var self = this;
@@ -161,7 +163,11 @@ $(document).ready(function () {
               button.children('.text').html('Pause');
             } else if (self.twilio) {
               console.log('twilio text-to-speech',recording);
-              self.twilio.connect({'text': recording });
+              self.twilio.connect({
+                'text': recording,
+                'voice': 'alice',
+                'lang': self.campaign_language,
+            });
 
               button.children('.glyphicon').removeClass('glyphicon-play').addClass('glyphicon-bullhorn');
               button.children('.text').html('Speak');
@@ -411,6 +417,7 @@ $(document).ready(function () {
       'click a.clear': 'clearRadioChoices',
 
       // campaign targets
+      'change select#campaign_country':  'changeCampaignCountry',
       'change select#campaign_type':  'changeCampaignType',
       'change select#campaign_subtype':  'changeCampaignSubtype',
       'change input[name="segment_by"]': 'changeSegmentBy',
@@ -427,6 +434,7 @@ $(document).ready(function () {
 
     initialize: function() {
       // init child views
+
       this.searchForm = new CallPower.Views.TargetSearch();
       this.targetListView = new CallPower.Views.TargetList();
 
@@ -435,6 +443,7 @@ $(document).ready(function () {
 
       // trigger change to targeting fields
       // so defaults show properly
+      this.changeCampaignCountry();
       this.changeCampaignType();
       this.changeSegmentBy();
 
@@ -455,70 +464,65 @@ $(document).ready(function () {
       this.checkForCallInCollisions();
     },
 
-    changeCampaignType: function() {
-      // updates campaign_subtype with available choices from data-attr
-      var field = $('select#campaign_type');
-      var val = field.val();
+    changeCampaignCountry: function() {
+      if ($('select#campaign_country').attr('disabled')) {
+        // country already set, no need to update type
+        return false;
+      }
 
-      var nested_field = $('select#campaign_subtype');
-      var nested_choices = nested_field.data('nested-choices');
-      var nested_val = nested_field.data('nested-selected');
+      // updates campaign_type with available choices from data-attr
+      var country = $('select#campaign_country').val();
+      var nested_field = $('select#campaign_type');
+      var nested_val = nested_field.val();
+
+      var type_choices = nested_field.data('nested-choices');
+      var selected_choices = type_choices[country];
+      
+      // clear existing choices
       nested_field.empty();
+      nested_field.append('<option val=""></option>');
 
-      // fill in new choices from data attr
-      // - handle weird obj layout from constants
-      var avail = _.find(nested_choices, function(v) { return v[0] == val; })[1];
-      _.each(avail, function(v) {
-        var option = $('<option value="'+v[0]+'">'+v[1]+'</option>');
+      // append new ones
+      $(selected_choices).each(function() {
+        var option = $('<option value="'+this[0]+'">'+this[1]+'</option>');
+        if (option.val() === nested_val) { option.attr('selected', true); }
         nested_field.append(option);
       });
-      var nested_avail = _.find(avail, function(v) { return v[0] === nested_val; });
+    },
 
-      // reset initial choice if still valid
-      if (nested_avail) {
-        nested_field.val(nested_val);
-      } else {
-        nested_field.val('');
-      }
+    changeCampaignType: function() {
+      // show/hide target segmenting based on campaign country and type
+      var country = $('select#campaign_country').val();
+      var type = $('select#campaign_type').val();
 
-      // hide field if no choices present
-      if (avail.length === 0) {
-        nested_field.hide();
-      } else {
-        nested_field.show();
-      }
+      if (country ==='us') {
+        if (type === "congress") {
+          // hide campaign_state form-group
+          $('.form-group.campaign_state').hide();
+        }
 
-      // special cases
+        // local or custom: no segment, location or search, show custom target_set
+        if (type === "custom" || type === "local" || type === "executive") {
+          // set default values
+          $('.form-group.locate_by input[name="locate_by"][value=""]').click();
+          $('.form-group.segment_by input[name="segment_by"][value="custom"]').click();
+          // hide fields
+          $('.form-group.segment_by').hide();
+          $('.form-group.locate_by').hide();
+          $('#target-search').hide();
+          // show custom target search
+          $('#set-targets').show();
+        } else {
+          // congress
+          $('.form-group.segment_by').show();
+          $('.form-group.locate_by').show();
+          $('#target-search').show();
 
-      // state: show/hide campaign_state select
-      if (val === 'state') {
-        $('select[name="campaign_state"]').show();
-        $('#target-search input[name="target-search"]').attr('placeholder', 'search OpenStates');
-      } else {
-        $('select[name="campaign_state"]').hide();
-        $('#target-search input[name="target-search"]').attr('placeholder', 'search Sunlight');
-      }
-
-      // local or custom: no segment, location or search, show custom target_set
-      if (val === "custom" || val === "local" || val === "executive") {
-        // set default values
-        $('.form-group.locate_by input[name="locate_by"][value=""]').click();
-        $('.form-group.segment_by input[name="segment_by"][value="custom"]').click();
-        // hide fields
-        $('.form-group.segment_by').hide();
-        $('.form-group.locate_by').hide();
-        $('#target-search').hide();
-        // show custom target search
-        $('#set-targets').show();
-      } else {
-        $('.form-group.segment_by').show();
-        $('.form-group.locate_by').show();
-        $('#target-search').show();
-
-        var segment_by = $('input[name="segment_by"]:checked');
-        // unless segment_by is custom
-        if (segment_by.val() !== 'custom') {
-          $('#set-targets').hide();
+          var segment_by = $('input[name="segment_by"]:checked');
+          // unless segment_by is custom
+          if (segment_by.val() !== 'custom') {
+            $('#set-targets').hide();
+          }
         }
       }
 
@@ -532,12 +536,13 @@ $(document).ready(function () {
       // state
       if (type === 'state') {
         if (subtype === 'exec') {
-          $('#target-search input[name="target-search"]').attr('placeholder', 'search US NGA');
+          $('#target-search input[name="target-search"]').attr('placeholder', 'search US Governors');
         } else {
           $('#target-search input[name="target-search"]').attr('placeholder', 'search OpenStates');
         }
       }
 
+      // FIXME: US-specific special case.
       // congress: show/hide target_ordering values upper_first and lower_first
       if ((type === 'congress' && subtype === 'both') ||
           (type === 'state' && subtype === 'both')) {
@@ -547,7 +552,6 @@ $(document).ready(function () {
         $('input[name="target_ordering"][value="upper-first"]').parent('label').hide();
         $('input[name="target_ordering"][value="lower-first"]').parent('label').hide();
       }
-
     },
 
     clearRadioChoices: function(event) {
@@ -656,6 +660,11 @@ $(document).ready(function () {
     },
 
     validateField: function(formGroup, validator, message) {
+      // first check to see if formGroup is present
+      if (!!formGroup) {
+        return true;
+      }
+
       // run validator for formGroup
       var isValid = validator(formGroup);
 
@@ -667,6 +676,7 @@ $(document).ready(function () {
       // toggle error states
       formGroup.parents('fieldset').find('legend').toggleClass('has-error', !isValid);
       formGroup.toggleClass('has-error', !isValid);
+
       return isValid;
     },
 
@@ -674,9 +684,12 @@ $(document).ready(function () {
     validateForm: function() {
       var isValid = true;
 
-      // campaign type
-      isValid = this.validateField($('.form-group.campaign_type'), this.validateState, 'Select a state') && isValid;
-      isValid = this.validateField($('.form-group.campaign_type'), this.validateNestedSelect, 'Select a sub-type') && isValid;
+      // campaign country and type
+      isValid = this.validateField($('.form-group.campaign_country'), this.validateSelected, 'Select a country') && isValid;
+      isValid = this.validateField($('.form-group.campaign_type'), this.validateNestedSelect, 'Select a type') && isValid;
+
+      // campaign sub-type
+      isValid = this.validateField($('.form-group.campaign_subtype'), this.validateState, 'Select a sub-type') && isValid;
 
       // campaign segmentation
       isValid = this.validateField($('.form-group.segment_by'), this.validateSegmentBy, 'Campaign type requires custom targeting') && isValid;
@@ -711,15 +724,28 @@ $(document).ready(function () {
     el: $('#launch'),
 
     events: {
+      'change select#test_call_country': 'changeTestCallCountry',
       'click .test-call': 'makeTestCall',
       'change #embed_type': 'toggleEmbedPanel',
-      'blur #embed_options input': 'updateEmbedCode',
+      'blur #custom_embed_options input': 'updateEmbedCode',
+      'change #custom_embed_options select': 'updateEmbedCode',
+      'change #embed_script_display': 'updateEmbedScriptDisplay',
     },
 
     initialize: function() {
       this.campaignId = $('#campaignId').val();
       $('.readonly').attr('readonly', 'readonly');
       this.toggleEmbedPanel();
+    },
+
+    changeTestCallCountry: function() {
+      var country = $('#test_call_country').val();
+      if (!country) {
+        $('#test_call_country_other').removeClass('hidden')
+        country = $('#test_call_country_other').val();
+      } else {
+        $('#test_call_country_other').addClass('hidden').val('');
+      }
     },
 
     makeTestCall: function(event) {
@@ -739,22 +765,33 @@ $(document).ready(function () {
       phone = phone.replace("+", "").replace(/\-/g, ''); // remove plus, dash
 
       var location = $('#test_call_location').val();
+      var country = $('#test_call_country').val() || $('#test_call_country_other').val();
+      var record = $('#test_call_record').val();
 
       $.ajax({
         url: '/call/create',
-        data: {campaignId: this.campaignId, userPhone: phone, userLocation: location},
+        data: {campaignId: this.campaignId,
+          userPhone: phone,
+          userLocation: location,
+          userCountry: country,
+          record: record
+        },
         success: function(data) {
-          console.log(data);
           alert('Calling you at '+$('#test_call_number').val()+' now!');
-          if (data.message == 'queued') {
+          if (data.call == 'queued') {
             statusIcon.removeClass('active').addClass('success');
+            $('.form-group.test_call .controls .help-block').removeClass('has-error').text('');
           } else {
-            console.error(data.message);
+            console.error(data);
             statusIcon.addClass('error');
+            $('.form-group.test_call .controls .help-block').addClass('has-error').text(data.responseText);
           }
         },
         error: function(err) {
           console.error(err);
+          statusIcon.addClass('error');
+          var errMessage = err.responseJSON.error || 'unknown error';
+          $('.form-group.test_call .controls .help-block').addClass('has-error').text(errMessage);
         }
       });
     },
@@ -779,7 +816,9 @@ $(document).ready(function () {
         $('#embed_options h3').text('Javascript Embed Options');
         $('#embed_options .form-group').show();
       }
+
       this.updateEmbedCode();
+      this.updateEmbedScriptDisplay();
     },
 
     updateEmbedCode: function(event) {
@@ -798,7 +837,16 @@ $(document).ready(function () {
           $('textarea#embed_code').val(html);
         }
       });
-    }
+    },
+
+    updateEmbedScriptDisplay: function(event) {
+      var formType = $('#embed_type').val();
+      var scriptDisplay = $('#embed_script_display').val();
+      
+      $('#embed_options .form-group.redirect').toggle(scriptDisplay === 'redirect');
+      $('#embed_options .form-group.custom').toggle(scriptDisplay === 'custom');
+      $('#embed_options .form-group.iframe').toggle(formType === 'iframe');
+    },
 
   });
 
@@ -1250,7 +1298,9 @@ $(document).ready(function () {
   CallPower.Routers.Campaign = Backbone.Router.extend({
     routes: {
       "campaign/create": "campaignForm",
+      "campaign/create/:country/:type": "campaignForm",
       "campaign/:id/edit": "campaignForm",
+      "campaign/:id/edit-type": "campaignForm",
       "campaign/:id/copy": "campaignForm",
       "campaign/:id/audio": "audioForm",
       "campaign/:id/launch": "launchForm",

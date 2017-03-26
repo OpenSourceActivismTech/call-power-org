@@ -1,0 +1,56 @@
+{% from "macros/_form.html" import render_field, render_label, render_input, render_button with context %}
+
+{% set label_width = 'col-sm-2' %}
+{% set control_width = 'col-sm-6' %}
+{% macro render_field_default(field, offset='', control_class=control_width, group='') %}
+    {%if offset%}{% set control_class = control_width+' '+offset %}{%endif%}
+    {{ render_field(field, class_={'label': label_width,
+                                   'control': control_class,
+                                   'group': group}
+                    ) }}
+{% endmacro %}
+
+
+{% set page_title = _("Campaign") %}
+
+{% extends "layouts/base_admin.html" %}
+
+{% block body %}
+<h3>New Campaign</h3>
+
+<form class="form-horizontal" id="campaign" method="POST" action="" >
+    {{ form.hidden_tag() }}
+    <fieldset class="border">
+        <legend>Get Started</legend>
+
+        {{render_field_default(form.campaign_country)}}
+
+        {# form tricks to update campaign_type dynamically based on country #}
+        {% with %}
+        <div class="form-group campaign_type">
+            {% set nested_field = form.campaign_type %}
+            {{ render_label(nested_field, label_width) }}
+            <div class="controls {{control_width}}">
+            {{ nested_field(class_='form-control inline', **{'data-nested-choices': country_types|json} ) }}
+            {% if nested_field.errors -%}
+                {% for error in nested_field.errors -%}
+                <span class="help-block error">{{ error|e }}</span>
+                {%- endfor %}
+            {%- endif %}
+            </div>
+        </div>
+        {% endwith %}
+
+        {{render_field_default(form.campaign_language)}}
+
+    </fieldset>
+
+    <div class="form-group container">
+        <div class="form-actions">
+            <div class="pull-right">
+                {{render_button(form.submit, {'field':'btn-success', 'icon':'arrow-right'}) }}
+            </div>
+        </div>
+    </div>
+</form>
+{% endblock %}

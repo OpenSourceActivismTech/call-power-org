@@ -4,19 +4,31 @@ from wtforms import (HiddenField, SubmitField, TextField,
                      SelectField, SelectMultipleField,
                      BooleanField, RadioField, IntegerField,
                      FileField, FieldList, FormField)
-from wtforms.ext.sqlalchemy.fields import QuerySelectMultipleField
-from wtforms_components import PhoneNumberField
+from wtforms.ext.sqlalchemy.fields import QuerySelectField, QuerySelectMultipleField
+from wtforms_components import PhoneNumberField, read_only
 from wtforms.widgets import TextArea
 from wtforms.validators import Required, Optional, AnyOf, NumberRange, ValidationError
 
-from .constants import (CAMPAIGN_CHOICES, CAMPAIGN_NESTED_CHOICES,
-                        SEGMENT_BY_CHOICES, LOCATION_CHOICES, ORDERING_CHOICES,
+from .constants import (SEGMENT_BY_CHOICES, LOCATION_CHOICES, LANGUAGE_CHOICES,
                         CAMPAIGN_STATUS, EMBED_FORM_CHOICES, EMBED_SCRIPT_DISPLAY)
-from ..political_data.constants import US_STATES
 
-from .models import TwilioPhoneNumber
+from .models import Campaign, TwilioPhoneNumber
 
+from ..political_data import COUNTRY_CHOICES
 from ..utils import choice_items, choice_keys, choice_values, choice_values_flat
+
+
+class DisabledSelectField(SelectField):
+  def __call__(self, *args, **kwargs):
+    kwargs.setdefault('disabled', True)
+    return super(DisabledSelectField, self).__call__(*args, **kwargs)
+
+
+class CountryTypeForm(Form):
+    campaign_country = SelectField(_('Country'), validators=[Required()])
+    campaign_type = SelectField(_('Type'), validators=[Required()])
+    campaign_language = SelectField(_('Language'), [Required()], choices=LANGUAGE_CHOICES)
+    submit = SubmitField(_('Next'))
 
 
 class TargetForm(Form):
@@ -30,18 +42,18 @@ class TargetForm(Form):
 class CampaignForm(Form):
     next = HiddenField()
     name = TextField(_('Campaign Name'), [Required()])
-    campaign_type = SelectField(_('Campaign Type'), [Required()], choices=choice_items(CAMPAIGN_CHOICES), description=True)
-    campaign_state = SelectField(_('State'), [Optional()], choices=choice_items(US_STATES))
-    campaign_subtype = SelectField('', [AnyOf(choice_keys(choice_values_flat(CAMPAIGN_NESTED_CHOICES))), Optional()], )
+    campaign_country = DisabledSelectField(_('Country'), [Optional()], choices=COUNTRY_CHOICES)
+    campaign_type = DisabledSelectField(_('Type'), [Optional()])
+    campaign_state = SelectField(_('State'), [Optional()])
+    campaign_subtype = SelectField(_('Subtype'), [Optional()])
     # nested_type passed to data-field in template, but starts empty
 
     segment_by = RadioField(_('Segment By'), [Required()], choices=choice_items(SEGMENT_BY_CHOICES),
                             description=True, default=SEGMENT_BY_CHOICES[0][0])
     locate_by = RadioField(_('Locate By'), [Optional()], choices=choice_items(LOCATION_CHOICES),
-                                  description=True, default=None)
+                           description=True, default=None)
     target_set = FieldList(FormField(TargetForm, _('Choose Targets')), validators=[Optional()])
-    target_ordering = RadioField(_('Order'), choices=choice_items(ORDERING_CHOICES),
-                                 description=True, default=ORDERING_CHOICES[0][0])
+    target_ordering = RadioField(_('Order'), [Optional()], description=True)
 
     call_limit = BooleanField(_('Limit Maximum Calls'), [Optional()], default=False)
     call_maximum = IntegerField(_('Call Maximum'), [Optional(), NumberRange(min=0)])
@@ -53,6 +65,17 @@ class CampaignForm(Form):
 
     submit = SubmitField(_('Edit Audio'))
     submit_skip_audio = SubmitField(_('Save and Test'))
+
+    def __init__(self, campaign_data, *args, **kwargs):
+        super(CampaignForm, self).__init__(*args, **kwargs)
+
+        read_only(self.campaign_country)
+        read_only(self.campaign_type)
+
+        self.campaign_type.choices = choice_items(campaign_data.data_provider.campaign_type_choices)
+        self.campaign_state.choices = choice_items(campaign_data.region_choices)
+        self.campaign_subtype.choices = choice_items(campaign_data.subtype_choices)
+        self.target_ordering.choices = choice_items(campaign_data.target_order_choices)
 
     def validate(self):
         # check default validation
@@ -100,6 +123,7 @@ class CampaignLaunchForm(Form):
 
     test_call_number = TextField(_('Call Me'))
     test_call_location = TextField(_('Test Location'))
+    test_call_country = SelectField(_('Country'), [Optional()], choices=COUNTRY_CHOICES+[('', "Other")])
 
     # standard embed fields
     embed_script = TextField(_('Display Script'), widget=TextArea(), description=True)
@@ -114,6 +138,7 @@ class CampaignLaunchForm(Form):
     embed_custom_css = TextField(_('Custom CSS URL'))
     embed_script_display = SelectField(_('Script Display'), [Optional()], choices=choice_items(EMBED_SCRIPT_DISPLAY),
         description=True, default=EMBED_SCRIPT_DISPLAY[0][0])
+    embed_redirect = TextField(_('Redirect URL'), description=True)
     embed_custom_js = TextField(_('Custom JS Code'), description=True)
 
     submit = SubmitField(_('Launch'))

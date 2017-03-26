@@ -12,13 +12,17 @@ from sqlalchemy.sql import func, desc
 from twilio.util import TwilioCapability
 
 from ..extensions import db
+from ..political_data import COUNTRY_CHOICES
 from ..utils import choice_items, choice_keys, choice_values_flat, duplicate_object
 
-from .constants import CAMPAIGN_NESTED_CHOICES, CUSTOM_CAMPAIGN_CHOICES, EMPTY_CHOICES, STATUS_LIVE
-from .models import Campaign, Target, CampaignTarget, AudioRecording, CampaignAudioRecording, TwilioPhoneNumber
+from .constants import EMPTY_CHOICES, STATUS_LIVE
+from .models import (Campaign, Target, CampaignTarget,
+                     AudioRecording, CampaignAudioRecording,
+                     TwilioPhoneNumber)
 from ..call.models import Call
-from .forms import (CampaignForm, CampaignAudioForm, AudioRecordingForm,
-                    CampaignLaunchForm, CampaignStatusForm, TargetForm)
+from .forms import (CountryTypeForm, CampaignForm, CampaignAudioForm,
+                    AudioRecordingForm, CampaignLaunchForm,
+                    CampaignStatusForm, TargetForm)
 
 campaign = Blueprint('campaign', __name__, url_prefix='/admin/campaign')
 
@@ -41,21 +45,80 @@ def index():
 
 
 @campaign.route('/create', methods=['GET', 'POST'])
-@campaign.route('/<int:campaign_id>/edit', methods=['GET', 'POST'])
-def form(campaign_id=None):
+@campaign.route('/<int:campaign_id>/edit-type', methods=['GET', 'POST'])
+def country_type(campaign_id=None):
     edit = False
     if campaign_id:
         edit = True
 
     if edit:
         campaign = Campaign.query.filter_by(id=campaign_id).first_or_404()
-        form = CampaignForm(obj=campaign)
-        campaign_id = campaign.id
+    else:
+        campaign = None
+
+    form = CountryTypeForm()
+    form.campaign_country.choices = choice_items(COUNTRY_CHOICES)
+
+    # set up a list for all campaign types in each country
+    country_type_choices = dict()
+    all_valid_choices = list()
+    for country_code, country_name in COUNTRY_CHOICES:
+        country_type_choices[country_code] = list()
+        for campaign_type, type_name in Campaign.get_campaign_type_choices(country_code):
+            country_type_choices[country_code].append((campaign_type, type_name))
+            all_valid_choices.append((campaign_type, type_name))
+
+    form.campaign_type.choices = choice_items(all_valid_choices)  # accepts all valid choices, but updates dynamically in view
+
+    if form.validate_on_submit():
+        country_code = form.campaign_country.data
+        campaign_type = form.campaign_type.data
+        campaign_language = form.campaign_language.data
+
+        if campaign and country_code and campaign_type:
+            campaign.country_code = country_code
+            campaign.campaign_type = campaign_type
+            campaign.campaign_language = campaign_language
+            db.session.add(campaign)
+            db.session.commit()
+            return redirect(
+                url_for('campaign.form', campaign_id=campaign.id)
+            )
+        elif country_code and campaign_type:
+            return redirect(
+                url_for('campaign.form', country_code=country_code, campaign_type=campaign_type)
+            )
+
+    if edit:
+        form.campaign_country.data = campaign.country_code
+        form.campaign_type.data = campaign.campaign_type
+        form.campaign_language.data = campaign.campaign_language
+
+    return render_template('campaign/country_type.html',
+        form=form, country_types=country_type_choices)
+
+@campaign.route('/create/<string:country_code>/<string:campaign_type>', methods=['GET', 'POST'])
+@campaign.route('/<int:campaign_id>/edit', methods=['GET', 'POST'])
+def form(country_code=None, campaign_type=None, campaign_id=None):
+    edit = False
+    if campaign_id:
+        edit = True
+
+    if edit:
+        campaign = Campaign.query.filter_by(id=campaign_id).first_or_404()
+        campaign_data = campaign.get_campaign_data()
+        form = CampaignForm(obj=campaign, campaign_data=campaign_data)
+        form.campaign_country.data = campaign_data.country_code
     else:
         campaign = Campaign()
-        form = CampaignForm()
-        campaign_id = None
+        campaign.country_code = country_code
+        campaign.campaign_type = campaign_type
+        campaign_data = campaign.get_campaign_data()
+        form = CampaignForm(campaign_data=campaign_data)
+        form.campaign_country.data = country_code
+        form.campaign_type.data = campaign_type
 
+    # filter call in numbers on client side
     call_in_map = {}
     for number in TwilioPhoneNumber.available_numbers().filter_by(call_in_allowed=True):
         if campaign.id != number.call_in_campaign.id:
@@ -64,7 +127,6 @@ def form(campaign_id=None):
 
     # for fields with dynamic choices, set to empty here in view
     # will be updated in client
-    form.campaign_subtype.choices = choice_values_flat(CAMPAIGN_NESTED_CHOICES)
     form.target_set.choices = choice_items(EMPTY_CHOICES)
 
     # check request.form for campaign_subtype, reset if not present
@@ -74,7 +136,7 @@ def form(campaign_id=None):
     if form.validate_on_submit():
         # can't use populate_obj with nested forms, iterate over fields manually
         for field in form:
-            if field.name != 'target_set':
+            if field.name not in ['target_set', 'campaign_country', 'campaign_type']:
                 setattr(campaign, field.name, field.data)
 
         # handle target_set nested data
@@ -126,9 +188,8 @@ def form(campaign_id=None):
 
     return render_template('campaign/form.html', form=form, edit=edit, campaign_id=campaign_id,
                            descriptions=current_app.config.CAMPAIGN_FIELD_DESCRIPTIONS,
-                           CAMPAIGN_NESTED_CHOICES=CAMPAIGN_NESTED_CHOICES,
-                           CUSTOM_CAMPAIGN_CHOICES=CUSTOM_CAMPAIGN_CHOICES,
                            campaign_has_audio=campaign.has_audio())
+
 
 
 @campaign.route('/<int:campaign_id>/copy', methods=['GET', 'POST'])
@@ -158,7 +219,7 @@ def copy(campaign_id):
         db.session.commit()
 
     flash('Campaign copied.', 'success')
-    return redirect(url_for('campaign.form', campaign_id=new_campaign.id))
+    return redirect(url_for('campaign.edit_form', campaign_id=new_campaign.id))
 
 
 @campaign.route('/<int:campaign_id>/audio', methods=['GET', 'POST'])
@@ -327,7 +388,8 @@ def launch(campaign_id):
                 'location_sel': form.embed_location_sel.data,
                 'custom_css': form.embed_custom_css.data,
                 'custom_js': form.embed_custom_js.data,
-                'script_display': form.embed_script_display.data
+                'script_display': form.embed_script_display.data,
+                'redirect': form.embed_redirect.data
             }
         elif form.embed_type.data == 'iframe':
             campaign.embed = {
@@ -357,11 +419,13 @@ def launch(campaign_id):
                 form.embed_custom_css.data = campaign.embed.get('custom_css')
                 form.embed_custom_js.data = campaign.embed.get('custom_js')
                 form.embed_script_display.data = campaign.embed.get('script_display')
+                form.embed_redirect.data = campaign.embed.get('redirect')
 
             if campaign.embed.get('script'):
                 form.embed_script.data = campaign.embed.get('script')
 
-    return render_template('campaign/launch.html', campaign=campaign, form=form,
+    return render_template('campaign/launch.html', campaign=campaign,
+        campaign_data=campaign.get_campaign_data(), form=form,
         descriptions=current_app.config.CAMPAIGN_FIELD_DESCRIPTIONS)
 
 

@@ -5,15 +5,28 @@
     el: $('#launch'),
 
     events: {
+      'change select#test_call_country': 'changeTestCallCountry',
       'click .test-call': 'makeTestCall',
       'change #embed_type': 'toggleEmbedPanel',
-      'blur #embed_options input': 'updateEmbedCode',
+      'blur #custom_embed_options input': 'updateEmbedCode',
+      'change #custom_embed_options select': 'updateEmbedCode',
+      'change #embed_script_display': 'updateEmbedScriptDisplay',
     },
 
     initialize: function() {
       this.campaignId = $('#campaignId').val();
       $('.readonly').attr('readonly', 'readonly');
       this.toggleEmbedPanel();
+    },
+
+    changeTestCallCountry: function() {
+      var country = $('#test_call_country').val();
+      if (!country) {
+        $('#test_call_country_other').removeClass('hidden')
+        country = $('#test_call_country_other').val();
+      } else {
+        $('#test_call_country_other').addClass('hidden').val('');
+      }
     },
 
     makeTestCall: function(event) {
@@ -33,22 +46,33 @@
       phone = phone.replace("+", "").replace(/\-/g, ''); // remove plus, dash
 
       var location = $('#test_call_location').val();
+      var country = $('#test_call_country').val() || $('#test_call_country_other').val();
+      var record = $('#test_call_record').val();
 
       $.ajax({
         url: '/call/create',
-        data: {campaignId: this.campaignId, userPhone: phone, userLocation: location},
+        data: {campaignId: this.campaignId,
+          userPhone: phone,
+          userLocation: location,
+          userCountry: country,
+          record: record
+        },
         success: function(data) {
-          console.log(data);
           alert('Calling you at '+$('#test_call_number').val()+' now!');
-          if (data.message == 'queued') {
+          if (data.call == 'queued') {
             statusIcon.removeClass('active').addClass('success');
+            $('.form-group.test_call .controls .help-block').removeClass('has-error').text('');
           } else {
-            console.error(data.message);
+            console.error(data);
             statusIcon.addClass('error');
+            $('.form-group.test_call .controls .help-block').addClass('has-error').text(data.responseText);
           }
         },
         error: function(err) {
           console.error(err);
+          statusIcon.addClass('error');
+          var errMessage = err.responseJSON.error || 'unknown error';
+          $('.form-group.test_call .controls .help-block').addClass('has-error').text(errMessage);
         }
       });
     },
@@ -73,7 +97,9 @@
         $('#embed_options h3').text('Javascript Embed Options');
         $('#embed_options .form-group').show();
       }
+
       this.updateEmbedCode();
+      this.updateEmbedScriptDisplay();
     },
 
     updateEmbedCode: function(event) {
@@ -92,7 +118,16 @@
           $('textarea#embed_code').val(html);
         }
       });
-    }
+    },
+
+    updateEmbedScriptDisplay: function(event) {
+      var formType = $('#embed_type').val();
+      var scriptDisplay = $('#embed_script_display').val();
+      
+      $('#embed_options .form-group.redirect').toggle(scriptDisplay === 'redirect');
+      $('#embed_options .form-group.custom').toggle(scriptDisplay === 'custom');
+      $('#embed_options .form-group.iframe').toggle(formType === 'iframe');
+    },
 
   });
 

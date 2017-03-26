@@ -11,7 +11,8 @@ from sqlalchemy.exc import SQLAlchemyError
 from ..extensions import csrf, db
 
 from .models import Call, Session
-from ..campaign.constants import ORDER_SHUFFLE, LOCATION_POSTAL, LOCATION_DISTRICT, SEGMENT_BY_LOCATION
+from .constants import TWILIO_TTS_LANGUAGES
+from ..campaign.constants import LOCATION_POSTAL, LOCATION_DISTRICT, SEGMENT_BY_LOCATION
 from ..campaign.models import Campaign, Target
 from ..political_data.lookup import locate_targets
 
@@ -23,31 +24,38 @@ csrf.exempt(call)
 call.errorhandler(400)(abortJSON)
 
 
-def play_or_say(r, audio, **kwds):
+def play_or_say(r, audio, voice='alice', lang='en-US', **kwargs):
     """
     Take twilio response and play or say message from an AudioRecording
     Can use mustache templates to render keyword arguments
     """
 
     if audio:
+        # check to ensure lang is in list of valid locales
+        if lang not in TWILIO_TTS_LANGUAGES:
+            if '-' in lang:
+                lang, country = lang.split('-')
+            else:
+                lang = 'en'
+
         if (hasattr(audio, 'text_to_speech') and not (audio.text_to_speech == '')):
-            msg = pystache.render(audio.text_to_speech, kwds)
-            r.say(msg)
+            msg = pystache.render(audio.text_to_speech, kwargs)
+            r.say(msg, voice=voice, language=lang)
         elif (hasattr(audio, 'file_storage') and (audio.file_storage.fp is not None)):
             r.play(audio.file_url())
         elif type(audio) == str:
             try:
-                msg = pystache.render(audio, kwds)
-                r.say(msg)
-            except Exception:
+                msg = pystache.render(audio, kwargs)
+                r.say(msg, voice=voice, language=lang)
+            except pystache.common.PystacheError:
                 current_app.logger.error('Unable to render pystache template %s' % audio)
-                r.say(audio)
+                r.say(audio, voice=voice, language=lang)
         else:
             current_app.logger.error('Unknown audio type %s' % type(audio))
     else:
         r.say('Error: no recording defined')
         current_app.logger.error('Missing audio recording')
-        current_app.logger.error(kwds)
+        current_app.logger.error(kwargs)
 
 
 def parse_params(r, inbound=False):
@@ -60,10 +68,13 @@ def parse_params(r, inbound=False):
         'sessionId': r.values.get('sessionId', None),
         'campaignId': r.values.get('campaignId', None),
         'userPhone': r.values.get('userPhone', None),
-        'userCountry': r.values.get('userCountry', 'US'),
+        'userCountry': r.values.get('userCountry', None),
         'userLocation': r.values.get('userLocation', None),
         'targetIds': r.values.getlist('targetIds'),
     }
+
+    if params['userCountry']:
+        params['userCountry'] = params['userCountry'].upper()
 
     if (not params['userPhone']) and not inbound:
         abort(400, 'userPhone required')
@@ -112,7 +123,8 @@ def intro_wait_human(params, campaign):
     # give up after 10 seconds
     with resp.gather(numDigits=1, method="POST", timeout=10,
                      action=action) as g:
-        play_or_say(g, campaign.audio('msg_intro_confirm'))
+        play_or_say(g, campaign.audio('msg_intro_confirm'),
+            lang=campaign.language_code)
 
         return str(resp)
 
@@ -126,9 +138,11 @@ def intro_location_gather(params, campaign):
 
     if campaign.audio('msg_intro_location'):
         play_or_say(resp, campaign.audio('msg_intro_location'),
-                    organization=current_app.config.get('INSTALLED_ORG', ''))
+                    organization=current_app.config.get('INSTALLED_ORG', ''),
+                    lang=campaign.language_code)
     else:
-        play_or_say(resp, campaign.audio('msg_intro'))
+        play_or_say(resp, campaign.audio('msg_intro'),
+            lang=campaign.language_code)
 
     return location_gather(resp, params, campaign)
 
@@ -140,7 +154,8 @@ def location_gather(resp, params, campaign):
     """
     with resp.gather(numDigits=5, method="POST",
                      action=url_for("call.location_parse", **params)) as g:
-        play_or_say(g, campaign.audio('msg_location'))
+        play_or_say(g, campaign.audio('msg_location'),
+            lang=campaign.language_code)
 
     return str(resp)
 
@@ -167,11 +182,15 @@ def make_calls(params, campaign):
         pass
 
     if not params['targetIds']:
-        play_or_say(resp, campaign.audio('msg_invalid_location'), location=params['userLocation'])
+        play_or_say(resp, campaign.audio('msg_invalid_location'),
+            location=params['userLocation'],
+            lang=campaign.language_code)
         resp.hangup()
 
-    if campaign.target_ordering == ORDER_SHUFFLE:
+    if campaign.target_ordering == 'shuffle':
         # reshuffle for each caller
+        # FIXME: Hard-coded special case. This should be implemented somewhere
+        #        in call_server/political_data/countries.
         random.shuffle(params['targetIds'])
 
     # limit calls to maximum number
@@ -181,7 +200,9 @@ def make_calls(params, campaign):
     n_targets = len(params['targetIds'])
 
     play_or_say(resp, campaign.audio('msg_call_block_intro'),
-                n_targets=n_targets, many=n_targets > 1)
+                n_targets=n_targets,
+                many=n_targets > 1,
+                lang=campaign.language_code)
 
     resp.redirect(url_for('call.make_single', call_index=0, **params))
 
@@ -211,6 +232,7 @@ def create():
         userCountry (defaults to US)
         userLocation (zipcode)
         targetIds
+        record (boolean)
     """
     # parse the info needed to make the call
     params, campaign = parse_params(request)
@@ -258,13 +280,16 @@ def create():
             url=url_for('call.connection', _external=True, **params),
             timeLimit=current_app.config['TWILIO_TIME_LIMIT'],
             timeout=current_app.config['TWILIO_TIMEOUT'],
-            status_callback=url_for("call.complete_status", _external=True, **params))
+            status_callback=url_for("call.complete_status", _external=True, **params),
+            record=request.values.get('record', False))
 
         if campaign.embed:
             script = campaign.embed.get('script')
+            redirect = campaign.embed.get('redirect')
         else:
             script = ''
-        result = jsonify(campaign=campaign.status, call=call.status, script=script)
+            redirect = ''
+        result = jsonify(campaign=campaign.status, call=call.status, script=script, redirect=redirect)
         result.status_code = 200 if call.status != 'failed' else 500
     except TwilioRestException, err:
         twilio_error = stripANSI(err.msg)
@@ -339,11 +364,12 @@ def location_parse():
     target_ids = locate_targets(location, campaign)
 
     if current_app.debug:
-        current_app.logger.debug('entered = {}'.format(location))
+        current_app.logger.debug(u'entered = {}'.format(location))
 
     if not target_ids:
         resp = twilio.twiml.Response()
-        play_or_say(resp, campaign.audio('msg_unparsed_location'))
+        play_or_say(resp, campaign.audio('msg_unparsed_location'),
+            lang=campaign.language_code)
 
         return location_gather(resp, params, campaign)
 
@@ -364,7 +390,7 @@ def make_single():
     params['call_index'] = i
 
     (uid, prefix) = parse_target(params['targetIds'][i])
-    (current_target, cached) = Target.get_uid_or_cache(uid, prefix)
+    (current_target, cached) = Target.get_or_cache_key(uid, prefix)
     if cached:
         # save Target to database
         db.session.add(current_target)
@@ -373,27 +399,36 @@ def make_single():
     resp = twilio.twiml.Response()
 
     if not current_target.number:
-        play_or_say(resp, campaign.audio('msg_invalid_location'))
+        play_or_say(resp, campaign.audio('msg_invalid_location'),
+            lang=campaign.language_code)
         return str(resp)
 
     
     play_or_say(resp, campaign.audio('msg_target_intro'),
-        title=current_target.title, name=current_target.name)
+        title=current_target.title,
+        name=current_target.name,
+        lang=campaign.language_code)
 
-    userPhone = PhoneNumber(params['userPhone'], params['userCountry'])
+    if current_app.debug:
+        current_app.logger.debug(u'Call #{}, {} ({}) from {} in call.make_single()'.format(
+            i, current_target.name, current_target.number.e164, params['userPhone']))
+
+    try:
+        parsed = PhoneNumber(params['userPhone'], params['userCountry'])
+        userPhone = parsed.e164
+    except phonenumbers.NumberParseException:
+        current_app.logger.error('Unable to parse %(userPhone)s for %(userCountry)s' % params)
+        # press onward, but we may not be able to actually dial
+        userPhone = params['userPhone']
 
     # sending a twiml.Number to dial init will not nest properly
     # have to add it after creation
-    resp.dial(callerId=userPhone.e164,
+    resp.dial(callerId=userPhone,
               timeLimit=current_app.config['TWILIO_TIME_LIMIT'],
               timeout=current_app.config['TWILIO_TIMEOUT'], hangupOnStar=True,
               action=url_for('call.complete', **params)) \
         .number(current_target.number.e164, sendDigits=current_target.number.extension)
 
-    if current_app.debug:
-        current_app.logger.debug('Call #{}, {} ({}) from {} in call.make_single()'.format(
-            i, current_target.name, current_target.number, params['userPhone']))
-        
     return str(resp)
 
 
@@ -406,7 +441,7 @@ def complete():
         abort(400)
 
     (uid, prefix) = parse_target(params['targetIds'][i])
-    (current_target, cached) = Target.get_uid_or_cache(uid, prefix)
+    (current_target, cached) = Target.get_or_cache_key(uid, prefix)
     call_data = {
         'session_id': params['sessionId'],
         'campaign_id': campaign.id,
@@ -426,20 +461,24 @@ def complete():
 
     if call_data['status'] == 'busy':
         play_or_say(resp, campaign.audio('msg_target_busy'),
-            title=current_target.title, name=current_target.name)
+            title=current_target.title,
+            name=current_target.name,
+            lang=campaign.language_code)
 
     i = int(request.values.get('call_index', 0))
 
     if i == len(params['targetIds']) - 1:
         # thank you for calling message
-        play_or_say(resp, campaign.audio('msg_final_thanks'))
+        play_or_say(resp, campaign.audio('msg_final_thanks'),
+            lang=campaign.language_code)
     else:
         # call the next target
         params['call_index'] = i + 1  # increment the call counter
         calls_left = len(params['targetIds']) - i - 1
 
         play_or_say(resp, campaign.audio('msg_between_calls'),
-            calls_left=calls_left)
+            calls_left=calls_left,
+            lang=campaign.language_code)
 
         resp.redirect(url_for('call.make_single', **params))
 

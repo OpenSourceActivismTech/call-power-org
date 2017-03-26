@@ -22,6 +22,7 @@
 
         <table class="table table-bordered">
             <tr><td>Campaign ID</td><td>{{campaign.id}}</td></tr>
+            <tr><td>Country</td><td>{{campaign_data.country_name}} - {{campaign.language_display() }}</td></tr>
             <tr><td>Name</td><td>{{campaign.name}}</td></tr>
             <tr><td>Type</td><td>{{campaign.campaign_type_display()}}</td></tr>
             <tr><td>Targets</td><td>{{campaign.targets_display()|safe}}</td></tr>
@@ -35,18 +36,20 @@
 
         </table>
 
-        <div class="form-group {{form.test_call_number.id}} ">
+        <div class="form-group test_call">
             <input id="campaignId" type="hidden" value="{{campaign.id}}" />
             <label class="control-label col-sm-2 " for="{{form.test_call_number.id}}">{{form.test_call_number.label}}</label>
 
-            <div class="controls col-sm-6">
+            <div class="controls col-sm-8">
                 <input class="form-control inline" id="{{form.test_call_number.id}}" name="{{form.test_call_number.id}}" type="text" {% if current_user.phone%}value="{{current_user.phone}}"{%endif%} placeholder="Test Phone">
                 <input class="form-control inline" id="{{form.test_call_location.id}}" name="{{form.test_call_location.id}}" type="text" {% if current_user.location%}value="{{current_user.location}}"{%endif%} placeholder="{{form.test_call_location.label.text}}">
-                                
+                {{form.test_call_country(class_="form-control inline", value=campaign_data.country_name)}}
+                <input class="form-control inline hidden" id="test_call_country_other" name="test_call_country_other" type="text" placeholder="ISO-2 Code" size="8" maxlength="2">
+                <label class="control-label"><input class="form-control inline" type="checkbox" name="record" id="test_call_record" value="true" /> Record</label>
                 <span class="help-block"></span>
             </div>
 
-            <div class="col-sm-3">
+            <div class="col-sm-2">
                 <button type="button" class="btn btn-primary test-call">Test Call</button>
                 <span class="glyphicon status inline"></span>
             </div>
@@ -71,8 +74,9 @@
                 {{ render_field_default(form.embed_phone_sel) }}
                 {{ render_field_default(form.embed_location_sel) }}
                 {{ render_field_default(form.embed_script_display) }}
+                {{ render_field_default(form.embed_redirect, group_class='redirect') }}
                 {{ render_field_default(form.embed_custom_css, group_class='iframe') }}
-                {{ render_field_default(form.embed_custom_js) }}
+                {{ render_field_default(form.embed_custom_js, group_class='custom') }}
             </div>
         </div>
 

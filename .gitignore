@@ -1,6 +1,7 @@
 .pid
 src
 venv
+.venv
 *.pyc
 *.db
 .env
@@ -11,3 +12,4 @@ call_server/static/.webassets-cache
 *.swp
 /docker-compose.yml
 instance/uploads
+/node_modules

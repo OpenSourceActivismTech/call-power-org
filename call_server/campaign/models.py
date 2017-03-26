@@ -8,8 +8,9 @@ from sqlalchemy import UniqueConstraint
 from ..extensions import db, cache
 from ..utils import convert_to_dict
 from ..political_data.adapters import adapt_to_target
-from .constants import (CAMPAIGN_CHOICES, CAMPAIGN_NESTED_CHOICES, STRING_LEN, TWILIO_SID_LENGTH,
-                        CAMPAIGN_STATUS, STATUS_PAUSED, SEGMENT_BY_CHOICES, LOCATION_CHOICES, ORDERING_CHOICES, )
+from ..political_data import get_country_data
+from .constants import (STRING_LEN, TWILIO_SID_LENGTH, LANGUAGE_CHOICES,
+                        CAMPAIGN_STATUS, STATUS_PAUSED, SEGMENT_BY_CHOICES, LOCATION_CHOICES)
 
 
 class Campaign(db.Model):
@@ -19,9 +20,11 @@ class Campaign(db.Model):
     created_time = db.Column(db.DateTime, default=datetime.utcnow)
 
     name = db.Column(db.String(STRING_LEN), nullable=False, unique=True)
+    country_code = db.Column(db.String(STRING_LEN), index=True)
     campaign_type = db.Column(db.String(STRING_LEN))
     campaign_state = db.Column(db.String(STRING_LEN))
     campaign_subtype = db.Column(db.String(STRING_LEN))
+    campaign_language = db.Column(db.String(STRING_LEN))
 
     segment_by = db.Column(db.String(STRING_LEN))
     locate_by = db.Column(db.String(STRING_LEN))
@@ -87,36 +90,40 @@ class Campaign(db.Model):
 
     def campaign_type_display(self):
         "Display method for this campaign's type"
-        campaign_choices = convert_to_dict(CAMPAIGN_CHOICES)
-        val = ''
-        if self.campaign_type:
-            val = campaign_choices.get(self.campaign_type, '')
-
-        return val
+        campaign_data = self.get_campaign_data()
+        if campaign_data:
+            return campaign_data.type_name
+        else:
+            return None
 
     def campaign_subtype_display(self):
         "Display method for this campaign's subtype"
-        subtype_choices = convert_to_dict(CAMPAIGN_NESTED_CHOICES)
-        campaign_subtypes = dict(subtype_choices[self.campaign_type])
-        val = ''
-        if self.campaign_subtype and self.campaign_subtype != "None":
-            sub = campaign_subtypes.get(self.campaign_subtype, '')
-            if self.campaign_type == 'state':
-                # special case, show specific state
-                val = '%s - %s' % (self.campaign_state, sub)
-            else:
-                val = sub
-        return val
+        campaign_data = self.get_campaign_data()
+        if campaign_data:
+            return campaign_data.get_subtype_display(self.campaign_subtype, campaign_region=self.campaign_state)
+        else:
+            return None
+
+    @property
+    def language_code(self):
+        return u"{}-{}".format(self.campaign_language.lower(), self.country_code.upper())
+
+    def language_display(self):
+        return dict(LANGUAGE_CHOICES).get(self.campaign_language, '?')
 
     def order_display(self):
         "Display method for this campaign's ordering"
-        return dict(ORDERING_CHOICES).get(self.target_ordering)
+        campaign_data = self.get_campaign_data()
+        if campaign_data:
+            return campaign_data.get_order_display(self.target_ordering)
+        else:
+            return None
 
     def phone_numbers(self, region_code=None):
         "Phone numbers for this campaign, can be limited to a specified region code (ISO-2)"
         if region_code:
             # convert region_code to country_code for comparison
-            country_code = phone_number.phonenumbers.country_code_for_region(region_code)
+            country_code = phone_number.phonenumbers.country_code_for_region(region_code.upper())
             return [n.number.e164 for n in self.phone_number_set if n.number.country_code == country_code]
         else:
             # return all numbers in set
@@ -125,9 +132,10 @@ class Campaign(db.Model):
     def required_fields(self):
         """API convenience method for rendering campaigns externally
         Returns dict of parameters and data types required to place call"""
-        fields = {'userPhone': 'US'}  # TODO, update for multiple countries
+        fields = dict()
+        fields['userPhone'] = self.country_code
         if self.segment_by == 'location':
-            fields.update({'userLocation': self.locate_by})
+            fields['userLocation'] = self.locate_by
         return fields
 
     def segment_display(self):
@@ -147,6 +155,18 @@ class Campaign(db.Model):
             return ", ".join(["%s" % t.name for t in self.target_set])
         else:
             return self.campaign_subtype_display()
+
+    @staticmethod
+    def get_campaign_type_choices(country_code, cache=cache):
+        country_data = get_country_data(country_code, cache=cache, api_cache='localmem')
+        return country_data.campaign_type_choices
+
+    def get_country_data(self, cache=cache):
+        return get_country_data(self.country_code, cache=cache, api_cache='localmem')
+
+    def get_campaign_data(self, cache=cache):
+        country_data = self.get_country_data(cache)
+        return country_data.get_campaign_type(self.campaign_type)
 
 
 class CampaignTarget(db.Model):
@@ -188,7 +208,7 @@ class Target(db.Model):
         return self.number.e164
 
     @classmethod
-    def get_uid_or_cache(cls, uid, prefix=None):
+    def get_or_cache_key(cls, uid, prefix=None):
         if prefix:
             key = '%s:%s' % (prefix, uid)
         else:
@@ -228,7 +248,8 @@ class TwilioPhoneNumber(db.Model):
     call_in_campaign = db.relationship('Campaign', foreign_keys=[call_in_campaign_id])
 
     def __unicode__(self):
-        return self.number.__unicode__()
+        # use e164 for external apis, but international formatting for display
+        return self.number.international
 
     @classmethod
     def available_numbers(*args, **kwargs):

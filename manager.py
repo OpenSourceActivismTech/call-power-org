@@ -39,7 +39,9 @@ def runserver(external=None):
         app.config['SERVER_NAME'] = external
         app.config['STORE_DOMAIN'] = "http://" + external # needs to have scheme, so urlparse is fully absolute
         print "serving from %s" % app.config['SERVER_NAME']
+    print "loading political data..."
     political_data.load_data(cache)
+    print "done"
 
     host = (os.environ.get('APP_HOST') or '127.0.0.1')
     app.run(debug=True, use_reloader=True, host=host)

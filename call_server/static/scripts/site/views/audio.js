@@ -33,6 +33,7 @@
       });
 
       this.campaign_id = $('input[name="campaign_id"]').val();
+      this.campaign_language = $('input[name="campaign_language"]').val();
 
       $('audio', this.el).on('ended', this.onPlayEnded);
       _.bindAll(this, 'onPlayEnded');
@@ -48,6 +49,7 @@
                     description: inputGroup.find('.description .help-inline').text(),
                     example_text: inputGroup.find('.description .example-text').text(),
                     campaign_id: this.campaign_id,
+                    campaign_language: this.campaign_language,
                   };
       // and api
       var self = this;
@@ -115,7 +117,11 @@
               button.children('.text').html('Pause');
             } else if (self.twilio) {
               console.log('twilio text-to-speech',recording);
-              self.twilio.connect({'text': recording });
+              self.twilio.connect({
+                'text': recording,
+                'voice': 'alice',
+                'lang': self.campaign_language,
+            });
 
               button.children('.glyphicon').removeClass('glyphicon-play').addClass('glyphicon-bullhorn');
               button.children('.text').html('Speak');
