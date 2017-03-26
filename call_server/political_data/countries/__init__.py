@@ -1,3 +1,4 @@
+from flask import current_app
 from flask.ext.babel import gettext as _
 import werkzeug.contrib.cache
 import pickle
@@ -57,22 +58,24 @@ class DataProvider(object):
         else:
             raise AttributeError('cache does not appear to be dict-like')
 
-    def cache_search(self, key_prefix):
+    def cache_search(self, key_starts_with):
         """
-        Searches for keys starting with prefix
+        Searches for keys starting with a name
         Handles difference between flask-cache and mock-dictionary
         May be slow in production, until we do ZRANGEBYLEX for sorted indexes
         """
         result = []
         if isinstance(self._cache.cache, werkzeug.contrib.cache.RedisCache):
             # it is redis, we can scan
-            redis = self._cache._client
-            for r in r.scan_iter(match=key_prefix+'*'):
-                result.append(r)
-        if isinstance(self._cache.cache, werkzeug.contrib.cache.SimpleCache):
+            redis = self._cache.cache._client
+            key_scan = current_app.config['CACHE_KEY_PREFIX'] + key_starts_with + '*'
+            for prefixed_key in redis.scan_iter(match=key_scan):
+                key = prefixed_key.replace(current_app.config['CACHE_KEY_PREFIX'], '')
+                result.extend(self.cache_get(key))
+        elif isinstance(self._cache.cache, werkzeug.contrib.cache.SimpleCache):
             # naively search across all the keys
             for (k,v) in self._cache.cache._cache.items():
-                if k.startswith(key_prefix):
+                if k.startswith(key_starts_with):
                     wet_value = pickle.loads(v[1])
                     if isinstance(wet_value, list):
                         result.extend(wet_value)

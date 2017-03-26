@@ -113,7 +113,7 @@ class HerokuConfig(ProductionConfig):
     # cache via heroku-redis
     CACHE_TYPE = 'redis'
     CACHE_REDIS_URL = os.environ.get('REDIS_URL')
-    CACHE_KEY_PREFIX = 'call-power'
+    CACHE_KEY_PREFIX = 'call-power:'
 
     # smtp via sendgrid
     MAIL_SERVER = 'smtp.sendgrid.net'
@@ -127,6 +127,10 @@ class DevelopmentConfig(DefaultConfig):
     DEBUG = True
     DEBUG_INFO = True
     TESTING = False
+
+    CACHE_TYPE = 'redis'
+    CACHE_REDIS_URL = 'redis://localhost:6379'
+    CACHE_KEY_PREFIX = 'call-power:'
 
     ENVIRONMENT = "Development"
 

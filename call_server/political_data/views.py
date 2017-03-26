@@ -33,9 +33,12 @@ def search():
 
     filters = request.args.getlist('filter')
     for f in filters:
-        field, value = f.split('=')
-        value = value.lower()
-        results = [d for d in results if d[field].lower().startswith(value)]
+        try:
+            field, value = f.split('=')
+            value = value.lower()
+            results = [d for d in results if d[field].lower().startswith(value)]
+        except ValueError:
+            continue
 
     return jsonify({
         'status': 'ok',

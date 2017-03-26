@@ -170,8 +170,6 @@
         results = response;
       }
 
-      console.log(results);
-
       var dropdownMenu = renderTemplate("#search-results-dropdown-tmpl");
       if (results.length === 0) {
         dropdownMenu.append('<li class="result close"><a>No results</a></li>');
@@ -189,12 +187,10 @@
           person.uid = 'us_state:openstates:'+person.leg_id;
         } else if (person.title === 'Governor') {
           person.uid = 'us_state:governor:'+person.state
-        } else if (person.related.boundary_url) {
+        } else if (person.related && person.related.boundary_url) {
           var boundary_url = person.related.boundary_url.replace('/boundaries/', '/');
           person.uid = boundary_url;
         }
-
-        console.log(person);
 
         // render the main office
         if (person.phone || person.tel) {
