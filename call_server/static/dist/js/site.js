@@ -537,6 +537,8 @@ $(document).ready(function () {
       var type = $('select#campaign_type').val();
       var subtype = $('select#campaign_subtype').val();
 
+      $('.search-field ul.dropdown-menu li a').show();
+
       if (country === 'us') {
         // state
         if (type === 'state') {
@@ -544,6 +546,7 @@ $(document).ready(function () {
             $('#target-search input[name="target-search"]').attr('placeholder', 'search US Governors');
           } else {
             $('#target-search input[name="target-search"]').attr('placeholder', 'search OpenStates');
+            $('.search-field ul.dropdown-menu li #state').hide(); // already searching by state
           }
         }
 
@@ -1468,7 +1471,8 @@ $(document).ready(function () {
             if (chamber === 'upper' || chamber === 'lower') {
               searchData['chamber'] = chamber;
             } // if both, don't limit to a chamber
-            searchData[search_field] = query;
+            // query may have been cleared, get value from input
+            searchData[search_field] = $('input[name="target-search"]').val();
           }
         }
       }
@@ -1478,6 +1482,7 @@ $(document).ready(function () {
         data: searchData,
         success: self.renderSearchResults,
         error: self.errorSearchResults,
+        beforeSend: function(jqXHR, settings) { console.log(settings.url); },
       });
       return true;
     },

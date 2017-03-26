@@ -129,6 +129,9 @@
       var type = $('select#campaign_type').val();
       var subtype = $('select#campaign_subtype').val();
 
+      // show all search fields
+      $('.search-field ul.dropdown-menu li a').show();
+
       if (country === 'us') {
         // state
         if (type === 'state') {
@@ -136,6 +139,7 @@
             $('#target-search input[name="target-search"]').attr('placeholder', 'search US Governors');
           } else {
             $('#target-search input[name="target-search"]').attr('placeholder', 'search OpenStates');
+            $('.search-field ul.dropdown-menu li #state').hide(); // already searching by state
           }
         }
 

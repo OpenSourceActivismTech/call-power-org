@@ -109,7 +109,8 @@
             if (chamber === 'upper' || chamber === 'lower') {
               searchData['chamber'] = chamber;
             } // if both, don't limit to a chamber
-            searchData[search_field] = query;
+            // query may have been cleared, get value from input
+            searchData[search_field] = $('input[name="target-search"]').val();
           }
         }
       }
@@ -119,6 +120,7 @@
         data: searchData,
         success: self.renderSearchResults,
         error: self.errorSearchResults,
+        beforeSend: function(jqXHR, settings) { console.log(settings.url); },
       });
       return true;
     },
