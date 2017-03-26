@@ -67,6 +67,17 @@ def loadpoliticaldata():
         # http://stackoverflow.com/questions/8774958/keyerror-in-module-threading-after-a-successful-py-test-run/12639040#12639040
 
 @manager.command
+def redis_clear():
+    print "This will entirely clear the Redis cache"
+    confirm = raw_input('Confirm (Y/N): ')
+    if confirm == 'Y':
+        with app.app_context():
+            cache.cache._client.flushdb()
+        print "redis cache cleared"
+    else:
+        print "exit"
+
+@manager.command
 def alembic():
     """Run alembic migration command"""
     subprocess.call([".venv/bin/alembic", "init", "alembic"])
