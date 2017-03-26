@@ -59,9 +59,9 @@
                         <div class="input-group-btn search-field">
                           <button type="button" class="btn btn-flat btn-white dropdown-toggle" data-toggle="dropdown">Field <span class="caret"></span></button>
                           <ul class="dropdown-menu">
-                            <li><a href="#">State</a></li>
-                            <li><a href="#">Last Name</a></li>
-                            <li><a href="#">Committee</a></li>
+                            <li><a href="#" id="state">State</a></li>
+                            <li><a href="#" id="last_name">Last Name</a></li>
+                            <!--<li><a href="#">Committee</a></li>-->
                           </ul>
                            <input type="hidden" name="search_field" />
                         </div>
@@ -69,7 +69,6 @@
                             <button class="btn btn-default search" type="button">Go</button>
                         </span>
                     </div>
-
                     <div class="input-group right">
                         <button class="btn btn-primary add" type="button">Add</button>
                         <div class="description">
@@ -78,6 +77,7 @@
                         </div>
                     </div>
                 </div>
+                <span class="search-help-block"></span>
 
                 <!-- target_set entries stored as hidden inputs named target_set-N-FIELD -->
                 <div id="target-set" class="hidden">
@@ -162,7 +162,7 @@
 <script type="text/template" id="search-results-item-tmpl">
     <li class="result">
         <a data-object='{ "title":"<%= data.title %>",
-                          "name":"<%= data.first_name %> <%= data.last_name %><% if (data.office_name){ %> <%= data.office_name %><% } %> office",
+                          "name":"<%= data.first_name %> <%= data.last_name %><% if (data.office_name){ %> <%= data.office_name %> office<% } %>",
                           "number":"<%= data.phone %>",
                           "uid": "<%= data.uid %>"
                         }'>

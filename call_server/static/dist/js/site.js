@@ -1367,7 +1367,7 @@ $(document).ready(function () {
       // target search
       'keydown input[name="target-search"]': 'searchKey',
       'focusout input[name="target-search"]': 'searchTab',
-      'click .search-field .dropdown-menu li': 'searchField',
+      'click .search-field .dropdown-menu li a': 'searchField',
       'click .search': 'doTargetSearch',
       'click .search-results .result': 'selectSearchResult',
       'click .search-results .close': 'closeSearch',
@@ -1389,9 +1389,9 @@ $(document).ready(function () {
 
     searchField: function(event) {
       event.preventDefault();
-      var selectedField = $(event.currentTarget).text();
-      $('.search-field button').html(selectedField+' <span class="caret"></span>');
-      $('input[name=search_field]').val(selectedField.replace(' ', '_').toLowerCase());
+      var selectedField = $(event.currentTarget);
+      $('.search-field button').html(selectedField.text()+' <span class="caret"></span>');
+      $('input[name=search_field]').val(selectedField.attr('id'));
     },
 
     doTargetSearch: function(event) {
@@ -1410,7 +1410,13 @@ $(document).ready(function () {
         'key': query // default to full text search
       };
 
+      if (!search_field) {
+        self.errorSearchResults({status: 'warning', message: 'Select a field to search'});
+        return false;
+      }
+
       if (query.length < 2) {
+        self.errorSearchResults({status: 'warning', message: 'Search query must be at least two characters long'});
         return false;
       }
 
@@ -1420,6 +1426,11 @@ $(document).ready(function () {
         if (campaign_type === 'congress') {
           // format key by chamber
           if (search_field === 'state') {
+            query = query.toUpperCase();
+            if (query.length > 2) {
+              self.errorSearchResults({status: 'danger', message: 'Search by state abbreviation'});
+              return false;
+            }
             if (chamber === 'lower') {
                 searchData['key'] = 'us:house:'+query;
             }
@@ -1433,7 +1444,7 @@ $(document).ready(function () {
           }
 
           if (search_field === 'last_name') {
-            console.error('TODO, search cache by name');
+            self.errorSearchResults({status: 'info', message: 'Search by name TODO'});
             return false;
           }
         }
@@ -1456,12 +1467,9 @@ $(document).ready(function () {
         }
       }
 
-      console.log(searchURL, searchData);
-
       $.ajax({
         url: searchURL,
         data: searchData,
-        beforeSend: function(jqXHR, settings) { console.log(settings.url); },
         success: self.renderSearchResults,
         error: self.errorSearchResults,
       });
@@ -1469,7 +1477,7 @@ $(document).ready(function () {
     },
 
     renderSearchResults: function(response) {
-      console.log(response);
+      $('.form-group#set-targets .search-help-block').empty();
 
       var results;
       if (response.results) {
@@ -1503,7 +1511,7 @@ $(document).ready(function () {
           dropdownMenu.append(li);
         }
 
-        // and all the others
+        // then any others
         _.each(person.offices, function(office) {
           if (office.phone) {
             person.phone = office.phone;
@@ -1517,8 +1525,10 @@ $(document).ready(function () {
     },
 
     errorSearchResults: function(response) {
-      // TODO: show bootstrap warning panel
-      console.log(response);
+      var error_panel = $('<div class="alert alert-'+response.status+'">'+
+                          '<button type="button" class="close" data-dismiss="alert">×</button>'+
+                          response.message+'</div>');
+      $('.form-group#set-targets .search-help-block').html(error_panel);
     },
 
     closeSearch: function() {
