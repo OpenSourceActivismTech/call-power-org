@@ -309,7 +309,7 @@ class USDataProvider(DataProvider):
         Load US state governor data from saved file
         Returns a dictionary keyed by state to cache for fast lookup
 
-        eg us:governor:CA = {'title':'Governor', 'name':'Jerry Brown Jr.', 'phone': '18008076755'}
+        eg us_state:governor:CA = {'title':'Governor', 'name':'Jerry Brown Jr.', 'phone': '18008076755'}
         """
         governors = collections.defaultdict(dict)
 

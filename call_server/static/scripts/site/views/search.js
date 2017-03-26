@@ -64,34 +64,40 @@
       if (campaign_country === 'us') {
         var chamber = $('select[name="campaign_subtype"]').val();
 
+        if (search_field === 'state') {
+          query = query.toUpperCase();
+          if (query.length > 2) {
+            self.errorSearchResults({status: 'danger', message: 'Search by state abbreviation'});
+            return false;
+          }
+        }
+
+        if (search_field === 'last_name') {
+          searchData['filter'] = 'last_name='+query;
+          query = ''; // clear query, used as filter value
+        }
+
         if (campaign_type === 'congress') {
           // format key by chamber
-          if (search_field === 'state') {
-            query = query.toUpperCase();
-            if (query.length > 2) {
-              self.errorSearchResults({status: 'danger', message: 'Search by state abbreviation'});
-              return false;
-            }
-            if (chamber === 'lower') {
-                searchData['key'] = 'us:house:'+query;
-            }
-            if (chamber === 'upper') {
-              searchData['key'] = 'us:senate:'+query;
-            }
-            if (chamber === 'both') {
-              // use jQuery param to send multiple values
-              searchData = $.param({ 'key': ['us:house:'+query, 'us:senate:'+query] }, true);
-            }
+          if (chamber === 'lower') {
+              searchData['key'] = 'us:house:'+query;
           }
-
-          if (search_field === 'last_name') {
-            self.errorSearchResults({status: 'info', message: 'Search by name TODO'});
-            return false;
+          if (chamber === 'upper') {
+            searchData['key'] = 'us:senate:'+query;
+          }
+          if (chamber === 'both') {
+            // use jQuery param to send multiple values
+            var filter = searchData['filter'];
+            searchData = $.param({
+              'key': ['us:house:'+query, 'us:senate:'+query],
+              'filter': filter
+            }, true);
           }
         }
 
         if (campaign_type === 'state') {
           if (chamber === 'exec') {
+            // search using our own data
             searchData['key'] = 'us_state:governor:'+query;
           } else {
             // hit OpenStates
@@ -118,6 +124,8 @@
     },
 
     renderSearchResults: function(response) {
+      // clear existing results, errors
+      $('.search-results .dropdown-menu').empty();
       $('.form-group#set-targets .search-help-block').empty();
 
       var results;

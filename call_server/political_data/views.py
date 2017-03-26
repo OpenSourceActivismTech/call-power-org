@@ -31,6 +31,12 @@ def search():
     for k in keys:
         results.extend(data_provider.cache_search(k))
 
+    filters = request.args.getlist('filter')
+    for f in filters:
+        field, value = f.split('=')
+        value = value.lower()
+        results = [d for d in results if d[field].lower().startswith(value)]
+
     return jsonify({
         'status': 'ok',
         'results': results
