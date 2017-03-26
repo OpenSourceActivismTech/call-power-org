@@ -133,7 +133,8 @@
       $('.search-field ul.dropdown-menu li a').show();
 
       if (country === 'us') {
-        // state
+        $('.search-field ul.dropdown-menu li #state').text('State');
+
         if (type === 'state') {
           if (subtype === 'exec') {
             $('#target-search input[name="target-search"]').attr('placeholder', 'search US Governors');
@@ -155,7 +156,12 @@
       }
 
       if (country === 'ca') {
-        // TODO, search OpenNorth for MP name
+        $('.search-field ul.dropdown-menu li #state').text('Province');
+        $('#target-search input[name="target-search"]').attr('placeholder', 'search OpenNorth');
+
+        if (type === 'province') {
+          $('.search-field ul.dropdown-menu li #state').hide(); // already searching by province
+        }
       }
     },
 

@@ -115,6 +115,34 @@
         }
       }
 
+      if (campaign_country === 'ca') {
+        var baseURL = CallPower.Config.OPENNORTH_URL;
+        // reset search data to match OpenNorth
+        searchData = {};
+        
+        if (campaign_type === 'parliament') {
+          searchURL = baseURL + 'representatives/house-of-commons/';
+          searchData[search_field] = query;
+        }
+
+        if (campaign_type === 'province') {
+          var CA_PROVINCE_BODIES = {
+            'AB': 'alberta-legislature',
+            'BC': 'bc-legislature',
+            'MB': 'manitoba-legislature',
+            'NB': 'new-brunswick-legislature',
+            'NL': 'newfoundland-labrador-legislature',
+            'NS': 'nova-scotia-legislature',
+            'ON': 'ontario-legislature',
+            'PE': 'pei-legislature',
+            'QC': 'quebec-assemblee-nationale',
+            'SK': 'saskatchewan-legislature',
+           }
+          searchURL = baseURL + 'representatives/'+CA_PROVINCE_BODIES[campaign_state];
+          searchData[search_field] = query;
+        }
+      }
+
       $.ajax({
         url: searchURL,
         data: searchData,
@@ -133,10 +161,16 @@
       var results;
       if (response.results) {
         results = response.results;
-      } else {
-        // openstates doesn't paginate
+      } if (response.objects) {
+        // open north returns meta
+        results = response.objects;
+      }
+
+      if (!results) {
         results = response;
       }
+
+      console.log(results);
 
       var dropdownMenu = renderTemplate("#search-results-dropdown-tmpl");
       if (results.length === 0) {
@@ -147,6 +181,7 @@
         // standardize office titles
         if (person.title === 'Sen')  { person.title = 'Senator'; }
         if (person.title === 'Rep')  { person.title = 'Representative'; }
+        if (person.elected_office === 'MP')  { person.title = 'MP'; }
 
         if (person.bioguide_id) {
           person.uid = 'us:bioguide:'+person.bioguide_id;
@@ -154,19 +189,24 @@
           person.uid = 'us_state:openstates:'+person.leg_id;
         } else if (person.title === 'Governor') {
           person.uid = 'us_state:governor:'+person.state
+        } else if (person.related.boundary_url) {
+          var boundary_url = person.related.boundary_url.replace('/boundaries/', '/');
+          person.uid = boundary_url;
         }
 
+        console.log(person);
+
         // render the main office
-        if (person.phone) {
+        if (person.phone || person.tel) {
           var li = renderTemplate("#search-results-item-tmpl", person);
           dropdownMenu.append(li);
         }
 
         // then any others
         _.each(person.offices, function(office) {
-          if (office.phone) {
-            person.phone = office.phone;
-            person.office_name = office.name || office.city;
+          if (office.phone || office.tel) {
+            person.phone = office.phone || office.tel;
+            person.office_name = office.name || office.city || office.type;
             var li = renderTemplate("#search-results-item-tmpl", person);
             dropdownMenu.append(li);
           }
