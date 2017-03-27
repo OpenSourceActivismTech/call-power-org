@@ -84,9 +84,12 @@ def country_type(campaign_id=None):
             return redirect(
                 url_for('campaign.form', campaign_id=campaign.id)
             )
-        elif country_code and campaign_type:
+        elif country_code and campaign_type and campaign_language:
             return redirect(
-                url_for('campaign.form', country_code=country_code, campaign_type=campaign_type)
+                url_for('campaign.form',
+                    country_code=country_code,
+                    campaign_type=campaign_type,
+                    campaign_language=campaign_language)
             )
 
     if edit:
@@ -97,9 +100,9 @@ def country_type(campaign_id=None):
     return render_template('campaign/country_type.html',
         form=form, country_types=country_type_choices)
 
-@campaign.route('/create/<string:country_code>/<string:campaign_type>', methods=['GET', 'POST'])
+@campaign.route('/create/<string(length=2):campaign_language>-<string(length=2):country_code>/<string:campaign_type>', methods=['GET', 'POST'])
 @campaign.route('/<int:campaign_id>/edit', methods=['GET', 'POST'])
-def form(country_code=None, campaign_type=None, campaign_id=None):
+def form(country_code=None, campaign_type=None, campaign_id=None, campaign_language=None):
     edit = False
     if campaign_id:
         edit = True
@@ -113,6 +116,7 @@ def form(country_code=None, campaign_type=None, campaign_id=None):
         campaign = Campaign()
         campaign.country_code = country_code
         campaign.campaign_type = campaign_type
+        campaign.campaign_language = campaign_language
         campaign_data = campaign.get_campaign_data()
         form = CampaignForm(campaign_data=campaign_data)
         form.campaign_country.data = country_code
