@@ -363,7 +363,7 @@ class USDataProvider(DataProvider):
 
     def get_house_members(self, state, district):
         key = self.KEY_HOUSE.format(state=state, district=district)
-        return self.cache.get(key) or []
+        return self.cache_get(key)
 
     def get_senators(self, state):
         key = self.KEY_SENATE.format(state=state)
