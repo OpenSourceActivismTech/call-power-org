@@ -30,12 +30,14 @@ class UnitedStatesData(object):
         for office in data.get('offices', []):
             if not office['phone']:
                 continue
-            office_list.append({
+            office_data = {
                 'name': office['city'],
                 'address': u'{address} {building} {city} {state}'.format(**office),
-                'location': 'POINT({latitude}, {longitude})'.format(**office),
                 'number': office['phone']
-            })
+            }
+            if 'latitude' in office and 'longitude' in office:
+                office_data['location'] = 'POINT({latitude}, {longitude})'.format(**office),
+            office_list.append(office_data)
         return office_list
 
 
