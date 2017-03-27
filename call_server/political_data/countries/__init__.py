@@ -7,6 +7,8 @@ class DataProvider(object):
     country_name = None
     campaign_types = []
 
+    SORTED_SETS = []
+
     def __init__(self, **kwargs):
         pass
 
@@ -62,16 +64,28 @@ class DataProvider(object):
         """
         Searches for keys starting with a name
         Handles difference between flask-cache and mock-dictionary
-        May be slow in production, until we do ZRANGEBYLEX for sorted indexes
         """
         result = []
         if isinstance(self._cache.cache, werkzeug.contrib.cache.RedisCache):
-            # it is redis, we can scan
             redis = self._cache.cache._client
-            key_scan = current_app.config['CACHE_KEY_PREFIX'] + key_starts_with + '*'
-            for prefixed_key in redis.scan_iter(match=key_scan):
-                key = prefixed_key.replace(current_app.config['CACHE_KEY_PREFIX'], '')
-                result.extend(self.cache_get(key))
+
+            # check sorted sets first
+            for s in self.SORTED_SETS:
+                if key_starts_with.startswith(s):
+                    # weird redis syntax for min/max
+                    min_val = u'[' + key_starts_with
+                    max_val = u'(' + key_starts_with + u'\xff'
+                    matching_keys = redis.zrangebylex(s, min_val, max_val)
+                    for key in matching_keys:
+                        result.extend(self.cache_get(key))
+
+            # fall back on key scan
+            # can be fairly slow (3-4s for full scan)
+            if not result:
+                key_scan = current_app.config['CACHE_KEY_PREFIX'] + key_starts_with + '*'
+                for prefixed_key in redis.scan_iter(match=key_scan):
+                    key = prefixed_key.replace(current_app.config['CACHE_KEY_PREFIX'], '')
+                    result.extend(self.cache_get(key))
         elif isinstance(self._cache.cache, werkzeug.contrib.cache.SimpleCache):
             # naively search across all the keys
             for (k,v) in self._cache.cache._cache.items():

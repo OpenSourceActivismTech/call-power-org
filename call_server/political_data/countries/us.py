@@ -1,3 +1,4 @@
+import werkzeug.contrib.cache
 from flask.ext.babel import gettext as _
 from sunlight import openstates, response_cache
 
@@ -206,6 +207,8 @@ class USDataProvider(DataProvider):
     KEY_GOVERNOR = 'us_state:governor:{state}'
     KEY_ZIPCODE = 'us:zipcode:{zipcode}'
 
+    SORTED_SETS = ['us:house', 'us:senate']
+
     def __init__(self, cache, api_cache=None, **kwargs):
         super(USDataProvider, self).__init__(**kwargs)
         self._cache = cache
@@ -336,6 +339,15 @@ class USDataProvider(DataProvider):
         self.cache_set_many(districts)
         self.cache_set_many(legislators)
         self.cache_set_many(governors)
+
+        # if cache is redis, add lexigraphical index on states, names
+        if isinstance(self._cache.cache, werkzeug.contrib.cache.RedisCache):
+            redis = self._cache.cache._client
+            for (key,record) in legislators.items():
+                if key.startswith('us:house'):
+                    redis.zadd('us:house', key, 0)
+                if key.startswith('us:senate'):
+                    redis.zadd('us:senate', key, 0)
 
         log.info("loaded %s zipcodes" % len(districts))
         log.info("loaded %s legislators" % len(legislators))
