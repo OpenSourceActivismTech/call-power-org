@@ -344,10 +344,9 @@ class USDataProvider(DataProvider):
         if isinstance(self._cache.cache, werkzeug.contrib.cache.RedisCache):
             redis = self._cache.cache._client
             for (key,record) in legislators.items():
-                if key.startswith('us:house'):
-                    redis.zadd('us:house', key, 0)
-                if key.startswith('us:senate'):
-                    redis.zadd('us:senate', key, 0)
+                for sorted_key in self.SORTED_SETS:
+                    if key.startswith(sorted_key):
+                        redis.zadd(sorted_key, key, 0)
 
         log.info("loaded %s zipcodes" % len(districts))
         log.info("loaded %s legislators" % len(legislators))
