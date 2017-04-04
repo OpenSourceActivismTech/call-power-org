@@ -246,7 +246,7 @@ class Target(db.Model):
             # create office objects, link to target
             for office in offices:
                 if adapter_suffix:
-                    if not office['id'] == adapter_suffix:
+                    if not office['uid'] == adapter_suffix:
                         continue
 
                 o = TargetOffice(**office)
@@ -262,6 +262,7 @@ class TargetOffice(db.Model):
     __tablename__ = 'campaign_target_office'
 
     id = db.Column(db.Integer, primary_key=True)
+    uid = db.Column(db.String(STRING_LEN), index=True, nullable=True)  # for US, this is bioguide_id-location_name
     name = db.Column(db.String(STRING_LEN), nullable=True)
     address = db.Column(db.String(STRING_LEN), nullable=True, unique=False)
     location = db.Column(db.String(STRING_LEN), nullable=True, unique=False)

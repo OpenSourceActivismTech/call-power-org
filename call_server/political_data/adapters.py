@@ -60,7 +60,7 @@ class UnitedStatesData(DataAdapter):
             office_data = {
                 'name': office.get('city', ''),
                 'number': office.get('phone', ''),
-                'id': office.get('id', '')
+                'uid': office.get('id', '')
             }
             if 'city' in office and 'state' in office:
                 if 'address' in office and 'building' in office:
