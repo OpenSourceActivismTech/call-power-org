@@ -242,11 +242,15 @@
     },
 
     selectSearchResult: function(event) {
+      // get reference to collection from global
+      var collection = CallPower.campaignForm.targetListView.collection;
+
       // pull json data out of data-object attr
       var obj = $(event.target).data('object');
-      
-      // add it to the targetListView collection
-      CallPower.campaignForm.targetListView.collection.add(obj);
+      // force to appear at the end of the list
+      obj.order = collection.length;
+      // add it to the collection, triggers render and recalculateOrder
+      collection.add(obj);
 
       // if only one result, closeSearch
       if ($('.search-results .dropdown-menu').children('.result').length <= 1) {
