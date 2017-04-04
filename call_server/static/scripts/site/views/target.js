@@ -215,7 +215,8 @@
     onAdd: function() {
       // create new empty item
       var item = this.collection.add({
-        uid: this.shortRandomString('custom:', 6)
+        uid: this.shortRandomString('custom:', 6),
+        order: this.collection.length
       });
       this.recalculateOrder(this);
     },
