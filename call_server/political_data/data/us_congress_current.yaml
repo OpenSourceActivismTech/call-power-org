@@ -2734,7 +2734,7 @@
     url: https://www.gillibrand.senate.gov
     address: 478 Russell Senate Office Building Washington DC 20510
     phone: 202-224-4451
-    fax: 202-225-1168
+    fax: 202-228-0282
     contact_form: http://www.gillibrand.senate.gov/contact/
     office: 478 Russell Senate Office Building
     state_rank: junior
@@ -21319,6 +21319,7 @@
     icpsr: 20307
     wikidata: Q539493
     google_entity_id: kg:/m/024tds
+    ballotpedia: Devin Nunes
   name:
     first: Devin
     middle: G.
@@ -35789,7 +35790,7 @@
     party: Republican
     phone: 202-225-2701
     url: https://mullin.house.gov
-    rss_url: http://mullin.house.gov/rss.xml
+    rss_url: http://mullin.house.gov/news/rss.aspx
     address: 1113 Longworth HOB; Washington DC 20515-3602
     office: 1113 Longworth House Office Building
     fax: 202-225-3038
@@ -41465,6 +41466,7 @@
     district: 19
     party: Republican
     phone: 202-225-5614
+    fax: 202-225-1168
     address: 1616 Longworth HOB; Washington DC 20515-3219
     office: 1616 Longworth House Office Building
     url: https://faso.house.gov
@@ -41865,6 +41867,8 @@
     fec:
     - S8AL00308
     maplight: 2245
+    wikipedia: Luther Strange
+    wikidata: Q6705642
     cspan: 9278255
   name:
     first: Luther

@@ -8748,6 +8748,30 @@
     latitude: 32.5579513
     longitude: -93.7228425
     id: J000299-bossier_city
+  - address: 444 Caspari Dr.
+    building: ''
+    city: Natchitoches
+    fax: ''
+    hours: ''
+    phone: 318-357-5731
+    state: LA
+    suite: South Hall Room 224
+    zip: '71497'
+    latitude: 31.7479383
+    longitude: -93.0970551
+    id: J000299-natchitoches
+  - address: 3329 University Parkway
+    building: Building 552
+    city: Leesville
+    fax: ''
+    hours: ''
+    phone: 337-392-3146
+    state: LA
+    suite: Room 24
+    zip: '71446'
+    latitude: 31.0884912
+    longitude: -93.2312895
+    id: J000299-leesville
 - id:
     bioguide: K000009
     govtrack: 400211
@@ -10005,18 +10029,6 @@
     govtrack: 412191
     thomas: '01834'
   offices:
-  - address: 415 Main St.
-    building: ''
-    city: Buena Vista
-    fax: 719-520-0840
-    hours: ''
-    phone: 719-520-0055
-    state: CO
-    suite: ''
-    zip: '81211'
-    latitude: 38.8427855
-    longitude: -106.1285992
-    id: L000564-buena_vista
   - address: 1125 Kelly Johnson Blvd.
     building: ''
     city: Colorado Springs
@@ -10646,6 +10658,18 @@
     latitude: 30.4463425
     longitude: -84.28819759999999
     id: L000586-tallahassee
+  - address: 1010 N. Davis St.
+    building: ''
+    city: Jacksonville
+    fax: 904-379-0309
+    hours: ''
+    phone: 904-354-1652
+    state: FL
+    suite: Suite 206
+    zip: '32209'
+    latitude: 30.336823
+    longitude: -81.667581
+    id: L000586-jacksonville
 - id:
     bioguide: L000587
     govtrack: 412711
@@ -12370,7 +12394,19 @@
 - id:
     bioguide: M001200
     govtrack: 412728
-    offices: []
+  offices:
+  - address: 110 North Robinson Street
+    building: ''
+    city: Richmond
+    fax: ''
+    hours: ''
+    phone: 804-486-1840
+    state: VA
+    suite: Suite 401
+    zip: '23220'
+    latitude: 37.5534549
+    longitude: -77.4731247
+    id: M001200-richmond
 - id:
     bioguide: M001201
     govtrack: 412710
@@ -15382,17 +15418,17 @@
     govtrack: 400367
     thomas: '01525'
   offices:
-  - address: 12750 Merit Drive
+  - address: 12377 Merit Drive
     building: Park Central VII
     city: Dallas
     fax: 972-392-0615
     hours: ''
     phone: 972-392-0505
     state: TX
-    suite: Suite 1434
-    zip: 75251-1229
-    latitude: 32.9222738
-    longitude: -96.7703002
+    suite: Suite 750
+    zip: 75251-2345
+    latitude: 32.915938
+    longitude: -96.772971
     id: S000250-dallas
 - id:
     bioguide: S000320
@@ -19268,3 +19304,31 @@
     latitude: 27.772067
     longitude: -82.64355
     id: C001111-st__petersburg
+- id:
+    bioguide: H001077
+    govtrack: 412705
+  offices:
+  - address: 600 Jefferson Street
+    building: Chase Building
+    city: Lafayette
+    fax: ''
+    hours: ''
+    phone: 337-703-6105
+    state: LA
+    suite: Suite 808
+    zip: '70501'
+    latitude: 30.22335
+    longitude: -92.01907
+    id: H001077-lafayette
+  - address: 1 Lakeshore Drive
+    building: Capital One Building
+    city: Lake Charles
+    fax: ''
+    hours: ''
+    phone: 337-656-2833
+    state: LA
+    suite: Suite 1670
+    zip: '70629'
+    latitude: 30.2305579
+    longitude: -93.2196295
+    id: H001077-lake_charles
