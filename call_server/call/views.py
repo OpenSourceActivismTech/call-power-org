@@ -404,22 +404,26 @@ def make_single():
             lang=campaign.language_code)
         return str(resp)
 
-    if campaign.target_offices == TARGET_OFFICE_DISTRICT:
-        office = random.choice(current_target.offices)
-        target_phone = office.number
-    elif campaign.target_offices == TARGET_OFFICE_BUSY:
-        # TODO keep track of which ones we have tried
-        undialed_offices = current_target.offices
-        # then pick a random one
-        office = random.choice(undialed_offices)
-        target_phone = office.number
-    #elif campaign.target_offices == TARGET_OFFICE_CLOSEST:
-    #   office = find_closest(current_target.offices, params['userLocation'])
-    #   target_phone = office.phone
+    if current_target.offices:
+        if campaign.target_offices == TARGET_OFFICE_DISTRICT:
+            office = random.choice(current_target.offices)
+            target_phone = office.number
+        elif campaign.target_offices == TARGET_OFFICE_BUSY:
+            # TODO keep track of which ones we have tried
+            undialed_offices = current_target.offices
+            # then pick a random one
+            office = random.choice(undialed_offices)
+            target_phone = office.number
+        #elif campaign.target_offices == TARGET_OFFICE_CLOSEST:
+        #   office = find_closest(current_target.offices, params['userLocation'])
+        #   target_phone = office.phone
+        else:
+            office = None
+            target_phone = current_target.number
     else:
         office = None
         target_phone = current_target.number
-
+        
     play_or_say(resp, campaign.audio('msg_target_intro'),
         title=current_target.title,
         name=current_target.name,
