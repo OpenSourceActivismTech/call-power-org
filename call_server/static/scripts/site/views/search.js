@@ -191,12 +191,16 @@
         if (person.title === 'Rep')  { person.title = 'Representative'; }
         if (person.elected_office === 'MP')  { person.title = 'MP'; }
 
+        var uid_prefix = '';
         if (person.bioguide_id) {
-          person.uid = 'us:bioguide:'+person.bioguide_id;
+          uid_prefix = 'us:bioguide:';
+          person.uid = uid_prefix+person.bioguide_id;
         } else if (person.leg_id) {
-          person.uid = 'us_state:openstates:'+person.leg_id;
+          uid_prefix = 'us_state:openstates:';
+          person.uid = uid_prefix+person.leg_id;
         } else if (person.title === 'Governor') {
-          person.uid = 'us_state:governor:'+person.state
+          uid_prefix = 'us_state:governor:';
+          person.uid = uid_prefix+person.state
         } else if (person.related && person.related.boundary_url) {
           var boundary_url = person.related.boundary_url.replace('/boundaries/', '/');
           person.uid = boundary_url;
@@ -210,10 +214,15 @@
 
         // then any others
         _.each(person.offices, function(office) {
+          // normalize fields to person
           if (office.phone || office.tel) {
-            person.phone = office.phone || office.tel;
-            person.office_name = office.name || office.city || office.type;
-            var li = renderTemplate("#search-results-item-tmpl", person);
+            office.title = person.title;
+            office.first_name = person.first_name;
+            office.last_name = person.last_name;
+            office.uid = uid_prefix+office.id;
+            office.phone = office.phone || office.tel;
+            office.office_name = office.name || office.city || office.type;
+            var li = renderTemplate("#search-results-item-tmpl", office);
             dropdownMenu.append(li);
           }
         });

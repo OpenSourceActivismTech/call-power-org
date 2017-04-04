@@ -226,8 +226,9 @@ class Target(db.Model):
         cached = False
 
         if not t:
-            cached_obj = cache.get(key)
             adapter = adapt_by_key(key)
+            adapted_key, adapted_suffix = adapter.key(key)
+            cached_obj = cache.get(key)
             if type(cached_obj) is list:
                 data = adapter.target(cached_obj[0])
                 offices = adapter.offices(cached_obj[0])
