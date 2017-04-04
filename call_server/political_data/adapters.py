@@ -19,8 +19,14 @@ class DataAdapter(object):
     def __init__(self, **kwargs):
         pass
 
-    def key(self, key):
-        return key       
+    def key(self, key, split_by='-'):
+        """
+        @return a key and suffix, split by an optional delimiter
+        """
+        if split_by:
+            return key.split(split_by)
+        else:
+            return (key, '')
 
     def target(self, data):
         raise NotImplementedError()
@@ -33,10 +39,9 @@ class UnitedStatesData(DataAdapter):
     def key(self, key):
         # split district office id from rest of bioguide
         if '-' in key:
-            biogude, office = key.split('-')
-            return bioguide
+            return key.split('-')
         else:
-            return key
+            return (key, '')
 
     def target(self, data):
         return {

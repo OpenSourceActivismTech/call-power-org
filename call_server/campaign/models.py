@@ -227,8 +227,8 @@ class Target(db.Model):
 
         if not t:
             adapter = adapt_by_key(key)
-            adapted_key, adapted_suffix = adapter.key(key)
-            cached_obj = cache.get(key)
+            adapted_key, adapter_suffix = adapter.key(key)
+            cached_obj = cache.get(adapted_key)
             if type(cached_obj) is list:
                 data = adapter.target(cached_obj[0])
                 offices = adapter.offices(cached_obj[0])
@@ -245,6 +245,10 @@ class Target(db.Model):
             db.session.add(t)
             # create office objects, link to target
             for office in offices:
+                if adapter_suffix:
+                    if not office['id'] == adapter_suffix:
+                        continue
+
                 o = TargetOffice(**office)
                 o.target = t
                 db.session.add(o)
