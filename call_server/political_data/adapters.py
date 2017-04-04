@@ -15,13 +15,35 @@ def adapt_by_key(key):
     # TODO add for other countries
 
 
-class UnitedStatesData(object):
+class DataAdapter(object):
+    def __init__(self, **kwargs):
+        pass
+
+    def key(self, key):
+        return key       
+
     def target(self, data):
-        return {       
+        raise NotImplementedError()
+
+    def offices(self, data):
+        raise NotImplementedError()
+
+
+class UnitedStatesData(DataAdapter):
+    def key(self, key):
+        # split district office id from rest of bioguide
+        if '-' in key:
+            biogude, office = key.split('-')
+            return bioguide
+        else:
+            return key
+
+    def target(self, data):
+        return {
             'name': u'{first_name} {last_name}'.format(**data),
-            'number': data['phone'], # DC office number
-            'title': data['title'],
-            'uid': data['bioguide_id']
+            'number': data.get('phone', ''), # DC office number
+            'title': data.get('title', ''),
+            'uid': data.get('bioguide_id', '')
         }
 
     def offices(self, data):
@@ -31,23 +53,33 @@ class UnitedStatesData(object):
             if not office['phone']:
                 continue
             office_data = {
-                'name': office['city'],
-                'address': u'{address} {building} {city} {state}'.format(**office),
-                'number': office['phone']
+                'name': office.get('city', ''),
+                'number': office.get('phone', ''),
+                'id': office.get('id', '')
             }
+            if 'city' in office and 'state' in office:
+                if 'address' in office and 'building' in office:
+                    office_data['address'] = '{address} {building} {city} {state}'.format(**office)
+                elif 'address' in office:
+                    office_data['address'] = '{address} {city} {state}'.format(**office)
+                else:
+                    office_data['address'] = '{city} {state}'.format(**office)
+            else:
+                office_data['address'] = ''
+
             if 'latitude' in office and 'longitude' in office:
-                office_data['location'] = 'POINT({latitude}, {longitude})'.format(**office),
+                office_data['location'] = 'POINT({latitude}, {longitude})'.format(**office)
             office_list.append(office_data)
         return office_list
 
 
-class OpenStatesData(object):
+class OpenStatesData(DataAdapter):
     def target(self, data):
         return {
-            'name': data['full_name'],
+            'name': data.get('full_name', ''),
             'title': 'Senator' if data['chamber'] == "upper" else "Represenatative",
-            'number': filter(lambda d: d['type'] == 'capitol', data['offices'])[0].get('phone', None),
-            'uid': data['leg_id']
+            'number': filter(lambda d: d['type'] == 'capitol', data['offices'])[0].get('phone', ''),
+            'uid': data.get('leg_id', '')
         }
 
     def offices(self, data):
@@ -59,31 +91,31 @@ class OpenStatesData(object):
             if not office['phone']:
                 continue
             office_list.append({
-                'name': office['name'],
-                'address': office['address'],
-                'number': office['phone']
+                'name': office.get('name', ''),
+                'address': office.get('address', ''),
+                'number': office.get('phone', '')
             })
         return office_list
 
 
-class GovernorAdapter(object):
+class GovernorAdapter(DataAdapter):
     def target(self, data):
         return {
             'name': u'{first_name} {last_name}'.format(**data),
-            'title': data['title'],
-            'number': data['phone'],
-            'uid': data['state'],
+            'title': data.get('title', ''),
+            'number': data.get('phone', ''),
+            'uid': data.get('state', ''),
         }
 
 
-class OpenNorthAdapter(object):
+class OpenNorthAdapter(DataAdapter):
     def target(self, data):
         return {
             'name': u'{first_name} {last_name}'.format(**data),
-            'title': data['elected_office'],
-            'number': filter(lambda d: d['type'] == 'legislature', data['offices'])[0].get('tel', None),
+            'title': data.get('elected_office', ''),
+            'number': filter(lambda d: d['type'] == 'legislature', data['offices'])[0].get('tel', ''),
             # legislature office number
-            'uid': data['cache_key']
+            'uid': data.get('cache_key', '')
         }
 
     def offices(self, data):
@@ -95,9 +127,9 @@ class OpenNorthAdapter(object):
             if not office['tel']:
                 continue
             office_list.append({
-                'name': office['type'],
-                'address': office['postal'],
-                'number': office['tel']
+                'name': office.get('type', ''),
+                'address': office.get('postal', ''),
+                'number': office.get('tel', '')
             })
         return office_list
 
