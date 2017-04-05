@@ -8,7 +8,7 @@ def locate_targets(location, campaign, cache=cache):
 
     if campaign.target_set:
         target_set = [t.uid for t in campaign.target_set]
-        if campaign.order == 'shuffle':
+        if campaign.target_ordering == 'shuffle':
             random.shuffle(target_set)
         return target_set
     else:

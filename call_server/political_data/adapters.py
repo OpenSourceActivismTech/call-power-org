@@ -11,7 +11,7 @@ def adapt_by_key(key):
     elif key.startswith("ca:opennorth"):
         return OpenNorthAdapter()
     else:
-        return data
+        return key
     # TODO add for other countries
 
 
