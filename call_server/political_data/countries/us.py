@@ -173,12 +173,12 @@ class USCampaignType_State(USCampaignType):
     def _get_state_upper(self, location, campaign_region=None):
         legislators = self.data_provider.get_state_legislators(location)
         filtered = self._filter_legislators(legislators, campaign_region)
-        return (l['leg_id'] for l in filtered if l['chamber'] == 'upper')
+        return (self.data_provider.KEY_OPENSTATES.format(id=l['leg_id']) for l in filtered if l['chamber'] == 'upper')
 
     def _get_state_lower(self, location, campaign_region=None):
         legislators = self.data_provider.get_state_legislators(location)
         filtered = self._filter_legislators(legislators, campaign_region)
-        return (l['leg_id'] for l in filtered if l['chamber'] == 'lower')
+        return (self.data_provider.KEY_OPENSTATES.format(id=l['leg_id']) for l in filtered if l['chamber'] == 'lower')
 
     def _filter_legislators(self, legislators, campaign_region=None):
         for legislator in legislators:
