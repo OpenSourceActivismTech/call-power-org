@@ -11,7 +11,7 @@ def adapt_by_key(key):
     elif key.startswith("ca:opennorth"):
         return OpenNorthAdapter()
     else:
-        return key
+        return DataAdapter()
     # TODO add for other countries
 
 
@@ -23,16 +23,16 @@ class DataAdapter(object):
         """
         @return a key and suffix, split by an optional delimiter
         """
-        if split_by:
+        if split_by in key:
             return key.split(split_by)
         else:
             return (key, '')
 
     def target(self, data):
-        raise NotImplementedError()
+        return data
 
     def offices(self, data):
-        raise NotImplementedError()
+        return [data]
 
 
 class UnitedStatesData(DataAdapter):
