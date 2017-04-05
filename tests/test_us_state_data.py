@@ -40,12 +40,12 @@ class TestUSStateData(BaseTestCase):
         # returns a list of uids (openstates leg_id)
         self.assertEqual(len(uids), 2)
 
-        house_rep = self.us_data.get_state_legid(uids[0])
+        house_rep = self.us_data.get_uid(uids[0])
         self.assertEqual(house_rep['chamber'], 'lower')
         self.assertEqual(house_rep['state'].upper(), 'CA')
         self.assertEqual(house_rep['active'], True)
 
-        senator = self.us_data.get_state_legid(uids[1])
+        senator = self.us_data.get_uid(uids[1])
         self.assertEqual(senator['chamber'], 'upper')
         self.assertEqual(senator['state'].upper(), 'CA')
         self.assertEqual(senator['active'], True)
@@ -55,9 +55,7 @@ class TestUSStateData(BaseTestCase):
         uids = locate_targets(self.mock_location, self.STATE_CAMPAIGN, self.mock_cache)
         self.assertEqual(len(uids), 1)
 
-        print uids
-
-        house_rep = self.us_data.get_state_legid(uids[0])
+        house_rep = self.us_data.get_uid(uids[0])
         self.assertEqual(house_rep['chamber'], 'lower')
         self.assertEqual(house_rep['state'].upper(), 'CA')
         self.assertEqual(house_rep['active'], True)
@@ -67,7 +65,7 @@ class TestUSStateData(BaseTestCase):
         uids = locate_targets(self.mock_location, self.STATE_CAMPAIGN, self.mock_cache)
         self.assertEqual(len(uids), 1)
 
-        senator = self.us_data.get_state_legid(uids[0])
+        senator = self.us_data.get_uid(uids[0])
         self.assertEqual(senator['chamber'], 'upper')
         self.assertEqual(senator['state'].upper(), 'CA')
         self.assertEqual(senator['active'], True)
@@ -78,10 +76,10 @@ class TestUSStateData(BaseTestCase):
         uids = locate_targets(self.mock_location, self.STATE_CAMPAIGN, self.mock_cache)
         self.assertEqual(len(uids), 2)
 
-        first = self.us_data.get_state_legid(uids[0])
+        first = self.us_data.get_uid(uids[0])
         self.assertEqual(first['chamber'], 'lower')
 
-        second = self.us_data.get_state_legid(uids[1])
+        second = self.us_data.get_uid(uids[1])
         self.assertEqual(second['chamber'], 'upper')
 
     def test_locate_targets_ordered_upper_first(self):
@@ -90,10 +88,10 @@ class TestUSStateData(BaseTestCase):
         uids = locate_targets(self.mock_location, self.STATE_CAMPAIGN, self.mock_cache)
         self.assertEqual(len(uids), 2)
 
-        first = self.us_data.get_state_legid(uids[0])
+        first = self.us_data.get_uid(uids[0])
         self.assertEqual(first['chamber'], 'upper')
 
-        second = self.us_data.get_state_legid(uids[1])
+        second = self.us_data.get_uid(uids[1])
         self.assertEqual(second['chamber'], 'lower')
 
     def test_locate_targets_incorrect_state(self):
@@ -104,6 +102,19 @@ class TestUSStateData(BaseTestCase):
         
         uids = locate_targets(other_location, self.STATE_CAMPAIGN, self.mock_cache)
         self.assertEqual(len(uids), 0)
+
+    def test_get_state_legid(self):
+        # uses sunlight api directly, not our locate_targets functions
+        self.STATE_CAMPAIGN.campaign_state = 'CA'
+
+        legids = self.us_data.get_state_legislators(self.mock_location)
+        self.assertEqual(len(legids), 2)
+
+        first = self.us_data.get_state_legid(legids[0]['id'])
+        self.assertEqual(first['chamber'], 'lower')
+
+        second = self.us_data.get_state_legid(legids[1]['id'])
+        self.assertEqual(second['chamber'], 'upper')
 
     def test_50_governors(self):
         NO_GOV = ['AS', 'GU', 'MP', 'PR', 'VI', 'DC', '']

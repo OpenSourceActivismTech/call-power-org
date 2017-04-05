@@ -341,7 +341,7 @@ class USDataProvider(DataProvider):
         self.cache_set_many(governors)
 
         # if cache is redis, add lexigraphical index on states, names
-        if isinstance(self._cache.cache, werkzeug.contrib.cache.RedisCache):
+        if hasattr(self._cache, 'cache') and isinstance(self._cache.cache, werkzeug.contrib.cache.RedisCache):
             redis = self._cache.cache._client
             for (key,record) in legislators.items():
                 for sorted_key in self.SORTED_SETS:
