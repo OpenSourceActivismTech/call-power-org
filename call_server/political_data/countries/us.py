@@ -173,12 +173,12 @@ class USCampaignType_State(USCampaignType):
     def _get_state_upper(self, location, campaign_region=None):
         legislators = self.data_provider.get_state_legislators(location)
         filtered = self._filter_legislators(legislators, campaign_region)
-        return (self.data_provider.KEY_OPENSTATES.format(id=l['leg_id']) for l in filtered if l['chamber'] == 'upper')
+        return (l['cache_key'] for l in filtered if l['chamber'] == 'upper')
 
     def _get_state_lower(self, location, campaign_region=None):
         legislators = self.data_provider.get_state_legislators(location)
         filtered = self._filter_legislators(legislators, campaign_region)
-        return (self.data_provider.KEY_OPENSTATES.format(id=l['leg_id']) for l in filtered if l['chamber'] == 'lower')
+        return (l['cache_key'] for l in filtered if l['chamber'] == 'lower')
 
     def _filter_legislators(self, legislators, campaign_region=None):
         for legislator in legislators:
@@ -384,9 +384,10 @@ class USDataProvider(DataProvider):
         legislators = openstates.legislator_geo_search(location.latitude, location.longitude)
 
         # save results individually in local cache
-        for l in legislators:
-            key = self.KEY_OPENSTATES.format(id=l['leg_id'])
-            self.cache_set(key, l)
+        for leg in legislators:
+            key = self.KEY_OPENSTATES.format(id=leg['leg_id'])
+            leg['cache_key'] = key
+            self.cache_set(key, leg)
 
         return legislators
 
@@ -398,6 +399,7 @@ class USDataProvider(DataProvider):
         if not leg:
             # or lookup from openstates and save
             leg = openstates.legislator_detail(legid)
+            leg['cache_key'] = key
             self.cache_set(key, leg)
         return leg
 
