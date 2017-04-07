@@ -64,11 +64,11 @@ class UnitedStatesData(DataAdapter):
             }
             if 'city' in office and 'state' in office:
                 if 'address' in office and 'building' in office:
-                    office_data['address'] = '{address} {building} {city} {state}'.format(**office)
+                    office_data['address'] = u'{address} {building} {city} {state}'.format(**office)
                 elif 'address' in office:
-                    office_data['address'] = '{address} {city} {state}'.format(**office)
+                    office_data['address'] = u'{address} {city} {state}'.format(**office)
                 else:
-                    office_data['address'] = '{city} {state}'.format(**office)
+                    office_data['address'] = u'{city} {state}'.format(**office)
             else:
                 office_data['address'] = ''
 

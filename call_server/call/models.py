@@ -40,7 +40,7 @@ class Call(db.Model):
         self.duration = duration
 
     def __repr__(self):
-        return '<Call to {}>'.format(self.target.name)
+        return u'<Call to {}>'.format(self.target.name)
 
     def target_display(self):
         if self.target:
@@ -85,4 +85,4 @@ class Session(db.Model):
         self.status = status
 
     def __repr__(self):
-        return '<Session for {}>'.format(self.phone_hash)
+        return u'<Session for {}>'.format(self.phone_hash)
