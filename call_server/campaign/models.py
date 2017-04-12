@@ -108,7 +108,10 @@ class Campaign(db.Model):
 
     @property
     def language_code(self):
-        return u"{}-{}".format(self.campaign_language.lower(), self.country_code.upper())
+        if self.campaign_language and self.country_code:
+            return u"{}-{}".format(self.campaign_language.lower(), self.country_code.upper())
+        else:
+            return u"en-US"
 
     def language_display(self):
         return dict(LANGUAGE_CHOICES).get(self.campaign_language, '?')
