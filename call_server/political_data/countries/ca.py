@@ -3,7 +3,7 @@ from flask.ext.babel import gettext as _
 import represent
 from . import DataProvider, CampaignType
 
-from ..geocode import Geocoder
+from ..geocode import Geocoder, LocationError
 from ..constants import CA_PROVINCE_ABBR_DICT
 from ...campaign.constants import (LOCATION_POSTAL, LOCATION_ADDRESS, LOCATION_LATLON)
 
@@ -195,7 +195,7 @@ class CADataProvider(DataProvider):
 
 
     def get_representatives(self, location, body_name='house-of-commons'):
-        if not location.latitude and location.longitude:
+        if not location or not (location.latitude and location.longitude):
             raise LocationError('CADataProvider.get_representatives requires location with lat/lon')
 
         point = "{},{}".format(location.latitude, location.longitude)

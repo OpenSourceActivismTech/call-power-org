@@ -16,6 +16,7 @@ from ..campaign.constants import (LOCATION_POSTAL, LOCATION_DISTRICT, SEGMENT_BY
     TARGET_OFFICE_DISTRICT, TARGET_OFFICE_BUSY)
 from ..campaign.models import Campaign, Target
 from ..political_data.lookup import locate_targets
+from ..political_data.geocode import LocationError
 
 from .decorators import crossdomain, abortJSON, stripANSI
 
@@ -177,7 +178,11 @@ def make_calls(params, campaign):
             params['targetIds'] = [t.uid for t in campaign.target_set]
         elif campaign.segment_by == SEGMENT_BY_LOCATION:
             # lookup targets for campaign type by segment, put in desired order
-            params['targetIds'] = locate_targets(params['userLocation'], campaign=campaign)
+            try:
+                params['targetIds'] = locate_targets(params['userLocation'], campaign=campaign)
+            except LocationError, e:
+                current_app.logger.error('Unable to locate_targets for %(userLocation)s in %(userCountry)s' % params)
+                params['targetIds'] = []
     else:
         # targetIds already set by /create
         pass

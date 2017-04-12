@@ -114,6 +114,10 @@ class GovernorAdapter(DataAdapter):
 
 
 class OpenNorthAdapter(DataAdapter):
+    def key(self, key, split_by=None):
+        # override default key split behavior, because we need to use district names which may have dashes
+        return (key, '')
+
     def target(self, data):
         return {
             'name': u'{first_name} {last_name}'.format(**data),
