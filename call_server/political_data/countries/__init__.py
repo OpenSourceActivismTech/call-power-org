@@ -103,7 +103,8 @@ class CampaignType(object):
     type_name = None
     subtypes = []
     target_orders = [
-        ('in-order', _("In order"))
+        ('in-order', _("In order")),
+        ('shuffle', _("Shuffle")),
     ]
 
     def __init__(self, data_provider):
