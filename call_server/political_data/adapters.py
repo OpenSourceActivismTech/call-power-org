@@ -80,12 +80,20 @@ class UnitedStatesData(DataAdapter):
 
 class OpenStatesData(DataAdapter):
     def target(self, data):
-        return {
+        adapted = {
             'name': data.get('full_name', ''),
             'title': 'Senator' if data['chamber'] == "upper" else "Represenatative",
-            'number': filter(lambda d: d['type'] == 'capitol', data['offices'])[0].get('phone', ''),
             'uid': data.get('leg_id', '')
         }
+        # default to capitol office
+        for office in data['offices']:
+            if office.get('type') == 'capitol':
+                adapted['number'] = office.get('phone', '')
+        # if none, try first
+        if not 'number' in adapted:
+            adapted['number'] = data.get('offices',[{}])[0].get('phone', '')
+            # fallback to none
+        return adapted
 
     def offices(self, data):
         office_list = []
