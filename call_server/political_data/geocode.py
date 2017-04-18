@@ -118,9 +118,9 @@ class Geocoder(object):
         if API_NAME == 'nominatim':
                 # nominatim sets country bias at init
                 # and has no API_KEY
-                self.client = service(country_bias=country)
+                self.client = service(country_bias=country, timeout=3)
         elif API_KEY:
-            self.client = service(API_KEY)
+            self.client = service(API_KEY, timeout=3)
         else:
             raise LocationError('configure your geocoder with environment variables GEOCODE_PROVIDER and GEOCODE_API_KEY')
             
@@ -145,16 +145,22 @@ class Geocoder(object):
     def geocode(self, address):
         service = self.get_service_name()
 
-        if service is GOOGLE_SERVICE:
-            # bias responses to region/country (2-letter TLD)
-            result = Location(self.client.geocode(address, region=self.country))
-        if service is NOMINATIM_SERVICE:
-            # nominatim won't return metadata unless we ask
-            result = Location(self.client.geocode(address, addressdetails=True))
-        else:
-            result = Location(self.client.geocode(address))
+        try:
+            if service is GOOGLE_SERVICE:
+                response = self.client.geocode(address, region=self.country)
+                # bias responses to region/country (2-letter TLD)           
+            if service is NOMINATIM_SERVICE:
+                # nominatim won't return metadata unless we ask
+                response = self.client.geocode(address, addressdetails=True)
+            else:
+                response = self.client.geocode(address)
 
-        result.service = service
+            result = Location(response)
+            result.service = service
+
+        except geopy.exc.GeocoderTimedOut:
+            result = Location()
+            result.service = "Timeout"
         return result
 
     def reverse(self, latlon):
