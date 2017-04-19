@@ -133,10 +133,6 @@ def form(country_code=None, campaign_type=None, campaign_id=None, campaign_langu
     # will be updated in client
     form.target_set.choices = choice_items(EMPTY_CHOICES)
 
-    # check request.form for campaign_subtype, reset if not present
-    if not request.form.get('campaign_subtype'):
-        form.campaign_subtype.data = None
-
     if form.validate_on_submit():
         # can't use populate_obj with nested forms, iterate over fields manually
         for field in form:
