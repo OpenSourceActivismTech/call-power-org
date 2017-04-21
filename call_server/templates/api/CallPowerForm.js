@@ -147,8 +147,8 @@ CallPowerForm.prototype = function($) {
       scriptDiv.html(response.script);
 
       scriptDiv.insertAfter(this.form);
-      this.form.slideUp();
-      scriptDiv.slideUp();
+      this.form.slideToggle();
+      scriptDiv.slideToggle();
     }
 
     if (this.scriptDisplay === 'redirect') {
