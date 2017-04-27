@@ -7,9 +7,12 @@ var main = function($) {
       $.getScript("{{ url_for('static', filename='embed/overlay.js', _external=True) }}");
       $('head').append('<link rel="stylesheet" href="{{ url_for("static", filename="embed/overlay.css", _external=True) }}" />');
     {% endif %}
+  {% else %}
+    {# if embed not defined, try to attach to the first form we see #}
+    callPowerForm = new CallPowerForm('form', $);
   {% endif %}
-  {# check javascript context also, in case it is defined in templates but not this campaign #}
-  if (window.CallPowerOptions.scriptDisplay === 'overlay' && !$.overlay) {
+  {# check javascript context also, in case script display is defined in templates but not this campaign #}
+  if (window.CallPowerOptions && window.CallPowerOptions.scriptDisplay === 'overlay' && !$.overlay) {
     $.getScript("{{ url_for('static', filename='embed/overlay.js', _external=True) }}");
     $('head').append('<link rel="stylesheet" href="{{ url_for("static", filename="embed/overlay.css", _external=True) }}" />');
   }
