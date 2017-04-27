@@ -219,7 +219,7 @@
             office.title = person.title;
             office.first_name = person.first_name;
             office.last_name = person.last_name;
-            office.uid = uid_prefix+office.id;
+            office.uid = person.uid+(office.id || '');
             office.phone = office.phone || office.tel;
             office.office_name = office.name || office.city || office.type;
             var li = renderTemplate("#search-results-item-tmpl", office);

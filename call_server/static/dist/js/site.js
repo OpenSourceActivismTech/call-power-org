@@ -1588,7 +1588,7 @@ $(document).ready(function () {
             office.title = person.title;
             office.first_name = person.first_name;
             office.last_name = person.last_name;
-            office.uid = uid_prefix+office.id;
+            office.uid = person.uid+(office.id || '');
             office.phone = office.phone || office.tel;
             office.office_name = office.name || office.city || office.type;
             var li = renderTemplate("#search-results-item-tmpl", office);
@@ -1902,7 +1902,6 @@ $(document).ready(function () {
 
       var rendered_items = [];
       this.collection.each(function(model) {
-        console.log(model);
         var item = new CallPower.Views.TargetItemView({
           model: model,
           attributes: {'data-cid': model.cid}
