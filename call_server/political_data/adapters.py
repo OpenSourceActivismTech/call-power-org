@@ -82,7 +82,7 @@ class OpenStatesData(DataAdapter):
     def target(self, data):
         adapted = {
             'name': data.get('full_name', ''),
-            'title': 'Senator' if data['chamber'] == "upper" else "Represenatative",
+            'title': 'Senator' if data['chamber'] == "upper" else "Representative",
             'uid': data.get('leg_id', '')
         }
         # default to capitol office
