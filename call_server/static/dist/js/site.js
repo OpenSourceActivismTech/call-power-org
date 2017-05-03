@@ -1749,7 +1749,7 @@ $(document).ready(function () {
           // get campaigns.json to match series labels
           $.getJSON('/api/campaigns.json', function(campaigns) {
             series = _.map(campaigns.objects, function(campaign_name, campaign_id) {
-              var s = _.map(data, function(value, date) {
+              var s = _.map(data.objects, function(value, date) {
                 if (value[campaign_id]) {
                   return [date, value[campaign_id]];
                 }
@@ -1768,6 +1768,12 @@ $(document).ready(function () {
               self.chart = new Chartkick.LineChart('chart_display', seriesFiltered, chartOpts);
             } else {
               $('#chart_display').html('no data to display. adjust dates or campaigns');
+            }
+
+            if (data.meta) {
+              $('#summary_data').html(
+                self.campaignDataTemplate(data.meta)
+              ).show();
             }
           });
         }

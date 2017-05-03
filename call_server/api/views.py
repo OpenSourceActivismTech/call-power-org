@@ -93,12 +93,19 @@ def campaigns_overall():
         .order_by(timespan)
     )
 
+    completed_query = db.session.query(
+        Call.timestamp, Call.id
+    ).filter_by(
+        status='completed'
+    )
+
     if start:
         try:
             startDate = dateutil.parser.parse(start)
         except ValueError:
             abort(400, 'start should be in isostring format')
         query = query.filter(Call.timestamp >= startDate)
+        completed_query = completed_query.filter(Call.timestamp >= startDate)
 
     if end:
         try:
@@ -110,13 +117,19 @@ def campaigns_overall():
         except ValueError:
             abort(400, 'end should be in isostring format')
         query = query.filter(Call.timestamp <= endDate)
+        completed_query = completed_query.filter(Call.timestamp <= endDate)
 
     dates = defaultdict(dict)
     for (date, campaign_id, timespan, count) in query.all():
         date_string = date.strftime(timespan_strf)
         dates[date_string][int(campaign_id)] = count
     sorted_dates = OrderedDict(sorted(dates.items()))
-    return Response(json.dumps(sorted_dates), mimetype='application/json')
+
+    meta = {
+        'calls_completed': completed_query.count()
+    }
+
+    return Response(json.dumps({'meta': meta,'objects': sorted_dates}), mimetype='application/json')
 
 
 # more detailed campaign statistics
