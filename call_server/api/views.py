@@ -248,7 +248,7 @@ def campaign_date_calls(campaign_id):
                 date_string = date.strftime(timespan_strf)
                 dates[date_string][status] = count
     sorted_dates = OrderedDict(sorted(dates.items()))
-    return Response(json.dumps(sorted_dates), mimetype='application/json')
+    return Response(json.dumps({'objects': sorted_dates}), mimetype='application/json')
 
 
 # calls made by target
@@ -317,7 +317,7 @@ def campaign_target_calls(campaign_id):
         for (target_title, target_name, call_status, count) in calls_wo_targets.all():
             if call_status == status:
                 targets['Unknown'][call_status] = targets.get('Unknown', {}).get(call_status, 0) + count
-    return Response(json.dumps(targets), mimetype='application/json')
+    return Response(json.dumps({'objects': targets}), mimetype='application/json')
 
 
 # embed campaign routes, should be public

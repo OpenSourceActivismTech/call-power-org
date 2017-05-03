@@ -1736,7 +1736,7 @@ $(document).ready(function () {
           // calls for this campaign by date, map to series by status
           var DISPLAY_STATUS = ['completed', 'busy', 'failed', 'no-answer', 'canceled', 'unknown'];
           series = _.map(DISPLAY_STATUS, function(status) { 
-            var s = _.map(data, function(value, date) {
+            var s = _.map(data.objects, function(value, date) {
               return [date, value[status]];
             });
             return {'name': status, 'data': s };
@@ -1791,7 +1791,7 @@ $(document).ready(function () {
 
         $('table#table_data').html('loading');
         $.getJSON(tableDataUrl, function(data) {
-          var content = self.targetDataTemplate(data);
+          var content = self.targetDataTemplate(data.objects);
           $('table#table_data').html(content);
           $('#table_display').show();
         });
