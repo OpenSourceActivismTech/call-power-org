@@ -65,13 +65,17 @@ def dashboard():
 def statistics():
     campaigns = Campaign.query.order_by(desc(Campaign.status_code)).all()
     today = datetime.today()
-    month_start = today.replace(day=1)  # first day of the current month
+    this_month_start = today.replace(day=1)  # first day of the current month
+
+    last_month = this_month_start - timedelta(days=28) # a day in last month
     next_month = today.replace(day=28) + timedelta(days=4)  # a day in next month (for months with 28,29,30,31)
-    month_end = next_month - timedelta(days=next_month.day)  # the last day of the current month
+
+    last_month_start = last_month - timedelta(days=(last_month.day-1))
+    this_month_end = next_month - timedelta(days=next_month.day)  # the last day of the current month
     return render_template('admin/statistics.html',
         campaigns=campaigns, timespans=API_TIMESPANS,
-        default_start=month_start.strftime('%Y/%m/%d'),
-        default_end=month_end.strftime('%Y/%m/%d'))
+        default_start=last_month_start.strftime('%Y/%m/%d'),
+        default_end=this_month_end.strftime('%Y/%m/%d'))
 
 
 @admin.route('/system')
