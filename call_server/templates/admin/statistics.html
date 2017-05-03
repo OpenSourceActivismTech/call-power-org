@@ -64,25 +64,25 @@
     <script type="text/javascript" src="{{ ASSET_URL }}"></script>
   {% endassets %}
 
-  <script type="text/template" id="campaign-data-tmpl">
-    <tr>
+  <script type="text/template" id="summary-data-tmpl">
+    <% if (data.calls_completed) { %><tr>
         <td class="col-sm-6"><input id="calls_completed" class="col-sm-12" value="<%= data.calls_completed %>" readonly/></td>
         <td class="col-sm-6"><label class="inline" for="calls_completed">Calls Completed</label></td>
-    </tr>
-    <tr>
+    </tr><% } %>
+    <% if (data.conversion_rate) { %><tr>
         <td class="col-sm-6"><input id="conversion_rate" class="col-sm-12" value="<%= data.conversion_rate %>" readonly/></td>
         <td class="col-sm-6"><label class="inline" for="conversion_rate">Conversion Rate</label></td>
-    </tr>
-    <tr>
+    </tr><% } %>
+    <% if (data.calls_per_session) { %><tr>
         <td class="col-sm-6"><input id="calls_per_session" class="col-sm-12" value="<%= data.calls_per_session %>" readonly/></td>
         <td class="col-sm-6"><label class="inline" for="calls_per_session">Session Median</label></td>
-    </tr>
-    <tr>
+    </tr><% } %>
+    <% if (data.id) { %><tr>
         <td></td>
         <td class="col-sm-12">
             <a href="/admin/campaign/<%= data.id %>/calls">call log</a>
         </td>
-    </tr>
+    </tr><% } %>
   </script>
 
   <script type="text/template" id="target-data-tmpl">

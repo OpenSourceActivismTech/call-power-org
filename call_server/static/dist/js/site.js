@@ -1665,7 +1665,7 @@ $(document).ready(function () {
           yAxis: { allowDecimals: false, min: null },
         }
       };
-      this.campaignDataTemplate = _.template($('#campaign-data-tmpl').html(), { 'variable': 'data' });
+      this.summaryDataTemplate = _.template($('#summary-data-tmpl').html(), { 'variable': 'data' });
       this.targetDataTemplate = _.template($('#target-data-tmpl').html(), { 'variable': 'targets'});
 
       this.renderChart();
@@ -1693,7 +1693,7 @@ $(document).ready(function () {
             data.calls_per_session = 'n/a';
           }
           $('#summary_data').html(
-            self.campaignDataTemplate(data)
+            self.summaryDataTemplate(data)
           ).show();
 
           if (data.date_start && data.date_end) {
@@ -1772,7 +1772,7 @@ $(document).ready(function () {
 
             if (data.meta) {
               $('#summary_data').html(
-                self.campaignDataTemplate(data.meta)
+                self.summaryDataTemplate(data.meta)
               ).show();
             }
           });
