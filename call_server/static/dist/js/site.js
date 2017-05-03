@@ -1653,7 +1653,6 @@ $(document).ready(function () {
       this.$el.on('changeDate', _.debounce(this.renderChart, this));
 
       this.chartOpts = {
-        stacked: true,
         discrete: true,
         library: {
           canvasDimensions:{ height:250},
@@ -1668,12 +1667,19 @@ $(document).ready(function () {
       };
       this.campaignDataTemplate = _.template($('#campaign-data-tmpl').html(), { 'variable': 'data' });
       this.targetDataTemplate = _.template($('#target-data-tmpl').html(), { 'variable': 'targets'});
+
+      this.renderChart();
     },
 
     changeCampaign: function(event) {
       var self = this;
 
       this.campaignId = $('select[name="campaigns"]').val();
+      if (!this.campaignId) {
+        self.renderChart();
+        $('#summary_data').hide();
+        return;
+      }
       $.getJSON('/api/campaign/'+this.campaignId+'/stats.json',
         function(data) {
           if (data.sessions_completed && data.sessions_started) {
@@ -1686,7 +1692,7 @@ $(document).ready(function () {
           if (!data.sessions_completed) {
             data.calls_per_session = 'n/a';
           }
-          $('#campaign_data').html(
+          $('#summary_data').html(
             self.campaignDataTemplate(data)
           ).show();
 
@@ -1701,10 +1707,6 @@ $(document).ready(function () {
     renderChart: function(event) {
       var self = this;
 
-      if (!this.campaignId) {
-        return false;
-      }
-
       var timespan = $('select[name="timespan"]').val();
       var start = new Date($('input[name="start"]').datepicker('getDate')).toISOString();
       var end = new Date($('input[name="end"]').datepicker('getDate')).toISOString();
@@ -1716,7 +1718,11 @@ $(document).ready(function () {
         $('.input-daterange input').removeClass('error');
       }
 
-      var chartDataUrl = '/api/campaign/'+this.campaignId+'/date_calls.json?timespan='+timespan;
+      if (this.campaignId) {
+        var chartDataUrl = '/api/campaign/'+this.campaignId+'/date_calls.json?timespan='+timespan;
+      } else {
+        var chartDataUrl = '/api/campaign/date_calls.json?timespan='+timespan;
+      }
       if (start) {
         chartDataUrl += ('&start='+start);
       }
@@ -1724,33 +1730,68 @@ $(document).ready(function () {
         chartDataUrl += ('&end='+end);
       }
 
-      $('#calls_for_campaign').html('loading');
+      $('#chart_display').html('loading');
       $.getJSON(chartDataUrl, function(data) {
-        // api data is by date, map to series by status
-        var DISPLAY_STATUS = ['completed', 'busy', 'failed', 'no-answer', 'canceled', 'unknown'];
-        series = _.map(DISPLAY_STATUS, function(status) { 
-          var s = _.map(data, function(value, date) {
-            return [date, value[status]];
+        if (self.campaignId) {
+          // calls for this campaign by date, map to series by status
+          var DISPLAY_STATUS = ['completed', 'busy', 'failed', 'no-answer', 'canceled', 'unknown'];
+          series = _.map(DISPLAY_STATUS, function(status) { 
+            var s = _.map(data, function(value, date) {
+              return [date, value[status]];
+            });
+            return {'name': status, 'data': s };
           });
-          return {'name': status, 'data': s };
+          // chart as stacked columns
+          var chartOpts = _.extend(self.chartOpts, {stacked: true});
+          self.chart = new Chartkick.ColumnChart('chart_display', series, chartOpts);
+        } else {
+          // all calls for timespan
+          // get campaigns.json to match series labels
+          $.getJSON('/api/campaigns.json', function(campaigns) {
+            series = _.map(campaigns.objects, function(campaign_name, campaign_id) {
+              var s = _.map(data, function(value, date) {
+                if (value[campaign_id]) {
+                  return [date, value[campaign_id]];
+                }
+              });
+              // compact to remove falsy values
+              return {'name': campaign_name, 'data': _.compact(s) };
+            });
+            // filter out series that have no data
+            var seriesFiltered = _.filter(series, function(line) {
+              return line.data.length
+            })
+
+            if (seriesFiltered.length) {
+              // chart as curved lines
+              var chartOpts = _.extend(self.chartOpts, {curve: true});
+              self.chart = new Chartkick.LineChart('chart_display', seriesFiltered, chartOpts);
+            } else {
+              $('#chart_display').html('no data to display. adjust dates or campaigns');
+            }
+          });
+        }
+      });
+
+      if (this.campaignId) {
+        // table data for calls per target
+        var tableDataUrl = '/api/campaign/'+this.campaignId+'/target_calls.json?';
+        if (start) {
+          tableDataUrl += ('&start='+start);
+        }
+        if (end) {
+          tableDataUrl += ('&end='+end);
+        }
+
+        $('table#table_data').html('loading');
+        $.getJSON(tableDataUrl, function(data) {
+          var content = self.targetDataTemplate(data);
+          $('table#table_data').html(content);
+          $('#table_display').show();
         });
-        self.chart = new Chartkick.ColumnChart('calls_for_campaign', series, self.chartOpts);
-      });
-
-      var tableDataUrl = '/api/campaign/'+this.campaignId+'/target_calls.json?';
-      if (start) {
-        tableDataUrl += ('&start='+start);
+      } else {
+        $('#table_display').hide()
       }
-      if (end) {
-        tableDataUrl += ('&end='+end);
-      }
-
-      $('table#target_data').html('loading');
-      $.getJSON(tableDataUrl, function(data) {
-        var content = self.targetDataTemplate(data);
-        $('table#target_data').html(content);
-        $('#target_counts').show();
-      });
     }
 
   });

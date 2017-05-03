@@ -14,7 +14,7 @@
             <div class="form-group">
                 <label>Campaign</label>
     			<select name="campaigns">
-                    <option value="">select one</option>
+                    <option value="">(show all)</option>
     			{% for c in campaigns%}
     				<option value="{{c.id}}">{{c.name}}</option>
     			{% endfor %}
@@ -40,18 +40,18 @@
         </div>
 
         <div class="col-sm-4">
-            <table class="table-condensed" id="campaign_data"></table>
+            <table class="table-condensed" id="summary_data"></table>
         </div>
     </div>
 
-	<div id="calls_for_campaign" style="height: 250px;">
+	<div id="chart_display" style="height: 250px;">
         <div class="alert alert-info"> Please select a campaign </div>   
     </div>
 
-    <div class="row hide-initial" id="target_counts">
+    <div class="row hide-initial" id="table_display">
         <div class="col-sm-12">
             <label>Call Counts</label>
-            <table class="table table-condensed table-striped" id="target_data"></table>
+            <table class="table table-condensed table-striped" id="table_data"></table>
         </div>
     </div>
 

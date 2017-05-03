@@ -56,6 +56,69 @@ def configure_restless(app):
 # non CRUD-routes
 # protect with decorator
 
+# simple campaign names
+@api.route('/campaigns.json', methods=['GET'])
+@api_key_or_auth_required
+def campaign_list():
+    campaigns = Campaign.query.all()
+    data = {}
+    for campaign in campaigns:
+        data[campaign.id] = campaign.name
+    return jsonify({'count': len(data), 'objects': data})
+
+# overall campaigns call by date
+@api.route('/campaign/date_calls.json', methods=['GET'])
+@api_key_or_auth_required
+def campaigns_overall():
+    start = request.values.get('start')
+    end = request.values.get('end')
+    timespan = request.values.get('timespan', 'day')
+
+    if timespan not in API_TIMESPANS.keys():
+        abort(400, 'timespan should be one of %s' % ','.join(API_TIMESPANS))
+    else:
+        timespan_strf = API_TIMESPANS[timespan]
+
+    timespan_extract = extract(timespan, Call.timestamp).label(timespan)
+
+    query = (
+        db.session.query(
+            func.min(Call.timestamp.label('date')),
+            Call.campaign_id,
+            timespan_extract,
+            func.count(distinct(Call.id)).label('calls_count')
+        )
+        .group_by(Call.campaign_id)
+        .group_by(timespan_extract)
+        .order_by(timespan)
+    )
+
+    if start:
+        try:
+            startDate = dateutil.parser.parse(start)
+        except ValueError:
+            abort(400, 'start should be in isostring format')
+        query = query.filter(Call.timestamp >= startDate)
+
+    if end:
+        try:
+            endDate = dateutil.parser.parse(end)
+            if endDate < startDate:
+                abort(400, 'end should be after start')
+            if endDate == startDate:
+                endDate = startDate + timedelta(days=1)
+        except ValueError:
+            abort(400, 'end should be in isostring format')
+        query = query.filter(Call.timestamp <= endDate)
+
+    dates = defaultdict(dict)
+    for (date, campaign_id, timespan, count) in query.all():
+        date_string = date.strftime(timespan_strf)
+        dates[date_string][int(campaign_id)] = count
+    sorted_dates = OrderedDict(sorted(dates.items()))
+    return Response(json.dumps(sorted_dates), mimetype='application/json')
+
+
 # more detailed campaign statistics
 @api.route('/campaign/<int:campaign_id>/stats.json', methods=['GET'])
 @api_key_or_auth_required
