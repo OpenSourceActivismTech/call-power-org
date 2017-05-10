@@ -313,10 +313,14 @@ def campaign_target_calls(campaign_id):
             target = u'{} {}'.format(target_title, target_name)
             if call_status == status:
                 targets[target][call_status] = targets.get(target, {}).get(call_status, 0) + count
+        try:
+            for (target_title, target_name, call_status, count) in calls_wo_targets.all():
+                if call_status == status:
+                    targets['Unknown'][call_status] = targets.get('Unknown', {}).get(call_status, 0) + count
+        except ValueError:
+            # can be triggered if there are calls without target id
+            targets['Unknown'][status] = ''
 
-        for (target_title, target_name, call_status, count) in calls_wo_targets.all():
-            if call_status == status:
-                targets['Unknown'][call_status] = targets.get('Unknown', {}).get(call_status, 0) + count
     return Response(json.dumps({'objects': targets}), mimetype='application/json')
 
 
