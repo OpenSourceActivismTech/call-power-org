@@ -286,7 +286,7 @@
 
     validateField: function(formGroup, validator, message) {
       // first check to see if formGroup is present
-      if (!!formGroup) {
+      if (!formGroup.length) {
         return true;
       }
 
