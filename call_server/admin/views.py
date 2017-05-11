@@ -35,20 +35,30 @@ def dashboard():
             .join(Call).group_by(Campaign.id))
 
     today = datetime.today()
-    month_start = today.replace(day=1)  # first day of the current month
+    this_month_start = today.replace(day=1)  # first day of the current month
+    last_month = this_month_start - timedelta(days=28) # a day in last month
     next_month = today.replace(day=28) + timedelta(days=4)  # a day in next month (for months with 28,29,30,31)
-    month_end = next_month - timedelta(days=next_month.day)  # the last day of the current month
+
+    this_month_end = next_month - timedelta(days=next_month.day)  # the last day of the current month
+    last_month_start = last_month - timedelta(days=(last_month.day-1))
+    last_month_end = this_month_start - timedelta(days=this_month_start.day)
 
     calls_this_month = (db.session.query(func.count(Call.id))
             .filter(Call.status == 'completed')
-            .filter(Call.timestamp >= month_start)
-            .filter(Call.timestamp <= month_end)
+            .filter(Call.timestamp >= this_month_start)
+            .filter(Call.timestamp <= this_month_end)
+        ).scalar()
+
+    calls_last_month = (db.session.query(func.count(Call.id))
+            .filter(Call.status == 'completed')
+            .filter(Call.timestamp >= last_month_start)
+            .filter(Call.timestamp <= last_month_end)
         ).scalar()
 
     calls_by_day = (db.session.query(func.date(Call.timestamp), func.count(Call.id))
             .filter(Call.status == 'completed')
-            .filter(Call.timestamp >= month_start)
-            .filter(Call.timestamp <= month_end)
+            .filter(Call.timestamp >= last_month_start)
+            .filter(Call.timestamp <= this_month_end)
             .group_by(func.date(Call.timestamp))
             .order_by(func.date(Call.timestamp))
         )
@@ -57,7 +67,8 @@ def dashboard():
         campaigns=campaigns,
         calls_by_campaign=dict(calls_by_campaign.all()),
         calls_by_day=calls_by_day.all(),
-        calls_this_month=calls_this_month
+        calls_this_month=calls_this_month,
+        calls_last_month=calls_last_month,
     )
 
 
