@@ -23,4 +23,5 @@ embed_script_display: How should the script display on the action page? Replace 
 embed_type: How will this form embed into your action page?
 embed_code: Copy and paste this javascript into your action page.
 embed_custom_js: Javascript that will run after the success callback. Eval'ed directly, so be careful.
+embed_custom_onload: Javascript that will run after the callPowerForm is attached. Eval'ed directly, so be careful.
 embed_redirect: After making call, redirect the page to this URL using Javascript.
