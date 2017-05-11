@@ -73,10 +73,15 @@ CallPowerForm.prototype = function() {
   var simpleValidateLocation = function() {
     countryCode = this.country();
 
-    var isValid = false;
-    if (countryCode === 'US') { return cleanUSZipcode(this.locationField.val()); }
-    else if (countryCode === 'CA') { return cleanCAPostal(this.locationField.val()); }
-    else { return this.locationField.val(); }
+    if (this.locationField.length == 1) {
+      var locationVal = this.locationField.val();
+    } else {
+      var locationVal = '';
+      this.locationField.each(function() { 
+        locationVal += (' ' + $(this).val());
+      });
+      locationVal = locationVal.trim();
+    }
   };
 
   // very simple country specific length validators
