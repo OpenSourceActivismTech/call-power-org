@@ -22,6 +22,7 @@ var CallPowerForm = function (formSelector, $) {
   this.locationField = this.$("#location_id");
   this.phoneField = this.$("#phone_id");
   {% endif %}
+  this.locateBy = '{{campaign.locate_by}}';
   this.scriptDisplay = 'overlay';
   
   // allow options to override settings
@@ -82,6 +83,12 @@ CallPowerForm.prototype = function() {
       });
       locationVal = locationVal.trim();
     }
+
+    if (this.locateBy === 'postal') {
+      if (countryCode === 'US') { return cleanUSZipcode(locationVal); }
+      else if (countryCode === 'CA') { return cleanCAPostal(locationVal); }
+    }
+    return locationVal;
   };
 
   // very simple country specific length validators
