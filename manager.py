@@ -2,9 +2,9 @@ import os
 import sys
 import subprocess
 
-from flask.ext.script import Manager
-from alembic import command
-from alembic.config import Config
+from flask.ext.script import Manager, Command
+import nose
+import alembic, alembic.config
 from flask.ext.assets import ManageAssets
 
 from call_server.app import create_app
@@ -16,7 +16,7 @@ app = create_app()
 app.db = db
 manager = Manager(app)
 
-alembic_config = Config(os.path.realpath(os.path.dirname(__name__)) + "/alembic.ini")
+alembic_config = alembic.config.Config(os.path.realpath(os.path.dirname(__name__)) + "/alembic.ini")
 # let the config override the default db location in production
 alembic_config.set_section_option('alembic', 'sqlalchemy.url',
                                   app.config.get('SQLALCHEMY_DATABASE_URI'))
@@ -89,9 +89,9 @@ def migrate(direction):
     reset_assets()
     print "migrating %s database at %s" % (direction, app.db.engine.url)
     if direction == "up":
-        command.upgrade(alembic_config, "head")
+        alembic.command.upgrade(alembic_config, "head")
     elif direction == "down":
-        command.downgrade(alembic_config, "-1")
+        alembic.command.downgrade(alembic_config, "-1")
     else:
         app.logger.error('invalid direction. (up/down)')
         sys.exit(-1)
@@ -101,15 +101,22 @@ def migrate(direction):
 def migration(message):
     """Create migration file"""
     reset_assets()
-    command.revision(alembic_config, autogenerate=True, message=message)
+    alembic.command.revision(alembic_config, autogenerate=True, message=message)
 
 
 @manager.command
 def stamp(revision):
     """Fake a migration to a particular revision"""
     reset_assets()
-    command.stamp(alembic_config, revision)
+    alembic.command.stamp(alembic_config, revision)
 
+@manager.add_command
+class NoseCommand(Command):
+    name = 'test'
+    capture_all_args = True
+
+    def run(self, remaining):
+        nose.main(argv=remaining)
 
 @manager.command
 def createadminuser(username=None, password=None, email=None):
