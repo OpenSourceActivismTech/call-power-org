@@ -4,7 +4,7 @@ import glob
 
 from flask import Flask, g, request, session
 from flask.ext.assets import Bundle
-from flask_sslify import SSLify
+
 
 from utils import json_markup, OrderedDictYAMLLoader
 import yaml
@@ -44,7 +44,9 @@ def create_app(configuration=None, app_name=None, blueprints=None):
     app = Flask(app_name)
     # configure app from object or environment
     configure_app(app, configuration)
-    SSLify(app)
+    if app.config['ENVIRONMENT'] == "Production":
+        from flask_sslify import SSLify
+        SSLify(app)
     # init extensions once we have app context
     init_extensions(app)
     # then blueprints, for url/view routing
