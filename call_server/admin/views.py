@@ -27,7 +27,7 @@ def before_request():
 def dashboard():
     campaigns = (Campaign.query
         .filter(Campaign.status_code >= STATUS_PAUSED)
-        .order_by(desc(Campaign.status_code))
+        .order_by(desc(Campaign.status_code), desc(Campaign.id))
     )
     calls_by_campaign = (db.session.query(Campaign.id, func.count(Call.id))
             .filter(Campaign.status_code >= STATUS_PAUSED)
@@ -74,7 +74,7 @@ def dashboard():
 
 @admin.route('/statistics')
 def statistics():
-    campaigns = Campaign.query.order_by(desc(Campaign.status_code)).all()
+    campaigns = Campaign.query.order_by(desc(Campaign.status_code), desc(Campaign.id)).all()
     today = datetime.today()
     this_month_start = today.replace(day=1)  # first day of the current month
 

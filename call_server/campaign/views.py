@@ -36,7 +36,7 @@ def before_request():
 
 @campaign.route('/')
 def index():
-    campaigns = Campaign.query.order_by(desc(Campaign.status_code)).all()
+    campaigns = Campaign.query.order_by(desc(Campaign.status_code), desc(Campaign.id)).all()
     calls = (db.session.query(Campaign.id, func.count(Call.id))
             .filter(Call.status == 'completed')
             .join(Call).group_by(Campaign.id))
