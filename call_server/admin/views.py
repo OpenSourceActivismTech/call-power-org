@@ -57,7 +57,7 @@ def dashboard():
 
     calls_by_day = (db.session.query(func.date(Call.timestamp), func.count(Call.id))
             .filter(Call.status == 'completed')
-            .filter(Call.timestamp >= last_month_start)
+            .filter(Call.timestamp >= this_month_start)
             .filter(Call.timestamp <= this_month_end)
             .group_by(func.date(Call.timestamp))
             .order_by(func.date(Call.timestamp))
