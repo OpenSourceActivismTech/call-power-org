@@ -140,6 +140,10 @@ CallPowerForm.prototype = function() {
     if (response.call !== 'queued') { return onError(this.form, 'Could not start call.'); }
     if (response.script === undefined) { return false; }
 
+    if (this.phoneDisplay) {
+      $(this.phoneDisplay).html(response.fromNumber);
+    }
+
     if (this.scriptDisplay === 'overlay') {
       // display simple overlay with script content
       var scriptOverlay = this.$('<div class="overlay"><div class="modal">'+response.script+'</div></div>');
