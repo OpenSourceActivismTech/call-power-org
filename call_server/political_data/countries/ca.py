@@ -61,6 +61,9 @@ class CACampaignType_Parliament(CACampaignType):
         if subtype == 'lower':
             result.extend(targets.get('lower'))
 
+        if order == 'shuffle':
+            random.shuffle(result)
+
         return result
 
     def _get_member_of_parliament(self, location):

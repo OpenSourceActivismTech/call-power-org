@@ -246,6 +246,7 @@ class Target(db.Model):
 
             # create target object
             t = Target(**data)
+            t.uid = adapted_key
             db.session.add(t)
             # create office objects, link to target
             for office in offices:

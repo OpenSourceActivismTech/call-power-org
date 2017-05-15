@@ -12,7 +12,8 @@ from ..extensions import csrf, db
 
 from .models import Call, Session
 from .constants import TWILIO_TTS_LANGUAGES
-from ..campaign.constants import (LOCATION_POSTAL, LOCATION_DISTRICT, SEGMENT_BY_LOCATION,
+from ..campaign.constants import (LOCATION_POSTAL, LOCATION_DISTRICT,
+    SEGMENT_BY_LOCATION, SEGMENT_BY_CUSTOM,
     TARGET_OFFICE_DISTRICT, TARGET_OFFICE_BUSY)
 from ..campaign.models import Campaign, Target
 from ..political_data.lookup import locate_targets
@@ -173,16 +174,20 @@ def make_calls(params, campaign):
     resp = twilio.twiml.Response()
 
     if not params['targetIds']:
-        # check if campaign target_set specified
-        if campaign.target_set:
+        # check if campaign custom targeting specified
+        if campaign.segment_by == SEGMENT_BY_CUSTOM:
             params['targetIds'] = [t.uid for t in campaign.target_set]
         elif campaign.segment_by == SEGMENT_BY_LOCATION:
             # lookup targets for campaign type by segment, put in desired order
             try:
                 params['targetIds'] = locate_targets(params['userLocation'], campaign=campaign)
+                # locate_targets will include from custom target_set if specified in campaign.include_custom
             except LocationError, e:
                 current_app.logger.error('Unable to locate_targets for %(userLocation)s in %(userCountry)s' % params)
                 params['targetIds'] = []
+        else:
+            current_app.logger.error('Unknown segment_by for campaign %(campaignId)s' % params)
+            params['targetIds'] = []
     else:
         # targetIds already set by /create
         pass
@@ -192,10 +197,6 @@ def make_calls(params, campaign):
             location=params['userLocation'],
             lang=campaign.language_code)
         resp.hangup()
-
-    if campaign.target_ordering == 'shuffle':
-        # reshuffle for each caller
-        random.shuffle(params['targetIds'])
 
     # limit calls to maximum number
     if campaign.call_maximum:
