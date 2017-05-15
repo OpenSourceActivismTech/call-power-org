@@ -220,7 +220,7 @@ class Target(db.Model):
         return self.number.e164
 
     @classmethod
-    def get_or_cache_key(cls, uid, prefix=None):
+    def get_or_cache_key(cls, uid, prefix=None, cache=cache):
         if prefix:
             key = '%s:%s' % (prefix, uid)
         else:
@@ -240,9 +240,13 @@ class Target(db.Model):
                 data = adapter.target(cached_obj)
                 offices = adapter.offices(cached_obj)
             else:
+                current_app.logger.error('Target.get_or_cache_key got unknown cached_obj type %s' % type(cached_obj))
                 # do it live
                 data = cached_obj
-                offices = cached_obj.get('offices', [])
+                try:
+                    offices = cached_obj.get('offices', [])
+                except AttributeError:
+                    offices = []
 
             # create target object
             t = Target(**data)

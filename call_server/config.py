@@ -142,6 +142,8 @@ class DevelopmentConfig(DefaultConfig):
 
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URI',
         'sqlite:////%s/dev.db' % os.path.abspath(os.curdir))
+    # four slashes for an absolute path
+    # per http://docs.sqlalchemy.org/en/latest/core/engines.html#sqlite
 
     SERVER_NAME = 'localhost:5000'
     STORE_PATH = '%s/instance/uploads/' % os.path.abspath(os.curdir)

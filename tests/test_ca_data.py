@@ -19,7 +19,9 @@ class TestCAData(BaseTestCase):
         cls.ca_data = CADataProvider(cls.mock_cache)
         # cls.ca_data.load_data()
 
-    def setUp(self):
+    def setUp(self, **kwargs):
+        super(TestCAData, self).setUp(**kwargs)
+
         self.PARLIAMENT_CAMPAIGN = Campaign(
             country_code='ca',
             campaign_type='parliament',

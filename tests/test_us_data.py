@@ -5,7 +5,7 @@ from run import BaseTestCase
 from call_server.political_data.lookup import locate_targets
 from call_server.political_data.countries.us import USDataProvider
 from call_server.political_data.geocode import Location
-from call_server.campaign.models import Campaign
+from call_server.campaign.models import Campaign, Target
 
 
 class TestUSData(BaseTestCase):
@@ -21,7 +21,9 @@ class TestUSData(BaseTestCase):
         cls.us_data.load_data()
 
 
-    def setUp(self):
+    def setUp(self, **kwargs):
+        super(TestUSData, self).setUp(**kwargs)
+
         self.CONGRESS_CAMPAIGN = Campaign(
             country_code='us',
             campaign_type='congress',
@@ -214,3 +216,90 @@ class TestUSData(BaseTestCase):
         fourth = self.us_data.get_uid(uids[3])[0]
         self.assertEqual(third['chamber'], 'senate')
         self.assertEqual(fourth['state'], 'WI')
+
+    def test_locate_targets_custom_first(self):
+        self.CONGRESS_CAMPAIGN.campaign_subtype = 'upper'
+
+        (custom_target, cached) = Target.get_or_cache_key('us:bioguide:S000033', cache=self.mock_cache) # Bernie
+        self.CONGRESS_CAMPAIGN.target_set = [custom_target,]
+        self.CONGRESS_CAMPAIGN.include_custom = 'first'
+
+        uids = locate_targets(self.mock_location, self.CONGRESS_CAMPAIGN, self.mock_cache)
+        self.assertEqual(len(uids), 3)
+
+        first = self.us_data.get_uid(uids[0])[0]
+        self.assertEqual(first['chamber'], 'senate')
+        self.assertEqual(first['last_name'], 'Sanders')
+        self.assertEqual(first['state'], 'VT')
+
+        second = self.us_data.get_uid(uids[1])[0]
+        self.assertEqual(second['chamber'], 'senate')
+        self.assertEqual(second['state'], 'MA')
+
+        third = self.us_data.get_uid(uids[2])[0]
+        self.assertEqual(third['chamber'], 'senate')
+        self.assertEqual(third['state'], 'MA')
+
+    def test_locate_targets_custom_last(self):
+        self.CONGRESS_CAMPAIGN.campaign_subtype = 'upper'
+
+        (custom_target, cached) = Target.get_or_cache_key('us:bioguide:S000033', cache=self.mock_cache) # Bernie
+        self.CONGRESS_CAMPAIGN.target_set = [custom_target,]
+        self.CONGRESS_CAMPAIGN.include_custom = 'last'
+
+        uids = locate_targets(self.mock_location, self.CONGRESS_CAMPAIGN, self.mock_cache)
+        self.assertEqual(len(uids), 3)
+
+        first = self.us_data.get_uid(uids[0])[0]
+        self.assertEqual(first['chamber'], 'senate')
+        self.assertEqual(first['state'], 'MA')
+
+        second = self.us_data.get_uid(uids[1])[0]
+        self.assertEqual(second['chamber'], 'senate')
+        self.assertEqual(second['state'], 'MA')
+
+        third = self.us_data.get_uid(uids[2])[0]
+        self.assertEqual(third['chamber'], 'senate')
+        self.assertEqual(third['state'], 'VT')
+        self.assertEqual(third['last_name'], 'Sanders')
+
+    def test_locate_targets_custom_only(self):
+        self.CONGRESS_CAMPAIGN.campaign_subtype = 'upper'
+
+        (custom_target, cached) = Target.get_or_cache_key('us:bioguide:S000033', cache=self.mock_cache) # Bernie
+        self.CONGRESS_CAMPAIGN.target_set = [custom_target,]
+        self.CONGRESS_CAMPAIGN.include_custom = 'only'
+
+        uids = locate_targets(self.mock_location, self.CONGRESS_CAMPAIGN, self.mock_cache)
+        self.assertEqual(len(uids), 1)
+
+        first = self.us_data.get_uid(uids[0])[0]
+        self.assertEqual(first['chamber'], 'senate')
+        self.assertEqual(first['last_name'], 'Sanders')
+        self.assertEqual(first['state'], 'VT')
+
+    def test_locate_targets_custom_multiple(self):
+        self.CONGRESS_CAMPAIGN.campaign_subtype = 'lower'
+
+        (custom_target_one, cached_one) = Target.get_or_cache_key('us:bioguide:P000197', cache=self.mock_cache) # Pelosi
+        (custom_target_two, cached_two) = Target.get_or_cache_key('us:bioguide:R000570', cache=self.mock_cache) # Ryan
+        self.CONGRESS_CAMPAIGN.target_set = [custom_target_one, custom_target_two]
+        self.CONGRESS_CAMPAIGN.include_custom = 'first'
+
+        uids = locate_targets(self.mock_location, self.CONGRESS_CAMPAIGN, self.mock_cache)
+        self.assertEqual(len(uids), 3)
+
+        first = self.us_data.get_uid(uids[0])[0]
+        self.assertEqual(first['chamber'], 'house')
+        self.assertEqual(first['last_name'], 'Pelosi')
+        self.assertEqual(first['state'], 'CA')
+
+        second = self.us_data.get_uid(uids[1])[0]
+        self.assertEqual(second['chamber'], 'house')
+        self.assertEqual(second['last_name'], 'Ryan')
+        self.assertEqual(second['state'], 'WI')
+
+        third = self.us_data.get_uid(uids[2])[0]
+        self.assertEqual(third['chamber'], 'house')
+        self.assertEqual(third['state'], 'MA')
+ 
