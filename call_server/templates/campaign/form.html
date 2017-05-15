@@ -46,6 +46,9 @@
         {{ render_field(form.locate_by, class_={'label': label_width,
                                                  'control': control_width,
                                                  'clear': True}) }}
+        {{ render_field(form.include_custom, class_={'label': label_width,
+                                                 'control': control_width,
+                                                 'clear': True}) }}                              
 
         <div class="form-group hide-initial" id="set-targets">
             {{render_label(form.target_set, label_width)}}

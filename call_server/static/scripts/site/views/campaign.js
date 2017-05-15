@@ -13,6 +13,7 @@
       'change select#campaign_type':  'changeCampaignType',
       'change select#campaign_subtype':  'changeCampaignSubtype',
       'change input[name="segment_by"]': 'changeSegmentBy',
+      'change input[name="include_custom"]': 'changeIncludeCustom',
 
       // call limit
       'change input[name="call_limit"]': 'changeCallLimit',
@@ -107,7 +108,7 @@
           // hide target_offices
           $('.form-group.target_offices').hide();
         } else {
-          // congress
+          // legislative, show segmenting and search
           $('.form-group.segment_by').show();
           $('.form-group.locate_by').show();
           $('.form-group.target_offices').show();
@@ -195,6 +196,19 @@
 
       if (segment_by === 'custom') {
         $('#set-targets').show();
+        $('.form-group.include_custom input[name="include_custom"][value="only"]').click();
+        $('.form-group.include_custom').hide();
+      } else {
+        $('#set-targets').hide();
+        $('input[name="include_custom"]').attr('checked', false);
+        $('.form-group.include_custom').show();
+      }
+    },
+
+    changeIncludeCustom: function() {
+      var include_custom = $('input[name="include_custom"]:checked').val();
+      if (include_custom) {
+         $('#set-targets').show();
       } else {
         $('#set-targets').hide();
       }

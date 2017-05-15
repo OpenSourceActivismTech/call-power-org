@@ -1,5 +1,6 @@
 campaign_type: This campaign targets which type of decision-makers?
 segment_by: Segment callers to targets by which attribute?
+include_custom: Include custom targets in addition to location-segmented ones?
 locate_by: Determine location by which attribute?
 target_set: Search for target phone numbers, or add them directly.
 target_ordering: |

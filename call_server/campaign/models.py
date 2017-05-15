@@ -29,6 +29,7 @@ class Campaign(db.Model):
 
     segment_by = db.Column(db.String(STRING_LEN))
     locate_by = db.Column(db.String(STRING_LEN))
+    include_custom = db.Column(db.String(STRING_LEN))
     target_set = db.relationship('Target', secondary='campaign_target_sets',
                                  order_by='campaign_target_sets.c.order',
                                  backref=db.backref('campaigns'))
