@@ -293,7 +293,7 @@ def create():
         else:
             script = ''
             redirect = ''
-        result = jsonify(campaign=campaign.status, call=call.status, script=script, redirect=redirect)
+        result = jsonify(campaign=campaign.status, call=call.status, script=script, redirect=redirect, fromNumber=from_number)
         result.status_code = 200 if call.status != 'failed' else 500
     except TwilioRestException, err:
         twilio_error = stripANSI(err.msg)
