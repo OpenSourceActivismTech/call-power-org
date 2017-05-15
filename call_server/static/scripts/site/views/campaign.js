@@ -201,6 +201,7 @@
       } else {
         $('#set-targets').hide();
         $('input[name="include_custom"]').attr('checked', false);
+        $('.form-group.include_custom input[name="include_custom"][value=""]').click();
         $('.form-group.include_custom').show();
       }
     },
@@ -211,6 +212,16 @@
          $('#set-targets').show();
       } else {
         $('#set-targets').hide();
+      }
+
+      if (include_custom === 'only') {
+        // target_ordering can only be 'in order' or 'shuffle'
+        $('input[name="target_ordering"][value="upper-first"]').parent('label').hide();
+        $('input[name="target_ordering"][value="lower-first"]').parent('label').hide();
+      } else {
+        // target_ordering can be chamber dependent
+        $('input[name="target_ordering"][value="upper-first"]').parent('label').show();
+        $('input[name="target_ordering"][value="lower-first"]').parent('label').show();
       }
     },
 
