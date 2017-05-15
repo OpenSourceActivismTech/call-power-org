@@ -4,7 +4,8 @@ import subprocess
 
 from flask.ext.script import Manager, Command
 import nose
-import alembic, alembic.config
+import alembic
+import alembic.config, alembic.command
 from flask.ext.assets import ManageAssets
 
 from call_server.app import create_app
@@ -66,6 +67,7 @@ def loadpoliticaldata():
         print "don't worry about the KeyError"
         # http://stackoverflow.com/questions/8774958/keyerror-in-module-threading-after-a-successful-py-test-run/12639040#12639040
 
+
 @manager.command
 def redis_clear():
     print "This will entirely clear the Redis cache"
@@ -76,11 +78,6 @@ def redis_clear():
         print "redis cache cleared"
     else:
         print "exit"
-
-@manager.command
-def alembic():
-    """Run alembic migration command"""
-    subprocess.call([".venv/bin/alembic", "init", "alembic"])
 
 
 @manager.command
@@ -110,6 +107,7 @@ def stamp(revision):
     reset_assets()
     alembic.command.stamp(alembic_config, revision)
 
+
 @manager.add_command
 class NoseCommand(Command):
     name = 'test'
@@ -117,6 +115,7 @@ class NoseCommand(Command):
 
     def run(self, remaining):
         nose.main(argv=remaining)
+
 
 @manager.command
 def createadminuser(username=None, password=None, email=None):
