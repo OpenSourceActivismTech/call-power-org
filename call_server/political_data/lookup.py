@@ -1,6 +1,8 @@
 from ..extensions import cache
 from ..campaign.constants import INCLUDE_CUSTOM_FIRST, INCLUDE_CUSTOM_LAST, INCLUDE_CUSTOM_ONLY
 
+from collections import OrderedDict
+
 def locate_targets(location, campaign, cache=cache):
     """
     Convenience method to get targets for location in a given campaign.
@@ -16,11 +18,15 @@ def locate_targets(location, campaign, cache=cache):
             random.shuffle(custom_targets)
 
         if campaign.include_custom == INCLUDE_CUSTOM_FIRST:
-            return custom_targets + location_targets
+            combined = custom_targets + location_targets
+            return list(OrderedDict.fromkeys(combined))
         elif campaign.include_custom == INCLUDE_CUSTOM_LAST:
-            return location_targets + custom_targets
+            combined = location_targets + custom_targets
+            return list(OrderedDict.fromkeys(combined))
         elif campaign.include_custom == INCLUDE_CUSTOM_ONLY:
-            return custom_targets
+            # find overlap between custom_targets and location_targets
+            overlap = set(custom_targets).intersection(set(location_targets))
+            return list(overlap)
         else:
             return custom_targets
     else:
