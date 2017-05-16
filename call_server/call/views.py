@@ -174,14 +174,14 @@ def make_calls(params, campaign):
     resp = twilio.twiml.Response()
 
     if not params['targetIds']:
-        # check if campaign custom targeting specified
+        # check if campaign custom segmenting specified
         if campaign.segment_by == SEGMENT_BY_CUSTOM:
             params['targetIds'] = [t.uid for t in campaign.target_set]
         elif campaign.segment_by == SEGMENT_BY_LOCATION:
             # lookup targets for campaign type by segment, put in desired order
             try:
                 params['targetIds'] = locate_targets(params['userLocation'], campaign=campaign)
-                # locate_targets will include from custom target_set if specified in campaign.include_custom
+                # locate_targets will include from special target_set if specified in campaign.include_special
             except LocationError, e:
                 current_app.logger.error('Unable to locate_targets for %(userLocation)s in %(userCountry)s' % params)
                 params['targetIds'] = []
@@ -366,8 +366,8 @@ def location_parse():
     # Override locate_by attribute so locate_targets knows we're passing a zip
     # This allows call-ins to be made for campaigns which otherwise use district locate_by
     campaign.locate_by = LOCATION_POSTAL
-    # Skip custom, because at this point we just want to know if the zipcode is valid
-    located_target_ids = locate_targets(location, campaign, skip_custom=True)
+    # Skip special, because at this point we just want to know if the zipcode is valid
+    located_target_ids = locate_targets(location, campaign, skip_special=True)
 
     if current_app.debug:
         current_app.logger.debug(u'entered = {}'.format(location))

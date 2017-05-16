@@ -421,7 +421,7 @@ $(document).ready(function () {
       'change select#campaign_type':  'changeCampaignType',
       'change select#campaign_subtype':  'changeCampaignSubtype',
       'change input[name="segment_by"]': 'changeSegmentBy',
-      'change input[name="include_custom"]': 'changeIncludeCustom',
+      'change input[name="include_special"]': 'changeIncludeCustom',
 
       // call limit
       'change input[name="call_limit"]': 'changeCallLimit',
@@ -511,7 +511,7 @@ $(document).ready(function () {
           $('.form-group.segment_by').hide();
           $('.form-group.locate_by').hide();
           $('#target-search').hide();
-          // show custom target search
+          // show target search
           $('#set-targets').show();
           // hide target_offices
           $('.form-group.target_offices').hide();
@@ -604,25 +604,25 @@ $(document).ready(function () {
 
       if (segment_by === 'custom') {
         $('#set-targets').show();
-        $('.form-group.include_custom input[name="include_custom"][value="only"]').click();
-        $('.form-group.include_custom').hide();
+        $('.form-group.include_special input[name="include_special"][value="only"]').click();
+        $('.form-group.include_special').hide();
       } else {
         $('#set-targets').hide();
-        $('.form-group.include_custom').show();
+        $('.form-group.include_special').show();
       }
 
-      this.changeIncludeCustom();
+      this.changeIncludeSpecial();
     },
 
-    changeIncludeCustom: function() {
-      var include_custom = $('input[name="include_custom"]:checked').val();
-      if (include_custom) {
+    changeIncludeSpecial: function() {
+      var include_special = $('input[name="include_special"]:checked').val();
+      if (include_special) {
          $('#set-targets').show();
       } else {
         $('#set-targets').hide();
       }
 
-      if (include_custom === 'only') {
+      if (include_special === 'only') {
         // target_ordering can only be 'in order' or 'shuffle'
         $('input[name="target_ordering"][value="upper-first"]').parent('label').hide();
         $('input[name="target_ordering"][value="lower-first"]').parent('label').hide();
@@ -750,11 +750,11 @@ $(document).ready(function () {
       isValid = this.validateField($('.form-group.campaign_subtype'), this.validateState, 'Select a sub-type') && isValid;
 
       // campaign segmentation
-      isValid = this.validateField($('.form-group.segment_by'), this.validateSegmentBy, 'Campaign type requires custom targeting') && isValid;
+      isValid = this.validateField($('.form-group.segment_by'), this.validateSegmentBy, 'Campaign type requires custom segmentation') && isValid;
       isValid = this.validateField($('.form-group.locate_by'), this.validateLocateBy, 'Please pick a location attribute') && isValid;
       
       // campaign targets
-      isValid = this.validateField($('.form-group#set-targets'), this.validateTargetList, 'Add a custom target') && isValid;
+      isValid = this.validateField($('.form-group#set-targets'), this.validateTargetList, 'Add a target') && isValid;
 
       // phone numbers
       isValid = this.validateField($('.form-group.phone_number_set'), this.validateSelected, 'Select a phone number') && isValid;

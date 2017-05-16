@@ -11,7 +11,7 @@ from ..political_data.adapters import adapt_by_key
 from ..political_data import get_country_data
 from .constants import (STRING_LEN, TWILIO_SID_LENGTH, LANGUAGE_CHOICES,
                         CAMPAIGN_STATUS, STATUS_PAUSED,
-                        SEGMENT_BY_CHOICES, LOCATION_CHOICES, INCLUDE_CUSTOM_CHOCIES, TARGET_OFFICE_CHOICES)
+                        SEGMENT_BY_CHOICES, LOCATION_CHOICES, INCLUDE_SPECIAL_CHOCIES, TARGET_OFFICE_CHOICES)
 
 
 class Campaign(db.Model):
@@ -29,7 +29,7 @@ class Campaign(db.Model):
 
     segment_by = db.Column(db.String(STRING_LEN))
     locate_by = db.Column(db.String(STRING_LEN))
-    include_custom = db.Column(db.String(STRING_LEN))
+    include_special = db.Column(db.String(STRING_LEN))
     target_set = db.relationship('Target', secondary='campaign_target_sets',
                                  order_by='campaign_target_sets.c.order',
                                  backref=db.backref('campaigns'))
@@ -125,9 +125,9 @@ class Campaign(db.Model):
         else:
             return None
 
-    def include_custom_display(self):
-        "Display method for this campaign's custom inclusion"
-        return dict(INCLUDE_CUSTOM_CHOCIES).get(self.include_custom, '?')
+    def include_special_display(self):
+        "Display method for this campaign's special inclusion"
+        return dict(INCLUDE_SPECIAL_CHOCIES).get(self.include_special, '?')
 
     def phone_numbers(self, region_code=None):
         "Phone numbers for this campaign, can be limited to a specified region code (ISO-2)"
