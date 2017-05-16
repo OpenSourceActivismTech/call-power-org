@@ -92,7 +92,7 @@ class TestUSData(BaseTestCase):
         self.assertGreater(len(rep['offices']), 1)
 
     def test_locate_targets(self):
-        uids = locate_targets(self.mock_location, self.CONGRESS_CAMPAIGN, self.mock_cache)
+        uids = locate_targets(self.mock_location, self.CONGRESS_CAMPAIGN, cache=self.mock_cache)
         # returns a list of target uids
         self.assertEqual(len(uids), 3)
 
@@ -110,7 +110,7 @@ class TestUSData(BaseTestCase):
 
     def test_locate_targets_house_only(self):
         self.CONGRESS_CAMPAIGN.campaign_subtype = 'lower'
-        uids = locate_targets(self.mock_location, self.CONGRESS_CAMPAIGN, self.mock_cache)
+        uids = locate_targets(self.mock_location, self.CONGRESS_CAMPAIGN, cache=self.mock_cache)
         self.assertEqual(len(uids), 1)
 
         first = self.us_data.get_uid(uids[0])[0]
@@ -119,7 +119,7 @@ class TestUSData(BaseTestCase):
     def test_locate_targets_senate_only(self):
         self.CONGRESS_CAMPAIGN.campaign_subtype = 'upper'
 
-        uids = locate_targets(self.mock_location, self.CONGRESS_CAMPAIGN, self.mock_cache)
+        uids = locate_targets(self.mock_location, self.CONGRESS_CAMPAIGN, cache=self.mock_cache)
         self.assertEqual(len(uids), 2)
 
         first = self.us_data.get_uid(uids[0])[0]
@@ -132,7 +132,7 @@ class TestUSData(BaseTestCase):
         self.CONGRESS_CAMPAIGN.campaign_subtype = 'both'
         self.CONGRESS_CAMPAIGN.target_ordering = 'lower-first'
 
-        uids = locate_targets(self.mock_location, self.CONGRESS_CAMPAIGN, self.mock_cache)
+        uids = locate_targets(self.mock_location, self.CONGRESS_CAMPAIGN, cache=self.mock_cache)
         self.assertEqual(len(uids), 3)
 
         first = self.us_data.get_uid(uids[0])[0]
@@ -148,7 +148,7 @@ class TestUSData(BaseTestCase):
         self.CONGRESS_CAMPAIGN.campaign_subtype = 'both'
         self.CONGRESS_CAMPAIGN.target_ordering = 'upper-first'
 
-        uids = locate_targets(self.mock_location, self.CONGRESS_CAMPAIGN, self.mock_cache)
+        uids = locate_targets(self.mock_location, self.CONGRESS_CAMPAIGN, cache=self.mock_cache)
         self.assertEqual(len(uids), 3)
 
         first = self.us_data.get_uid(uids[0])[0]
@@ -164,7 +164,7 @@ class TestUSData(BaseTestCase):
         self.CONGRESS_CAMPAIGN.campaign_subtype = 'both'
         self.CONGRESS_CAMPAIGN.target_ordering = 'lower-first'
 
-        uids = locate_targets(self.mock_location_multiple_states, self.CONGRESS_CAMPAIGN, self.mock_cache)
+        uids = locate_targets(self.mock_location_multiple_states, self.CONGRESS_CAMPAIGN, cache=self.mock_cache)
         self.assertEqual(len(uids), 6)
 
         first = self.us_data.get_uid(uids[0])[0]
@@ -196,7 +196,7 @@ class TestUSData(BaseTestCase):
         self.CONGRESS_CAMPAIGN.campaign_subtype = 'both'
         self.CONGRESS_CAMPAIGN.target_ordering = 'lower-first'
 
-        uids = locate_targets(self.mock_location_multiple_districts, self.CONGRESS_CAMPAIGN, self.mock_cache)
+        uids = locate_targets(self.mock_location_multiple_districts, self.CONGRESS_CAMPAIGN, cache=self.mock_cache)
         self.assertEqual(len(uids), 4)
 
         first = self.us_data.get_uid(uids[0])[0]
@@ -224,7 +224,7 @@ class TestUSData(BaseTestCase):
         self.CONGRESS_CAMPAIGN.target_set = [custom_target,]
         self.CONGRESS_CAMPAIGN.include_custom = 'first'
 
-        uids = locate_targets(self.mock_location, self.CONGRESS_CAMPAIGN, self.mock_cache)
+        uids = locate_targets(self.mock_location, self.CONGRESS_CAMPAIGN, cache=self.mock_cache)
         self.assertEqual(len(uids), 3)
 
         first = self.us_data.get_uid(uids[0])[0]
@@ -247,7 +247,7 @@ class TestUSData(BaseTestCase):
         self.CONGRESS_CAMPAIGN.target_set = [custom_target,]
         self.CONGRESS_CAMPAIGN.include_custom = 'last'
 
-        uids = locate_targets(self.mock_location, self.CONGRESS_CAMPAIGN, self.mock_cache)
+        uids = locate_targets(self.mock_location, self.CONGRESS_CAMPAIGN, cache=self.mock_cache)
         self.assertEqual(len(uids), 3)
 
         first = self.us_data.get_uid(uids[0])[0]
@@ -270,7 +270,7 @@ class TestUSData(BaseTestCase):
         self.CONGRESS_CAMPAIGN.target_set = [custom_target,]
         self.CONGRESS_CAMPAIGN.include_custom = 'only'
 
-        uids = locate_targets(self.mock_location, self.CONGRESS_CAMPAIGN, self.mock_cache)
+        uids = locate_targets(self.mock_location, self.CONGRESS_CAMPAIGN, cache=self.mock_cache)
         self.assertEqual(len(uids), 1)
 
         first = self.us_data.get_uid(uids[0])[0]
@@ -286,7 +286,7 @@ class TestUSData(BaseTestCase):
         self.CONGRESS_CAMPAIGN.include_custom = 'only'
 
         # mock_location is outside of custom targets
-        uids = locate_targets(self.mock_location, self.CONGRESS_CAMPAIGN, self.mock_cache)
+        uids = locate_targets(self.mock_location, self.CONGRESS_CAMPAIGN, cache=self.mock_cache)
         self.assertEqual(len(uids), 0)
 
     def test_locate_targets_custom_multiple_first(self):
@@ -297,7 +297,7 @@ class TestUSData(BaseTestCase):
         self.CONGRESS_CAMPAIGN.target_set = [custom_target_one, custom_target_two]
         self.CONGRESS_CAMPAIGN.include_custom = 'first'
 
-        uids = locate_targets(self.mock_location, self.CONGRESS_CAMPAIGN, self.mock_cache)
+        uids = locate_targets(self.mock_location, self.CONGRESS_CAMPAIGN, cache=self.mock_cache)
         self.assertEqual(len(uids), 3)
 
         first = self.us_data.get_uid(uids[0])[0]
@@ -322,7 +322,7 @@ class TestUSData(BaseTestCase):
         self.CONGRESS_CAMPAIGN.target_set = [custom_target_one, custom_target_two]
         self.CONGRESS_CAMPAIGN.include_custom = 'last'
 
-        uids = locate_targets(self.mock_location, self.CONGRESS_CAMPAIGN, self.mock_cache)
+        uids = locate_targets(self.mock_location, self.CONGRESS_CAMPAIGN, cache=self.mock_cache)
         self.assertEqual(len(uids), 3)
 
         first = self.us_data.get_uid(uids[0])[0]

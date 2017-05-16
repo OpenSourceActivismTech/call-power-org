@@ -49,7 +49,7 @@ class TestCAData(BaseTestCase):
         self.assertEqual(riding['city'], 'Mississauga')
 
     def test_locate_targets(self):
-        keys = locate_targets(self.mock_location, self.PARLIAMENT_CAMPAIGN, self.mock_cache)
+        keys = locate_targets(self.mock_location, self.PARLIAMENT_CAMPAIGN, cache=self.mock_cache)
         # returns a list of target boundary keys
         self.assertEqual(len(keys), 1)
 
@@ -58,7 +58,7 @@ class TestCAData(BaseTestCase):
         self.assertEqual(mp['representative_set_name'], 'House of Commons')
 
     def test_locate_targets_province_quebec(self):
-        keys = locate_targets(self.mock_location, self.PROVINCE_CAMPAIGN, self.mock_cache)
+        keys = locate_targets(self.mock_location, self.PROVINCE_CAMPAIGN, cache=self.mock_cache)
         self.assertEqual(len(keys), 1)
         mha = self.ca_data.cache_get(keys[0])
         self.assertEqual(mha['elected_office'], 'MNA')
