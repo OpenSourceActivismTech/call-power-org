@@ -608,10 +608,10 @@ $(document).ready(function () {
         $('.form-group.include_custom').hide();
       } else {
         $('#set-targets').hide();
-        $('input[name="include_custom"]').attr('checked', false);
-        $('.form-group.include_custom input[name="include_custom"][value=""]').click();
         $('.form-group.include_custom').show();
       }
+
+      this.changeIncludeCustom();
     },
 
     changeIncludeCustom: function() {
