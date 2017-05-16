@@ -363,15 +363,16 @@ def location_parse():
 
     location = request.values.get('Digits', '')
 
-    # Override location method so locate_targets knows we're passing a zip
+    # Override locate_by attribute so locate_targets knows we're passing a zip
     # This allows call-ins to be made for campaigns which otherwise use district locate_by
     campaign.locate_by = LOCATION_POSTAL
-    target_ids = locate_targets(location, campaign)
+    # Skip custom, because at this point we just want to know if the zipcode is valid
+    located_target_ids = locate_targets(location, campaign, skip_custom=True)
 
     if current_app.debug:
         current_app.logger.debug(u'entered = {}'.format(location))
 
-    if not target_ids:
+    if not located_target_ids:
         resp = twilio.twiml.Response()
         play_or_say(resp, campaign.audio('msg_unparsed_location'),
             lang=campaign.language_code)
@@ -379,7 +380,6 @@ def location_parse():
         return location_gather(resp, params, campaign)
 
     params['userLocation'] = location
-    params['targetIds'] = target_ids
 
     return make_calls(params, campaign)
 
