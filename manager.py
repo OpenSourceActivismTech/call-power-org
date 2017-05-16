@@ -3,7 +3,6 @@ import sys
 import subprocess
 
 from flask.ext.script import Manager, Command
-import nose
 import alembic
 import alembic.config, alembic.command
 from flask.ext.assets import ManageAssets
@@ -106,15 +105,6 @@ def stamp(revision):
     """Fake a migration to a particular revision"""
     reset_assets()
     alembic.command.stamp(alembic_config, revision)
-
-
-@manager.add_command
-class NoseCommand(Command):
-    name = 'test'
-    capture_all_args = True
-
-    def run(self, remaining):
-        nose.main(argv=remaining)
 
 
 @manager.command
