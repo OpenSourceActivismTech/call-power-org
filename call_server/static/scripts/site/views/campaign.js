@@ -13,9 +13,12 @@
       'change select#campaign_type':  'changeCampaignType',
       'change select#campaign_subtype':  'changeCampaignSubtype',
       'change input[name="segment_by"]': 'changeSegmentBy',
-      'change input[name="include_custom"]': 'changeIncludeCustom',
 
-      // call limit
+      // include special
+      'change input[name="show_special"]': 'showSpecial',
+      'change select[name="include_special"]': 'changeIncludeSpecial',
+
+      // call limits
       'change input[name="call_limit"]': 'changeCallLimit',
 
       // phone numbers
@@ -196,25 +199,35 @@
 
       if (segment_by === 'custom') {
         $('#set-targets').show();
-        $('.form-group.include_custom input[name="include_custom"][value="only"]').click();
-        $('.form-group.include_custom').hide();
+        $('.form-group.include_special select[name="include_special"][value="only"]').click();
+        $('.form-group.include_special').hide();
       } else {
         $('#set-targets').hide();
-        $('.form-group.include_custom').show();
+        $('.form-group.include_special').show();
       }
 
-      this.changeIncludeCustom();
+      this.changeIncludeSpecial();
     },
 
-    changeIncludeCustom: function() {
-      var include_custom = $('input[name="include_custom"]:checked').val();
-      if (include_custom) {
+    showSpecial: function(event) {
+      var specialGroup = $('select[name="include_special"]').parents('.input-group');
+      if ($(event.target).prop('checked')) {
+        specialGroup.show();
+      } else {
+        specialGroup.hide();
+        $('select[name="include_special"]').val('').trigger('change');
+      }
+    },
+
+    changeIncludeSpecial: function() {
+      var include_special = $('select[name="include_special"]').val();
+      if (include_special) {
          $('#set-targets').show();
       } else {
         $('#set-targets').hide();
       }
 
-      if (include_custom === 'only') {
+      if (include_special === 'only') {
         // target_ordering can only be 'in order' or 'shuffle'
         $('input[name="target_ordering"][value="upper-first"]').parent('label').hide();
         $('input[name="target_ordering"][value="lower-first"]').parent('label').hide();

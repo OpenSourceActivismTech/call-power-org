@@ -133,6 +133,10 @@ def form(country_code=None, campaign_type=None, campaign_id=None, campaign_langu
     # will be updated in client
     form.target_set.choices = choice_items(EMPTY_CHOICES)
 
+    # set form.show_special based on value of campaign.include_special
+    if campaign.include_special:
+        form.show_special.data = True
+
     if form.validate_on_submit():
         # can't use populate_obj with nested forms, iterate over fields manually
         for field in form:

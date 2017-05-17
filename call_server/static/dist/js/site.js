@@ -421,9 +421,12 @@ $(document).ready(function () {
       'change select#campaign_type':  'changeCampaignType',
       'change select#campaign_subtype':  'changeCampaignSubtype',
       'change input[name="segment_by"]': 'changeSegmentBy',
-      'change input[name="include_special"]': 'changeIncludeCustom',
 
-      // call limit
+      // include special
+      'change input[name="show_special"]': 'showSpecial',
+      'change select[name="include_special"]': 'changeIncludeSpecial',
+
+      // call limits
       'change input[name="call_limit"]': 'changeCallLimit',
 
       // phone numbers
@@ -511,7 +514,7 @@ $(document).ready(function () {
           $('.form-group.segment_by').hide();
           $('.form-group.locate_by').hide();
           $('#target-search').hide();
-          // show target search
+          // show custom target search
           $('#set-targets').show();
           // hide target_offices
           $('.form-group.target_offices').hide();
@@ -604,7 +607,7 @@ $(document).ready(function () {
 
       if (segment_by === 'custom') {
         $('#set-targets').show();
-        $('.form-group.include_special input[name="include_special"][value="only"]').click();
+        $('.form-group.include_special select[name="include_special"][value="only"]').click();
         $('.form-group.include_special').hide();
       } else {
         $('#set-targets').hide();
@@ -614,8 +617,18 @@ $(document).ready(function () {
       this.changeIncludeSpecial();
     },
 
+    showSpecial: function(event) {
+      var specialGroup = $('select[name="include_special"]').parents('.input-group');
+      if ($(event.target).prop('checked')) {
+        specialGroup.show();
+      } else {
+        specialGroup.hide();
+        $('select[name="include_special"]').val('').trigger('change');
+      }
+    },
+
     changeIncludeSpecial: function() {
-      var include_special = $('input[name="include_special"]:checked').val();
+      var include_special = $('select[name="include_special"]').val();
       if (include_special) {
          $('#set-targets').show();
       } else {
@@ -750,11 +763,11 @@ $(document).ready(function () {
       isValid = this.validateField($('.form-group.campaign_subtype'), this.validateState, 'Select a sub-type') && isValid;
 
       // campaign segmentation
-      isValid = this.validateField($('.form-group.segment_by'), this.validateSegmentBy, 'Campaign type requires custom segmentation') && isValid;
+      isValid = this.validateField($('.form-group.segment_by'), this.validateSegmentBy, 'Campaign type requires custom targeting') && isValid;
       isValid = this.validateField($('.form-group.locate_by'), this.validateLocateBy, 'Please pick a location attribute') && isValid;
       
       // campaign targets
-      isValid = this.validateField($('.form-group#set-targets'), this.validateTargetList, 'Add a target') && isValid;
+      isValid = this.validateField($('.form-group#set-targets'), this.validateTargetList, 'Add a custom target') && isValid;
 
       // phone numbers
       isValid = this.validateField($('.form-group.phone_number_set'), this.validateSelected, 'Select a phone number') && isValid;

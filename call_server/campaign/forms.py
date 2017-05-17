@@ -52,7 +52,8 @@ class CampaignForm(Form):
                             description=True, default=SEGMENT_BY_CHOICES[0][0])
     locate_by = RadioField(_('Locate By'), [Optional()], choices=choice_items(LOCATION_CHOICES),
                            description=True, default=None)
-    include_special = RadioField(_('Special Targets'), [Optional()], choices=choice_items(INCLUDE_SPECIAL_CHOCIES),
+    show_special = BooleanField(_('Include Special Targets'), [Optional()], default=False)
+    include_special = SelectField(_('Users Representatives'), [Optional()], choices=choice_items(INCLUDE_SPECIAL_CHOCIES),
                            description=True, default=INCLUDE_SPECIAL_CHOCIES[0][0])
     target_set = FieldList(FormField(TargetForm, _('Choose Targets')), validators=[Optional()])
     target_ordering = RadioField(_('Target Order'), [Optional()], description=True)

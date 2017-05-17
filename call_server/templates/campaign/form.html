@@ -46,9 +46,18 @@
         {{ render_field(form.locate_by, class_={'label': label_width,
                                                  'control': control_width,
                                                  'clear': True}) }}
-        {{ render_field(form.include_special, class_={'label': label_width,
-                                                 'control': control_width,
-                                                 'clear': True}) }}                              
+
+        <div class="form-group special-targets">
+        <label class="control-label col-sm-2"></label>
+            <div class="controls col-sm-6">
+                {{ form.show_special() }}
+                {{ render_label(form.show_special, 'inline') }}
+                <div class="input-group inline">
+                    {{ form.include_special() }}
+                    {{ render_label(form.include_special, 'inline') }}
+                </div>
+            </div>
+        </div>
 
         <div class="form-group hide-initial" id="set-targets">
             {{render_label(form.target_set, label_width)}}

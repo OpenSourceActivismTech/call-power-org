@@ -21,10 +21,10 @@ INCLUDE_SPECIAL_FIRST = 'first'
 INCLUDE_SPECIAL_LAST = 'last'
 INCLUDE_SPECIAL_ONLY = 'only'
 INCLUDE_SPECIAL_CHOCIES = (
-    ('', 'None'),
-    (INCLUDE_SPECIAL_FIRST, 'First'),
-    (INCLUDE_SPECIAL_LAST, 'Last'),
-    (INCLUDE_SPECIAL_ONLY, 'Only'),
+    ('', '- choose order -'),
+    (INCLUDE_SPECIAL_FIRST, 'Before'),
+    (INCLUDE_SPECIAL_LAST, 'After'),
+    (INCLUDE_SPECIAL_ONLY, 'Only If'),
 )
 
 TARGET_OFFICE_DISTRICT = 'district'
