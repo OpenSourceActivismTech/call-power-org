@@ -30,7 +30,6 @@ label.inline, input.inline {
     display: inline-block;
     width: auto;
     height: auto;
-    vertical-align: middle;
     font-weight:normal;
 }
 
@@ -66,7 +65,16 @@ input.form-control[type="radio"] {
 }
 
 .radio-inline, .checkbox-inline {
+    vertical-align: middle;
+}
+
+.input-group.inline select {
     vertical-align: bottom;
+    margin: 0 5px 0 2px;
+}
+
+input.form-control[step="1"] {
+    width: 70px;
 }
 
 /* Specific input overrides */

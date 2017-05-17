@@ -450,6 +450,7 @@ $(document).ready(function () {
       this.changeCampaignCountry();
       this.changeCampaignType();
       this.changeSegmentBy();
+      this.changeIncludeSpecial();
 
       if ($('input[name="call_maximum"]').val()) {
         $('input[name="call_limit"]').attr('checked', 'checked');
@@ -607,33 +608,28 @@ $(document).ready(function () {
 
       if (segment_by === 'custom') {
         $('#set-targets').show();
-        $('.form-group.include_special select[name="include_special"][value="only"]').click();
-        $('.form-group.include_special').hide();
+        $('.form-group.special_targets').hide();
       } else {
         $('#set-targets').hide();
-        $('.form-group.include_special').show();
+        $('.form-group.special_targets').show();
+        this.showSpecial();
       }
-
-      this.changeIncludeSpecial();
     },
 
     showSpecial: function(event) {
       var specialGroup = $('select[name="include_special"]').parents('.input-group');
-      if ($(event.target).prop('checked')) {
+      if ($('input[name="show_special"]').prop('checked')) {
         specialGroup.show();
+        $('#set-targets').show();
       } else {
         specialGroup.hide();
+        $('#set-targets').hide();
         $('select[name="include_special"]').val('').trigger('change');
       }
     },
 
     changeIncludeSpecial: function() {
       var include_special = $('select[name="include_special"]').val();
-      if (include_special) {
-         $('#set-targets').show();
-      } else {
-        $('#set-targets').hide();
-      }
 
       if (include_special === 'only') {
         // target_ordering can only be 'in order' or 'shuffle'
@@ -726,6 +722,15 @@ $(document).ready(function () {
       }
     },
 
+    validateSpecialTargets: function(f) {
+      // if show_special checked, ensure we also have include_special set
+      if ($('input#show_special:checked').val()) {
+        return !!$('select#include_special').val();
+      } else {
+        return true;
+      }
+    },
+
     validateSelected: function(formGroup) {
       return !!$('select option:selected', formGroup).length;
     },
@@ -768,6 +773,7 @@ $(document).ready(function () {
       
       // campaign targets
       isValid = this.validateField($('.form-group#set-targets'), this.validateTargetList, 'Add a custom target') && isValid;
+      isValid = this.validateField($('.form-group.special_targets'), this.validateSpecialTargets, 'Please pick an order for Special Targets') && isValid;
 
       // phone numbers
       isValid = this.validateField($('.form-group.phone_number_set'), this.validateSelected, 'Select a phone number') && isValid;
