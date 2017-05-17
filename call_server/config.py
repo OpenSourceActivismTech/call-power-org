@@ -96,7 +96,7 @@ class ProductionConfig(DefaultConfig):
         # http://docs.aws.amazon.com/general/latest/gr/rande.html#s3_region
         # use path-style urls, in case bucket name is DNS incompatible (uses periods, or mixed case
         # http://docs.aws.amazon.com/AmazonS3/latest/dev/BucketRestrictions.html
-        if STORE_S3_REGION is 'us-east-1':
+        if STORE_S3_REGION == 'us-east-1':
             STORE_DOMAIN = 'https://s3.amazonaws.com/%s/' % (STORE_S3_BUCKET)
         else:
             STORE_DOMAIN = 'https://s3-%s.amazonaws.com/%s/' % (STORE_S3_REGION, STORE_S3_BUCKET)
