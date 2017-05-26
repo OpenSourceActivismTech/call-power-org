@@ -1911,16 +1911,16 @@ $(document).ready(function () {
 
     events: {
       'keydown [contenteditable]': 'onEdit',
+      'paste [contenteditable]': 'onEdit',
       'blur [contenteditable]': 'onSave',
       'click .remove': 'onRemove',
     },
 
     onEdit: function(event) {
       var target = $(event.target);
-      var esc = event.which == 27,
-          nl = event.which == 13,
-          tab = event.which == 9;
-
+      var esc = (event.which === 27),
+          nl = (event.which === 13),
+          tab = (event.which === 9);
 
       if (esc) {
         document.execCommand('undo');
@@ -1934,6 +1934,11 @@ $(document).ready(function () {
       } else if (target.text() === target.attr('placeholder')) {
         target.text(''); // overwrite placeholder text
         target.removeClass('placeholder');
+      } else if (event.type==='paste') {
+        setTimeout(function() {
+          // on paste, convert html to plain text
+          target.html(target.text());
+        },10);
       }
     },
 
