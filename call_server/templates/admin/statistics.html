@@ -69,6 +69,10 @@
         <td class="col-sm-6"><input id="calls_completed" class="col-sm-12" value="<%= data.calls_completed %>" readonly/></td>
         <td class="col-sm-6"><label class="inline" for="calls_completed">Calls Completed</label></td>
     </tr><% } %>
+    <% if (data.sessions_completed) { %><tr>
+        <td class="col-sm-6"><input id="sessions_completed" class="col-sm-12" value="<%= data.sessions_completed %>" readonly/></td>
+        <td class="col-sm-6"><label class="inline" for="sessions_completed">Individual Callers</label></td>
+    </tr><% } %>
     <% if (data.conversion_rate) { %><tr>
         <td class="col-sm-6"><input id="conversion_rate" class="col-sm-12" value="<%= data.conversion_rate %>" readonly/></td>
         <td class="col-sm-6"><label class="inline" for="conversion_rate">Conversion Rate</label></td>
