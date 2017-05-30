@@ -194,11 +194,11 @@
             }
           }).promise();
         }).then(function() {
+          $('.btn.download').show();
           // don't know why this is necessary, but it appears to be
           setTimeout(function() {
             $('table#table_data').trigger("updateAll");
-            $('.btn.download').show();
-          }, 0);
+          }, 10);
         });
       } else {
         $('#table_display').hide();
