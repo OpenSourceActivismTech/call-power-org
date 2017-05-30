@@ -211,6 +211,7 @@ class Target(db.Model):
     uid = db.Column(db.String(STRING_LEN), index=True, nullable=True)  # for US, this is bioguide_id
     title = db.Column(db.String(STRING_LEN), nullable=True)
     name = db.Column(db.String(STRING_LEN), nullable=False, unique=False)
+    district = db.Column(db.String(STRING_LEN), nullable=True)
     number = db.Column(phone_number.PhoneNumberType())
     offices = db.relationship('TargetOffice', backref="target")
 
@@ -222,6 +223,7 @@ class Target(db.Model):
 
     def phone_number(self):
         return self.number.e164
+
 
     @classmethod
     def get_or_cache_key(cls, uid, prefix=None, cache=cache):

@@ -218,6 +218,10 @@ class CADataProvider(DataProvider):
         return keys
 
 
+    def get_uid(self, uid):
+        return [self.cache_get(uid, dict())]
+
+
     def get_boundary_key(self, boundary_key):
         key = self.KEY_OPENNORTH.format(boundary=boundary_key)
         return self.cache_get(key, dict())

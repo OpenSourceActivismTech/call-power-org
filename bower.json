@@ -23,6 +23,7 @@
   ],
   "dependencies": {
     "bootstrap": "~3.3.5",
+    "bootswatch": "^3.3.7",
     "backbone": "~1.1.2",
     "html.sortable": "0.2.8",
     "volume-meter": "https://github.com/cwilso/volume-meter.git",
@@ -31,6 +32,6 @@
     "highcharts": "~4.1.7",
     "chartkick": "~1.4.0",
     "bootstrap-datepicker": "~1.4.0",
-    "bootswatch": "^3.3.7"
+    "tablesorter": "https://github.com/Mottie/tablesorter.git"
   }
 }

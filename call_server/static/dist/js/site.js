@@ -1689,6 +1689,7 @@ $(document).ready(function () {
     events: {
       'change select[name="campaigns"]': 'changeCampaign',
       'change select[name="timespan"]': 'renderChart',
+      'click .btn.download': 'downloadTable',
     },
 
     initialize: function() {
@@ -1716,6 +1717,18 @@ $(document).ready(function () {
       };
       this.summaryDataTemplate = _.template($('#summary-data-tmpl').html(), { 'variable': 'data' });
       this.targetDataTemplate = _.template($('#target-data-tmpl').html(), { 'variable': 'targets'});
+
+      $.tablesorter.addParser({
+        id: 'lastname',
+        is: function(s) {
+          return false;
+        },
+        format: function(s) {
+          var parts = s.split(" ");
+          return parts[1];
+        },
+        type: 'text'
+      });
 
       this.renderChart();
     },
@@ -1779,7 +1792,7 @@ $(document).ready(function () {
         chartDataUrl += ('&end='+end);
       }
 
-      $('#chart_display').html('loading');
+      $('#chart_display').html('<span class="glyphicon glyphicon-refresh spin"></span> Loading...');
       $.getJSON(chartDataUrl, function(data) {
         if (self.campaignId) {
           // calls for this campaign by date, map to series by status
@@ -1838,19 +1851,46 @@ $(document).ready(function () {
           tableDataUrl += ('&end='+end);
         }
 
-        $('table#table_data').html('loading');
-        $.getJSON(tableDataUrl, function(data) {
+        $('table#table_data').html('<span class="glyphicon glyphicon-refresh spin"></span> Loading...');
+        $('#table_display').show();
+        $.getJSON(tableDataUrl).success(function(data) {
           var content = self.targetDataTemplate(data.objects);
-          $('table#table_data').html(content);
-          $('#table_display').show();
+          return $('table#table_data').html(content).promise();
+        }).then(function() {
+          return $('table#table_data').tablesorter({
+            theme: "bootstrap",
+            headerTemplate: '{content} {icon}',
+            headers: {
+              1: {
+                sorter:'lastname'
+              }
+            },
+            sortList: [[3,1]],
+            sortInitialOrder: "asc",
+            widgets: [ "uitheme", "columns", "zebra", "output"],
+            widgetOptions: {
+              zebra : ["even", "odd"],
+              output_delivery: 'download',
+              output_saveFileName: 'callpower-export.csv'
+            }
+          }).promise();
+        }).then(function() {
+          $('.btn.download').show();
+          // don't know why this is necessary, but it appears to be
+          setTimeout(function() {
+            $('table#table_data').trigger("updateAll");
+          }, 10);
         });
       } else {
-        $('#table_display').hide()
+        $('#table_display').hide();
       }
-    }
+    },
 
+    downloadTable: function(event) {
+      console.log('download!');
+      $('table#table_data').trigger('outputTable');
+    },
   });
-
 })();
 /*global CallPower, Backbone */
 
@@ -1911,16 +1951,16 @@ $(document).ready(function () {
 
     events: {
       'keydown [contenteditable]': 'onEdit',
+      'paste [contenteditable]': 'onEdit',
       'blur [contenteditable]': 'onSave',
       'click .remove': 'onRemove',
     },
 
     onEdit: function(event) {
       var target = $(event.target);
-      var esc = event.which == 27,
-          nl = event.which == 13,
-          tab = event.which == 9;
-
+      var esc = (event.which === 27),
+          nl = (event.which === 13),
+          tab = (event.which === 9);
 
       if (esc) {
         document.execCommand('undo');
@@ -1934,6 +1974,11 @@ $(document).ready(function () {
       } else if (target.text() === target.attr('placeholder')) {
         target.text(''); // overwrite placeholder text
         target.removeClass('placeholder');
+      } else if (event.type==='paste') {
+        setTimeout(function() {
+          // on paste, convert html to plain text
+          target.html(target.text());
+        },10);
       }
     },
 
