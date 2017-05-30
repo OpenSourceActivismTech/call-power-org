@@ -48,8 +48,7 @@ class UnitedStatesData(DataAdapter):
             'name': u'{first_name} {last_name}'.format(**data),
             'number': data.get('phone', ''), # DC office number
             'title': data.get('title', ''),
-            'uid': data.get('bioguide_id', ''),
-            'state': data.get('state')
+            'uid': data.get('bioguide_id', '')
         }
         if 'district' in data and data['district']:
             adapted['district'] = '{state}-{district}'.format(**data)

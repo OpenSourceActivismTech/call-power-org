@@ -312,17 +312,25 @@ def campaign_target_calls(campaign_id):
     for status in TWILIO_CALL_STATUS:
         # combine calls status for each target
         for (target_title, target_name, target_uid, call_status, count) in query_targets.all():
-            if ':' in target_uid:
+            # get more target_data from political_data cache
+            try:
                 target_data = political_data.cache_get(target_uid)[0]
+            except KeyError:
+                target_data = political_data.cache_get(target_uid)
+
+            # use adapter to get title, name and district 
+            if ':' in target_uid:
                 data_adapter = adapt_by_key(target_uid)
                 adapted_data = data_adapter.target(target_data)
             elif political_data.country_code.lower() == 'us' and campaign.campaign_type == 'congress':
                 # fall back to USData, which uses bioguide
-                target_data = political_data.get_bioguide(target_uid)[0]
+                if not target_data:
+                    target_data = political_data.get_bioguide(target_uid)[0]
                 data_adapter = UnitedStatesData()
                 adapted_data = data_adapter.target(target_data)
             else:
-                adapted_data = political_data.cache_get(target_uid)[0]
+                # no need to adapt
+                adapted_data = target_data
             
             try:
                 targets[target_uid]['title'] = adapted_data['title']
