@@ -8,6 +8,7 @@
     events: {
       'change select[name="campaigns"]': 'changeCampaign',
       'change select[name="timespan"]': 'renderChart',
+      'click .btn.download': 'downloadTable',
     },
 
     initialize: function() {
@@ -185,21 +186,28 @@
             },
             sortList: [[3,1]],
             sortInitialOrder: "asc",
-            widgets: [ "uitheme", "columns", "zebra" ],
+            widgets: [ "uitheme", "columns", "zebra", "output"],
             widgetOptions: {
               zebra : ["even", "odd"],
+              output_delivery: 'download',
+              output_saveFileName: 'callpower-export.csv'
             }
           }).promise();
         }).then(function() {
           // don't know why this is necessary, but it appears to be
           setTimeout(function() {
             $('table#table_data').trigger("updateAll");
+            $('.btn.download').show();
           }, 0);
         });
       } else {
-        $('#table_display').hide()
+        $('#table_display').hide();
       }
-    }
-  });
+    },
 
+    downloadTable: function(event) {
+      console.log('download!');
+      $('table#table_data').trigger('outputTable');
+    },
+  });
 })();

@@ -182,6 +182,7 @@ def configure_assets(app):
                       'bower_components/chartkick/chartkick.js',
                       'bower_components/tablesorter/dist/js/jquery.tablesorter.js',
                       'bower_components/tablesorter/dist/js/jquery.tablesorter.widgets.js',
+                      'bower_components/tablesorter/dist/js/widgets/widget-output.min.js',
                       filters='rjsmin', output='dist/js/graph.js')
     assets.register('graph_js', graph_js)
 
