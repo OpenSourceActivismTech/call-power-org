@@ -169,6 +169,7 @@ def configure_assets(app):
     vendor_css = Bundle('bower_components/bootstrap/dist/css/bootstrap.css',
                         'bower_components/bootstrap/dist/css/bootstrap-theme.css',
                         'bower_components/bootstrap-datepicker/dist/css/bootstrap-datepicker.css',
+                        'bower_components/tablesorter/dist/css/theme.bootstrap_3.min.css',
                         filters='cssmin', output='dist/css/vendor.css')
     assets.register('vendor_css', vendor_css)
 
@@ -179,6 +180,8 @@ def configure_assets(app):
 
     graph_js = Bundle('bower_components/highcharts/highcharts.js',
                       'bower_components/chartkick/chartkick.js',
+                      'bower_components/tablesorter/dist/js/jquery.tablesorter.js',
+                      'bower_components/tablesorter/dist/js/jquery.tablesorter.widgets.js',
                       filters='rjsmin', output='dist/js/graph.js')
     assets.register('graph_js', graph_js)
 

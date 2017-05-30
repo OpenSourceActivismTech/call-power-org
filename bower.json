@@ -30,6 +30,7 @@
     "backbone-filtered-collection": "~0.4.0",
     "highcharts": "~4.1.7",
     "chartkick": "~1.4.0",
-    "bootstrap-datepicker": "~1.4.0"
+    "bootstrap-datepicker": "~1.4.0",
+    "tablesorter": "https://github.com/Mottie/tablesorter.git"
   }
 }

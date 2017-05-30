@@ -36,6 +36,18 @@
       this.summaryDataTemplate = _.template($('#summary-data-tmpl').html(), { 'variable': 'data' });
       this.targetDataTemplate = _.template($('#target-data-tmpl').html(), { 'variable': 'targets'});
 
+      $.tablesorter.addParser({
+        id: 'lastname',
+        is: function(s) {
+          return false;
+        },
+        format: function(s) {
+          var parts = s.split(" ");
+          return parts[1];
+        },
+        type: 'text'
+      });
+
       this.renderChart();
     },
 
@@ -98,7 +110,7 @@
         chartDataUrl += ('&end='+end);
       }
 
-      $('#chart_display').html('loading');
+      $('#chart_display').html('<span class="glyphicon glyphicon-refresh spin"></span> Loading...');
       $.getJSON(chartDataUrl, function(data) {
         if (self.campaignId) {
           // calls for this campaign by date, map to series by status
@@ -157,17 +169,37 @@
           tableDataUrl += ('&end='+end);
         }
 
-        $('table#table_data').html('loading');
-        $.getJSON(tableDataUrl, function(data) {
+        $('table#table_data').html('<span class="glyphicon glyphicon-refresh spin"></span> Loading...');
+        $('#table_display').show();
+        $.getJSON(tableDataUrl).success(function(data) {
           var content = self.targetDataTemplate(data.objects);
-          $('table#table_data').html(content);
-          $('#table_display').show();
+          return $('table#table_data').html(content).promise();
+        }).then(function() {
+          return $('table#table_data').tablesorter({
+            theme: "bootstrap",
+            headerTemplate: '{content} {icon}',
+            headers: {
+              1: {
+                sorter:'lastname'
+              }
+            },
+            sortList: [[3,1]],
+            sortInitialOrder: "asc",
+            widgets: [ "uitheme", "columns", "zebra" ],
+            widgetOptions: {
+              zebra : ["even", "odd"],
+            }
+          }).promise();
+        }).then(function() {
+          // don't know why this is necessary, but it appears to be
+          setTimeout(function() {
+            $('table#table_data').trigger("updateAll");
+          }, 0);
         });
       } else {
         $('#table_display').hide()
       }
     }
-
   });
 
 })();
