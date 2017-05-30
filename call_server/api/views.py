@@ -16,6 +16,7 @@ from constants import API_TIMESPANS
 
 from ..extensions import csrf, rest, db
 from ..campaign.models import Campaign, Target, AudioRecording
+from ..political_data.adapters import adapt_by_key, UnitedStatesData
 from ..call.models import Call, Session
 from ..call.constants import TWILIO_CALL_STATUS
 
@@ -295,26 +296,45 @@ def campaign_target_calls(campaign_id):
         db.session.query(
             Target.title,
             Target.name,
+            Target.uid,
             subquery.c.status,
             subquery.c.calls_count
         )
         .join(subquery, subquery.c.target_id == Target.id)
     )
-
     # in case some calls don't get matched directly to targets
     # they are filtered out by join, so hold on to them
     calls_wo_targets = query_calls.filter(Call.target_id == None)
 
     targets = defaultdict(dict)
+    political_data = campaign.get_campaign_data().data_provider
 
     for status in TWILIO_CALL_STATUS:
         # combine calls status for each target
-        for (target_title, target_name, call_status, count) in query_targets.all():
-            target = u'{} {}'.format(target_title, target_name)
+        for (target_title, target_name, target_uid, call_status, count) in query_targets.all():
+            if ':' in target_uid:
+                target_data = political_data.cache_get(target_uid)[0]
+                data_adapter = adapt_by_key(target_uid)
+                adapted_data = data_adapter.target(target_data)
+            elif political_data.country_code.lower() == 'us' and campaign.campaign_type == 'congress':
+                # fall back to USData, which uses bioguide
+                target_data = political_data.get_bioguide(target_uid)[0]
+                data_adapter = UnitedStatesData()
+                adapted_data = data_adapter.target(target_data)
+            else:
+                adapted_data = political_data.cache_get(target_uid)[0]
+            
+            try:
+                targets[target_uid]['title'] = adapted_data['title']
+                targets[target_uid]['name'] = adapted_data['name']
+                targets[target_uid]['district'] = adapted_data['district']
+            except KeyError:
+                pass
+
             if call_status == status:
-                targets[target][call_status] = targets.get(target, {}).get(call_status, 0) + count
+                targets[target_uid][call_status] = targets.get(target_uid, {}).get(call_status, 0) + count
         try:
-            for (target_title, target_name, call_status, count) in calls_wo_targets.all():
+            for (target_title, target_name, target_uid, call_status, count) in calls_wo_targets.all():
                 if call_status == status:
                     targets['Unknown'][call_status] = targets.get('Unknown', {}).get(call_status, 0) + count
         except ValueError:

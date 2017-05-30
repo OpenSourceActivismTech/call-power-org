@@ -391,6 +391,11 @@ class USDataProvider(DataProvider):
 
         return legislators
 
+    def get_bioguide(self, bioguide):
+        # try first to get from cache
+        key = self.KEY_BIOGUIDE.format(bioguide_id=bioguide)
+        return self.cache_get(key, dict())
+
     def get_state_legid(self, legid):
         # try first to get from cache
         key = self.KEY_OPENSTATES.format(id=legid)

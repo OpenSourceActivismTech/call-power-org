@@ -91,7 +91,9 @@
 
   <script type="text/template" id="target-data-tmpl">
     <thead><tr>
-        <th>Target</th>
+        <th>Title</th>
+        <th>Name</th>
+        <th>District</th>
         <th>Completed</th>
         <th>Busy</th>
         <th>Failed</th>
@@ -102,7 +104,9 @@
     <tbody>
     <% _.each(targets, function(data, name) { %> 
     <tr>
-        <td><%= name %></td>
+        <td><%= data.title %></td>
+        <td><%= data.name %></td>
+        <td><%= data.district %></td>
         <td><%= data.completed %></td>
         <td><%= data.busy %></td>
         <td><%= data.failed %></td>

@@ -44,12 +44,18 @@ class UnitedStatesData(DataAdapter):
             return (key, '')
 
     def target(self, data):
-        return {
+        adapted = {
             'name': u'{first_name} {last_name}'.format(**data),
             'number': data.get('phone', ''), # DC office number
             'title': data.get('title', ''),
-            'uid': data.get('bioguide_id', '')
+            'uid': data.get('bioguide_id', ''),
+            'state': data.get('state')
         }
+        if 'district' in data and data['district']:
+            adapted['district'] = '{state}-{district}'.format(**data)
+        else:
+            adapted['district'] = data.get('state', '')
+        return adapted
 
     def offices(self, data):
         # district office numbers
@@ -97,6 +103,9 @@ class OpenStatesData(DataAdapter):
         if not 'number' in adapted:
             adapted['number'] = data.get('offices',[{}])[0].get('phone', '')
             # fallback to none
+
+        adapted['district'] = data.get('district', '')
+
         return adapted
 
     def offices(self, data):
@@ -122,6 +131,7 @@ class GovernorAdapter(DataAdapter):
             'title': data.get('title', ''),
             'number': data.get('phone', ''),
             'uid': data.get('state', ''),
+            'district': data.get('state', '')
         }
 
 
@@ -136,7 +146,8 @@ class OpenNorthAdapter(DataAdapter):
             'title': data.get('elected_office', ''),
             'number': filter(lambda d: d['type'] == 'legislature', data['offices'])[0].get('tel', ''),
             # legislature office number
-            'uid': data.get('cache_key', '')
+            'uid': data.get('cache_key', ''),
+            'district': data.get('district_name', '')
         }
 
     def offices(self, data):
