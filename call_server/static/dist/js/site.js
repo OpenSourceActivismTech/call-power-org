@@ -331,6 +331,7 @@ $(document).ready(function () {
       'change .filters select': 'updateFilters',
       'click .filters button.search': 'searchCallIds',
       'blur input[name="call-search"]': 'searchCallIds',
+      'click a.info-modal': 'showInfoModal',
     },
 
 
@@ -375,7 +376,6 @@ $(document).ready(function () {
       if(call_sids) {
         filters.push({'name': 'call_id', 'op': 'in', 'val': call_sids});
       }
-      console.log(filters);
 
       this.collection.fetch({filters: filters});
     },
@@ -387,7 +387,7 @@ $(document).ready(function () {
       if (!search_phone)
         return false;
 
-      $.getJSON('/api/twilio/call_sids/'+search_phone,
+      $.getJSON('/api/twilio/calls/to/'+search_phone+'/',
           function(data) {
             $('input[name="call_sids"]').val(JSON.stringify(data.objects));
         }).then(function() {
@@ -425,7 +425,45 @@ $(document).ready(function () {
       return new CallPower.Views.CallItemView({ model: model });
     },
 
+    showInfoModal: function (event) {
+      var sid = $(event.target).data('sid');
+      $.getJSON('/api/twilio/calls/info/'+sid+'/',
+          function(data) {
+            data.sid = sid;
+            return (new CallPower.Views.CallInfoView(data)).render();
+        });
+    },
+
   });
+  
+  CallPower.Views.CallInfoView = Backbone.View.extend({
+    tagName: 'div',
+    className: 'microphone modal fade',
+
+    initialize: function(data) {
+      this.data = data;
+      this.template = _.template($('#call-info-tmpl').html(), { 'variable': 'data' });
+    },
+
+    render: function() {
+      var html = this.template(this.data);
+      this.$el.html(html);
+
+      this.$el.on('hidden.bs.modal', this.destroy);
+      this.$el.modal('show');
+
+      return this;
+    },
+
+    destroy: function() {
+      this.undelegateEvents();
+      this.$el.removeData().unbind();
+
+      this.remove();
+      Backbone.View.prototype.remove.call(this);
+    },
+  });
+
 
 })();
 /*global CallPower, Backbone */

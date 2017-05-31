@@ -373,6 +373,23 @@ def call_sids_for_number(phone):
     return Response(json.dumps({'objects': calls_id_list}), mimetype='application/json')
 
 
+# returns information for twilio calls with parent_call_sid
+@api.route('/twilio/calls/info/<sid>/', methods=['GET'])
+@api_key_or_auth_required
+def call_info(sid):
+    twilio = current_app.config['TWILIO_CLIENT']
+    calls = twilio.calls.list(parent_call_sid=sid)
+    display_fields = ['to', 'from_', 'status', 'duration', 'start_time', 'end_time', 'direction']
+    calls_info = []
+    for call in calls:
+        call_info = {}
+        for field in display_fields:
+            call_info[field] = getattr(call, field)
+        calls_info.append(call_info)
+
+    return Response(json.dumps({'objects': calls_info}), mimetype='application/json')
+
+
 # embed campaign routes, should be public
 # js must be crossdomain
 @api.route('/campaign/<int:campaign_id>/embed.js', methods=['GET'])
