@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 import dateutil
 
 import twilio.twiml
-from flask import Blueprint, Response, render_template, abort, request, jsonify
+from flask import Blueprint, Response, current_app, render_template, abort, request, jsonify
 
 from sqlalchemy.sql import func, extract, distinct
 
@@ -350,6 +350,27 @@ def campaign_target_calls(campaign_id):
             targets['Unknown'][status] = ''
 
     return Response(json.dumps({'objects': targets}), mimetype='application/json')
+
+
+# returns twilio call sids made to a particular phone number
+# searches phone_hash if available, otherwise the twilio api
+@api.route('/twilio/calls/to/<phone>/', methods=['GET'])
+@api_key_or_auth_required
+def call_sids_for_number(phone):
+
+    if current_app.config['LOG_PHONE_NUMBERS']:
+        phone_hash = Session.hash_phone(str(phone))
+        sessions = db.session.query(Session.id).filter_by(phone_hash=phone_hash).subquery()
+        calls = db.session.query(Call.call_id).filter(Call.session_id.in_(sessions)).distinct()
+        calls_id_list = [c.call_id for c in calls.all()]
+    
+    else:
+        # not stored locally, need to hit twilio for calls matching to_
+        twilio = current_app.config['TWILIO_CLIENT']
+        calls_list = twilio.calls.list(to=phone)
+        calls_id_list = [c.sid for c in calls_list]
+
+    return Response(json.dumps({'objects': calls_id_list}), mimetype='application/json')
 
 
 # embed campaign routes, should be public

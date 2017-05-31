@@ -37,6 +37,24 @@
                 <input type="text" name="end" placeholder="end" value="{{end}}"/>
             </div>
         </div>
+        
+        <div class="row">
+            <div class="col-sm-2">
+                <label class="inline">User Phone</label>
+            </div>
+            <div class="input-group col-sm-5" id="call-search">
+                <div class="search-results open">
+                    <input type="text" class="form-control" name="call-search" placeholder="search"/>
+                </div>
+                <span class="input-group-btn">
+                    <button class="btn btn-default search" type="button">
+                        <span class="glyphicon glyphicon-search"></span>
+                        <span class="glyphicon glyphicon-repeat spin hide-initial"></span>
+                    </button>
+                </span>
+                <input type="hidden" name="call_sids" value="null" />
+            </div>
+        </div>
         </fieldset>
     </form>
 

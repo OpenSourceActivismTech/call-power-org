@@ -457,7 +457,7 @@ def status(campaign_id):
 @campaign.route('/<int:campaign_id>/calls', methods=['GET'])
 def calls(campaign_id):
     campaign = Campaign.query.filter_by(id=campaign_id).first_or_404()
-    # call lookup handled via api ajax
+    # call lookup handled via api ajax to /api/calls
 
     start = datetime.date.today()
     end = start + datetime.timedelta(days=1)

@@ -63,6 +63,8 @@
     events: {
       'change .filters input': 'updateFilters',
       'change .filters select': 'updateFilters',
+      'click .filters button.search': 'searchCallIds',
+      'blur input[name="call-search"]': 'searchCallIds',
     },
 
 
@@ -85,6 +87,7 @@
       var status = $('select[name="status"]').val();
       var start = new Date($('input[name="start"]').datepicker('getDate'));
       var end = new Date($('input[name="end"]').datepicker('getDate'));
+      var call_sids = JSON.parse($('input[name="call_sids"]').val());
 
       if (start > end) {
         $('.input-daterange input[name="start"]').addClass('error');
@@ -103,8 +106,27 @@
       if (end) {
         filters.push({'name': 'timestamp', 'op': 'lt', 'val': end.toISOString()});
       }
+      if(call_sids) {
+        filters.push({'name': 'call_id', 'op': 'in', 'val': call_sids});
+      }
+      console.log(filters);
 
       this.collection.fetch({filters: filters});
+    },
+
+    searchCallIds: function() {
+      var self = this;
+
+      var search_phone = $('input[name="call-search"]').val();
+      if (!search_phone)
+        return false;
+
+      $.getJSON('/api/twilio/calls/to/'+search_phone,
+          function(data) {
+            $('input[name="call_sids"]').val(JSON.stringify(data.objects));
+        }).then(function() {
+          self.updateFilters();
+        });
     },
 
     renderCollection: function() {
