@@ -81,5 +81,22 @@
     </div>
     </fieldset>
     {% endif %}
+
+    <fieldset class="border">
+    <legend>Political Data</legend>
+    <table class='table table-bordered table-hover'>
+        <thead>
+            <tr>
+                <th>{{ _('Country') }}</th>
+                <th>{{ _('Data') }}</th>
+            </tr>
+        {% for (country,summary) in political_data_cache.items() %}
+            <tr>
+                <td>{{country}}</td>
+                <td>{% for data_type in summary %}{{data_type}}<br>{%endfor%}</td>
+            </tr>
+        {% endfor %}
+    </table>
+    </fieldset>
 </div>
 {% endblock %}

@@ -358,9 +358,14 @@ class USDataProvider(DataProvider):
                     if key.startswith(sorted_key):
                         redis.zadd(sorted_key, key, 0)
 
-        log.info("loaded %s zipcodes" % len(districts))
-        log.info("loaded %s legislators" % len(legislators))
-        log.info("loaded %s governors" % len(governors))
+        success = [
+            "%s zipcodes" % len(districts),
+            "%s legislators" % len(legislators),
+            "%s governors" % len(governors),
+            "at %s" % datetime.now(),
+        ]
+        log.info('loaded %s' % ', '.join(success))
+        self.cache_set('political_data:us', success)
 
         return len(districts) + len(legislators) + len(governors)
 

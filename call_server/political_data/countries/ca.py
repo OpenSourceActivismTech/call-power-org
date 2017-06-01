@@ -183,6 +183,7 @@ class CADataProvider(DataProvider):
         # we don't have an easy mapping of postcode to riding
         # so just hit OpenNorth with every request and cache responses
         log.info('no data to load for political_data.countries.ca')
+        self.cache_set('political_data:ca', ['data sourced from represent.opennorth.ca',])
         return 0
         
 
