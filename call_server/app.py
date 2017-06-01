@@ -122,6 +122,10 @@ def register_blueprints(app, blueprints):
 
 
 def configure_babel(app):
+    if babel.locale_selector_func and app.config['TESTING']:
+        # short circuit in case of testing
+        return True
+
     @babel.localeselector
     def get_locale():
         # TODO, first check user config?
