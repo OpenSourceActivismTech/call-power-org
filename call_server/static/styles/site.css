@@ -38,6 +38,8 @@ html {
 body {
   /* Margin bottom by footer height */
   margin-bottom: 30px;
+
+  font-family: "Lato", "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 footer {
   position: absolute;
@@ -46,6 +48,8 @@ footer {
   /* Set the fixed height of the footer here */
   height: 30px;
 }
+h1, h2, h3, h4, h5, h6, .h1, .h2, .h3, .h4, .h5, .h6 {
+  font-family: "Lato", "Helvetica Neue", Helvetica, Arial, sans-serif;
 
 .spin {
     -animation: spin .7s infinite linear;

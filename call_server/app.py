@@ -166,8 +166,7 @@ def configure_assets(app):
                        filters='rjsmin', output='dist/js/vendor.js')
     assets.register('vendor_js', vendor_js)
 
-    vendor_css = Bundle('bower_components/bootstrap/dist/css/bootstrap.css',
-                        'bower_components/bootstrap/dist/css/bootstrap-theme.css',
+    vendor_css = Bundle('bower_components/bootswatch/cosmo/bootstrap.css',
                         'bower_components/bootstrap-datepicker/dist/css/bootstrap-datepicker.css',
                         'bower_components/tablesorter/dist/css/theme.bootstrap_3.min.css',
                         filters='cssmin', output='dist/css/vendor.css')
