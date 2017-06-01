@@ -12,6 +12,7 @@ import csv
 import yaml
 import collections
 import random
+from datetime import datetime
 import logging
 log = logging.getLogger(__name__)
 
@@ -240,23 +241,31 @@ class USDataProvider(DataProvider):
         legislators = collections.defaultdict(list)
         offices = collections.defaultdict(list)
 
-        with open('call_server/political_data/data/us_congress_current.yaml') as f1, open('call_server/political_data/data/us_congress_offices.yaml') as f2:
+        with open('call_server/political_data/data/us_congress_current.yaml') as f1, \
+            open('call_server/political_data/data/us_congress_historical.yaml') as f2, \
+            open('call_server/political_data/data/us_congress_offices.yaml') as f3:
 
-            leg_info = yaml.load(f1, Loader=yamlLoader)
-            office_info = yaml.load(f2, Loader=yamlLoader)
+            current_leg = yaml.load(f1, Loader=yamlLoader)
+            historical_leg = yaml.load(f2, Loader=yamlLoader)
+            office_info = yaml.load(f3, Loader=yamlLoader)
 
             for info in office_info:
                 id = info['id']['bioguide']
                 offices[id] = info.get('offices', [])
 
-            for info in leg_info:
+            for info in current_leg+historical_leg:
                 term = info['terms'][-1]
                 if term['start'] < "2011-01-01":
                     continue # don't get too historical
 
                 if term.get('phone') is None:
-                    log.error(u"term does not have field phone {type} {name}{last}".format(term, info))
-                    continue
+                    term['name'] = info['name']['last']
+                    term_end = datetime.strptime(term['end'], '%Y-%m-%d')
+                    if term_end < datetime.now():
+                        # it's not current anyways, skip it
+                        continue
+                    else:
+                        log.error(u"term {start} - {end} does not have field phone for {type} {name}".format(**term))
 
                 district = str(term['district']) if term.has_key('district') else None
 
@@ -282,6 +291,7 @@ class USDataProvider(DataProvider):
                 legislators[chamber_key].append(record)
 
         return legislators
+
 
     def _load_districts(self):
         """
@@ -348,9 +358,14 @@ class USDataProvider(DataProvider):
                     if key.startswith(sorted_key):
                         redis.zadd(sorted_key, key, 0)
 
-        log.info("loaded %s zipcodes" % len(districts))
-        log.info("loaded %s legislators" % len(legislators))
-        log.info("loaded %s governors" % len(governors))
+        success = [
+            "%s zipcodes" % len(districts),
+            "%s legislators" % len(legislators),
+            "%s governors" % len(governors),
+            "at %s" % datetime.now(),
+        ]
+        log.info('loaded %s' % ', '.join(success))
+        self.cache_set('political_data:us', success)
 
         return len(districts) + len(legislators) + len(governors)
 
@@ -394,7 +409,7 @@ class USDataProvider(DataProvider):
     def get_bioguide(self, bioguide):
         # try first to get from cache
         key = self.KEY_BIOGUIDE.format(bioguide_id=bioguide)
-        return self.cache_get(key, list())
+        return self.cache_get(key, list({}))
 
     def get_state_legid(self, legid):
         # try first to get from cache

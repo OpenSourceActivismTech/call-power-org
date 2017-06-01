@@ -1,6 +1,7 @@
 import os
 import sys
 import subprocess
+import logging
 
 from flask_script import Manager, Command
 import alembic
@@ -11,6 +12,8 @@ from call_server.app import create_app
 from call_server.extensions import assets, db, cache
 from call_server import political_data
 from call_server.user import User, USER_ADMIN, USER_ACTIVE
+
+log = logging.getLogger(__name__)
 
 app = create_app()
 app.db = db
@@ -27,7 +30,7 @@ manager.add_command("assets", ManageAssets())
 def reset_assets():
     """Reset assets named bundles to {} before running command.
     This command should really be run with TestingConfig context"""
-    print "resetting assets"
+    log.info("resetting assets")
     assets._named_bundles = {}
 
 
@@ -39,9 +42,8 @@ def runserver(external=None):
         app.config['SERVER_NAME'] = external
         app.config['STORE_DOMAIN'] = "http://" + external # needs to have scheme, so urlparse is fully absolute
         print "serving from %s" % app.config['SERVER_NAME']
-    print "loading political data..."
-    political_data.load_data(cache)
-    print "done"
+    if app.config['DEBUG'] and not cache.get('political_data:us'):
+        political_data.load_data(cache)
 
     host = (os.environ.get('APP_HOST') or '127.0.0.1')
     app.run(debug=True, use_reloader=True, host=host)
@@ -54,17 +56,13 @@ def loadpoliticaldata():
         import gevent.monkey
         gevent.monkey.patch_thread()
     except ImportError:
-        print "unable to apply gevent monkey.patch_thread"
+        log.warning("unable to apply gevent monkey.patch_thread")
 
-    print "loading political data"
+    log.info("loading political data")
     with app.app_context():
         cache.clear()
         n = political_data.load_data(cache)
-    print "loaded %d objects" % n
-    print "done"
-    if app.config.get('ENVIRONMENT') is "Heroku":
-        print "don't worry about the KeyError"
-        # http://stackoverflow.com/questions/8774958/keyerror-in-module-threading-after-a-successful-py-test-run/12639040#12639040
+    log.info("done loading %d objects" % n)
 
 
 @manager.command
