@@ -7,16 +7,16 @@
     {{ render_label(field, class_.get('label', '')) }}
     <div class="input-group col-sm-10">
         <div class="btn-group audio col-sm-6">
-            <button class="{{button_class}} btn-primary record">
+            <button class="{{button_class}} btn-invert record">
                 <span class="glyphicon glyphicon-record"></span>
                 <span class="text">Record</span>
             </button>
-            <button class="{{button_class}} btn-success play">
+            <button class="{{button_class}} btn-invert play">
                 <span class="glyphicon glyphicon-play"></span>
                 <span class="text">Play</span>
                 <audio></audio>
             </button>
-            <button class="{{button_class}} btn-info version">
+            <button class="{{button_class}} btn-invert version">
                 <span class="glyphicon glyphicon-repeat"></span>
                 <span class="text">Version</span>
             </button>
