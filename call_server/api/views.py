@@ -1,4 +1,3 @@
-import json
 from collections import defaultdict, OrderedDict
 from datetime import datetime, timedelta
 import dateutil
@@ -130,7 +129,7 @@ def campaigns_overall():
         'calls_completed': completed_query.count()
     }
 
-    return Response(json.dumps({'meta': meta,'objects': sorted_dates}), mimetype='application/json')
+    return jsonify({'meta': meta,'objects': sorted_dates})
 
 
 # more detailed campaign statistics
@@ -249,7 +248,7 @@ def campaign_date_calls(campaign_id):
                 date_string = date.strftime(timespan_strf)
                 dates[date_string][status] = count
     sorted_dates = OrderedDict(sorted(dates.items()))
-    return Response(json.dumps({'objects': sorted_dates}), mimetype='application/json')
+    return jsonify({'objects': sorted_dates})
 
 
 # calls made by target
@@ -353,7 +352,7 @@ def campaign_target_calls(campaign_id):
             # can be triggered if there are calls without target id
             targets['Unknown'][status] = ''
 
-    return Response(json.dumps({'objects': targets}), mimetype='application/json')
+    return jsonify({'objects': targets})
 
 
 # returns twilio call sids made to a particular phone number
@@ -374,7 +373,7 @@ def call_sids_for_number(phone):
         calls_list = twilio.calls.list(to=phone)
         calls_id_list = [c.sid for c in calls_list]
 
-    return Response(json.dumps({'objects': calls_id_list}), mimetype='application/json')
+    return jsonify({'objects': calls_id_list})
 
 
 # returns information for twilio calls with parent_call_sid
@@ -391,7 +390,7 @@ def call_info(sid):
             call_info[field] = getattr(call, field)
         calls_info.append(call_info)
 
-    return Response(json.dumps({'objects': calls_info}), mimetype='application/json')
+    return jsonify({'objects': calls_info})
 
 
 # embed campaign routes, should be public
