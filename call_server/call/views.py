@@ -1,6 +1,6 @@
 import random
 import pystache
-import twilio.twiml
+from twilio.twiml.voice_response import VoiceResponse
 from sqlalchemy_utils.types.phone_number import PhoneNumber, phonenumbers
 
 from flask import abort, Blueprint, request, url_for, current_app
@@ -116,7 +116,7 @@ def intro_wait_human(params, campaign):
     Play intro message, and wait for key press to ensure we have a human on the line.
     Then, redirect to _make_calls.
     """
-    resp = twilio.twiml.Response()
+    resp = VoiceResponse()
 
     play_or_say(resp, campaign.audio('msg_intro'))
 
@@ -124,8 +124,7 @@ def intro_wait_human(params, campaign):
 
     # wait for user keypress, in case we connected to voicemail
     # give up after 10 seconds
-    with resp.gather(numDigits=1, method="POST", timeout=10,
-                     action=action) as g:
+    with resp.gather(numDigits=1, method="POST", timeout=10, action=action) as g:
         play_or_say(g, campaign.audio('msg_intro_confirm'),
             lang=campaign.language_code)
 
@@ -137,15 +136,14 @@ def intro_location_gather(params, campaign):
     If specified, play msg_intro_location audio. Otherwise, standard msg_intro.
     Then, return location_gather.
     """
-    resp = twilio.twiml.Response()
+    resp = VoiceResponse()
 
     if campaign.audio('msg_intro_location'):
         play_or_say(resp, campaign.audio('msg_intro_location'),
                     organization=current_app.config.get('INSTALLED_ORG', ''),
                     lang=campaign.language_code)
     else:
-        play_or_say(resp, campaign.audio('msg_intro'),
-            lang=campaign.language_code)
+        play_or_say(resp, campaign.audio('msg_intro'), lang=campaign.language_code)
 
     return location_gather(resp, params, campaign)
 
@@ -171,7 +169,7 @@ def make_calls(params, campaign):
 
     Required params: campaignId, targetIds
     """
-    resp = twilio.twiml.Response()
+    resp = VoiceResponse()
 
     if not params['targetIds']:
         # check if campaign custom segmenting specified
@@ -283,7 +281,6 @@ def create():
             to=userPhone,
             from_=from_number,
             url=url_for('call.connection', _external=True, **params),
-            timeLimit=current_app.config['TWILIO_TIME_LIMIT'],
             timeout=current_app.config['TWILIO_TIMEOUT'],
             status_callback=url_for("call.complete_status", _external=True, **params),
             record=request.values.get('record', False))
@@ -373,7 +370,7 @@ def location_parse():
         current_app.logger.debug(u'entered = {}'.format(location))
 
     if not located_target_ids:
-        resp = twilio.twiml.Response()
+        resp = VoiceResponse()
         play_or_say(resp, campaign.audio('msg_unparsed_location'),
             lang=campaign.language_code)
 
@@ -401,7 +398,7 @@ def make_single():
         db.session.add(current_target)
         db.session.commit()
 
-    resp = twilio.twiml.Response()
+    resp = VoiceResponse()
 
     if not current_target.number:
         play_or_say(resp, campaign.audio('msg_invalid_location'),
@@ -482,7 +479,7 @@ def complete():
     except SQLAlchemyError:
         current_app.logger.error('Failed to log call:', exc_info=True)
 
-    resp = twilio.twiml.Response()
+    resp = VoiceResponse()
 
     if call_data['status'] == 'busy':
         play_or_say(resp, campaign.audio('msg_target_busy'),
