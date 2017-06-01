@@ -45,11 +45,16 @@ class UnitedStatesData(DataAdapter):
 
     def target(self, data):
         adapted = {
-            'name': u'{first_name} {last_name}'.format(**data),
             'number': data.get('phone', ''), # DC office number
             'title': data.get('title', ''),
             'uid': data.get('bioguide_id', '')
         }
+        if 'first_name' in data and 'last_name' in data:
+            adapted['name'] = u'{first_name} {last_name}'.format(**data)
+        elif 'name' in data:
+            adapted['name'] = data['name']
+        else:
+            data['name'] = 'Unknown'
         if 'district' in data and data['district']:
             adapted['district'] = '{state}-{district}'.format(**data)
         else:
@@ -89,10 +94,12 @@ class OpenStatesData(DataAdapter):
             'title': 'Senator' if data['chamber'] == "upper" else "Representative",
             'uid': data.get('leg_id', '')
         }
-        if data.get('first_name') and data.get('last_name'):
+        if 'first_name' in data and 'last_name' in data:
             adapted['name'] = u'{first_name} {last_name}'.format(**data)
         elif data.get('full_name'):
             adapted['name'] = data['full_name']
+        else:
+            adapted['name'] = 'Unknown'
 
         # default to capitol office
         for office in data['offices']:
@@ -125,13 +132,20 @@ class OpenStatesData(DataAdapter):
 
 class GovernorAdapter(DataAdapter):
     def target(self, data):
-        return {
+        adapted = {
             'name': u'{first_name} {last_name}'.format(**data),
             'title': data.get('title', ''),
             'number': data.get('phone', ''),
             'uid': data.get('state', ''),
             'district': data.get('state', '')
         }
+        if 'first_name' in data and 'last_name' in data:
+            adapted['name'] = u'{first_name} {last_name}'.format(**data)
+        elif data.get('full_name'):
+            adapted['name'] = data['full_name']
+        else:
+            adapted['name'] = 'Unknown'
+        return adapted
 
 
 class OpenNorthAdapter(DataAdapter):
@@ -140,14 +154,20 @@ class OpenNorthAdapter(DataAdapter):
         return (key, '')
 
     def target(self, data):
-        return {
-            'name': u'{first_name} {last_name}'.format(**data),
+        adapted = {
             'title': data.get('elected_office', ''),
             'number': filter(lambda d: d['type'] == 'legislature', data['offices'])[0].get('tel', ''),
             # legislature office number
             'uid': data.get('cache_key', ''),
             'district': data.get('district_name', '')
         }
+        if 'first_name' in data and 'last_name' in data:
+            adapted['name'] = u'{first_name} {last_name}'.format(**data)
+        elif data.get('full_name'):
+            adapted['name'] = data['full_name']
+        else:
+            adapted['name'] = 'Unknown'
+        return adapted
 
     def offices(self, data):
         office_list = []

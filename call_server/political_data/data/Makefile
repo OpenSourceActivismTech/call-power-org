@@ -3,6 +3,9 @@ all: us_congress_current.yaml us_congress_offices.yaml us_districts.csv us_gover
 clean:
 	rm -rf -- *.csv *.yaml
 
+us_congress_historical.yaml :
+	curl -k "https://raw.githubusercontent.com/unitedstates/congress-legislators/master/legislators-historical.yaml" -o "us_congress_historical.yaml"
+
 us_congress_current.yaml :
 	curl -k "https://raw.githubusercontent.com/unitedstates/congress-legislators/master/legislators-current.yaml" -o "us_congress_current.yaml"
 

@@ -321,7 +321,12 @@ def campaign_target_calls(campaign_id):
             # use adapter to get title, name and district 
             if ':' in target_uid:
                 data_adapter = adapt_by_key(target_uid)
-                adapted_data = data_adapter.target(target_data)
+                try:
+                    adapted_data = data_adapter.target(target_data)
+                except AttributeError:
+                    current_app.logger.error('unable to adapt target_data for %s: %s' % (target_uid, target_data))
+                    adapted_data = target_data
+
             elif political_data.country_code.lower() == 'us' and campaign.campaign_type == 'congress':
                 # fall back to USData, which uses bioguide
                 if not target_data:
@@ -329,9 +334,18 @@ def campaign_target_calls(campaign_id):
                         target_data = political_data.get_bioguide(target_uid)[0]
                     except Exception, e:
                         current_app.logger.error('unable to get_bioguide for %s: %s' % (target_uid, e))
-                        target_data = {}
-                data_adapter = UnitedStatesData()
-                adapted_data = data_adapter.target(target_data)
+                        continue
+
+                if target_data:
+                    try:
+                        data_adapter = UnitedStatesData()
+                        adapted_data = data_adapter.target(target_data)
+                    except AttributeError:
+                        current_app.logger.error('unable to adapt target_data for %s: %s' % (target_uid, target_data))
+                        continue
+                else:
+                    current_app.logger.error('no target_data for %s: %s' % (target_uid, e))
+                    continue
             else:
                 # no need to adapt
                 adapted_data = target_data
@@ -341,7 +355,8 @@ def campaign_target_calls(campaign_id):
                 targets[target_uid]['name'] = adapted_data['name']
                 targets[target_uid]['district'] = adapted_data['district']
             except KeyError:
-                pass
+                current_app.logger.error('unable to get title,name or district for %s: %s' % (target_uid, adapted_data))
+                continue
 
             if call_status == status:
                 targets[target_uid][call_status] = targets.get(target_uid, {}).get(call_status, 0) + count
