@@ -1,4 +1,4 @@
-from flask_wtf import Form
+from flask_wtf import FlaskForm
 from flask_babel import gettext as _
 from wtforms import (HiddenField, SubmitField, TextField,
                      SelectField, SelectMultipleField,
@@ -24,14 +24,14 @@ class DisabledSelectField(SelectField):
     return super(DisabledSelectField, self).__call__(*args, **kwargs)
 
 
-class CountryTypeForm(Form):
+class CountryTypeForm(FlaskForm):
     campaign_country = SelectField(_('Country'), validators=[Required()])
     campaign_type = SelectField(_('Type'), validators=[Required()])
     campaign_language = SelectField(_('Language'), [Required()], choices=LANGUAGE_CHOICES)
     submit = SubmitField(_('Next'))
 
 
-class TargetForm(Form):
+class TargetForm(FlaskForm):
     order = IntegerField(_('Order'),)
     title = TextField(_('Title'), [Optional()])
     name = TextField(_('Name'), [Required()])
@@ -39,7 +39,7 @@ class TargetForm(Form):
     uid = TextField(_('Unique ID'), [Optional()])
 
 
-class CampaignForm(Form):
+class CampaignForm(FlaskForm):
     next = HiddenField()
     name = TextField(_('Campaign Name'), [Required()])
     campaign_country = DisabledSelectField(_('Country'), [Optional()], choices=COUNTRY_CHOICES)
@@ -84,7 +84,7 @@ class CampaignForm(Form):
 
     def validate(self):
         # check default validation
-        if not Form.validate(self):
+        if not FlaskForm.validate(self):
             return False
 
         # check nested forms
@@ -97,7 +97,7 @@ class CampaignForm(Form):
         return True
 
 
-class CampaignAudioForm(Form):
+class CampaignAudioForm(FlaskForm):
     next = HiddenField()
     msg_intro = TextField(_('Introduction'))
     msg_intro_confirm = TextField(_('Start Confirmation'))
@@ -115,7 +115,7 @@ class CampaignAudioForm(Form):
     submit = SubmitField(_('Save and Test'))
 
 
-class AudioRecordingForm(Form):
+class AudioRecordingForm(FlaskForm):
     key = TextField(_('Key'), [Required()])
     file_storage = FileField(_('File'), [Optional()])
     file_type = TextField(_('Type'), [Optional()])
@@ -123,7 +123,7 @@ class AudioRecordingForm(Form):
     description = TextField(_('Description'), [Optional()])
 
 
-class CampaignLaunchForm(Form):
+class CampaignLaunchForm(FlaskForm):
     next = HiddenField()
 
     test_call_number = TextField(_('Call Me'))
@@ -151,7 +151,7 @@ class CampaignLaunchForm(Form):
     submit = SubmitField(_('Launch'))
 
 
-class CampaignStatusForm(Form):
+class CampaignStatusForm(FlaskForm):
     status_code = RadioField(_("Status"), [AnyOf([str(val) for val in CAMPAIGN_STATUS.keys()])],
                              choices=[(str(val), label) for val, label in CAMPAIGN_STATUS.items()])
     submit = SubmitField(_('Save'))
