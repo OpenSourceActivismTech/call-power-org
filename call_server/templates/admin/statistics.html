@@ -88,7 +88,7 @@
     <% if (data.id) { %><tr>
         <td></td>
         <td class="col-sm-12">
-            <a href="/admin/campaign/<%= data.id %>/calls">call log</a>
+            <a href="/admin/campaign/<%= data.id %>/calls?start=<%= data.date_start %>&end=<%= data.date_end %>">call log</a>
         </td>
     </tr><% } %>
   </script>

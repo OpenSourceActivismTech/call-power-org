@@ -459,7 +459,7 @@ def calls(campaign_id):
     campaign = Campaign.query.filter_by(id=campaign_id).first_or_404()
     # call lookup handled via api ajax to /api/calls
 
-    start = datetime.date.today()
-    end = start + datetime.timedelta(days=1)
+    start = request.args.get("start") or datetime.date.today()
+    end = request.args.get("end") or (start + datetime.timedelta(days=1))
 
     return render_template('campaign/calls.html', campaign=campaign, start=start, end=end)
