@@ -315,7 +315,7 @@ def campaign_target_calls(campaign_id):
             # get more target_data from political_data cache
             try:
                 target_data = political_data.cache_get(target_uid)[0]
-            except KeyError:
+            except (KeyError,IndexError):
                 target_data = political_data.cache_get(target_uid)
 
             # use adapter to get title, name and district 
@@ -325,7 +325,11 @@ def campaign_target_calls(campaign_id):
             elif political_data.country_code.lower() == 'us' and campaign.campaign_type == 'congress':
                 # fall back to USData, which uses bioguide
                 if not target_data:
-                    target_data = political_data.get_bioguide(target_uid)[0]
+                    try:
+                        target_data = political_data.get_bioguide(target_uid)[0]
+                    except Exception, e:
+                        current_app.logger.error('unable to get_bioguide for %s: %s' % (target_uid, e))
+                        target_data = {}
                 data_adapter = UnitedStatesData()
                 adapted_data = data_adapter.target(target_data)
             else:
