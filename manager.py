@@ -2,10 +2,10 @@ import os
 import sys
 import subprocess
 
-from flask.ext.script import Manager, Command
+from flask_script import Manager, Command
 import alembic
 import alembic.config, alembic.command
-from flask.ext.assets import ManageAssets
+from flask_assets import ManageAssets
 
 from call_server.app import create_app
 from call_server.extensions import assets, db, cache

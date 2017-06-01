@@ -1,5 +1,5 @@
-from flask.ext.wtf import Form
-from flask.ext.babel import gettext as _
+from flask_wtf import Form
+from flask_babel import gettext as _
 from wtforms import (HiddenField, SubmitField, TextField,
                      SelectField, SelectMultipleField,
                      BooleanField, RadioField,

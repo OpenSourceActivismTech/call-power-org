@@ -1,8 +1,8 @@
 from datetime import datetime, timedelta
 
 from flask import Blueprint, render_template, current_app, flash, url_for, redirect
-from flask.ext.login import login_required
-from flask.ext.babel import gettext as _
+from flask_login import login_required
+from flask_babel import gettext as _
 
 from ..extensions import db
 from sqlalchemy.sql import func, desc

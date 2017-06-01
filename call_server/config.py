@@ -16,6 +16,7 @@ class DefaultConfig(object):
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URI',
         'sqlite:////%s/dev.db' % os.path.abspath(os.curdir))
     SQLALCHEMY_ECHO = False
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     BABEL_DEFAULT_LOCALE = 'en'
     BABEL_DEFAULT_TIMEZONE = 'UTC'

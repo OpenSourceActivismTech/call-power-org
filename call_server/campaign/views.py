@@ -3,7 +3,7 @@ import datetime
 from flask import (Blueprint, render_template, current_app, request,
                    flash, url_for, redirect, session, abort, jsonify)
 from flask.json import JSONEncoder
-from flask.ext.login import login_required
+from flask_login import login_required
 from flask_store.providers.temp import TemporaryStore
 
 import sqlalchemy

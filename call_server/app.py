@@ -3,7 +3,7 @@ import logging
 import glob
 
 from flask import Flask, g, request, session
-from flask.ext.assets import Bundle
+from flask_assets import Bundle
 
 
 from utils import json_markup, OrderedDictYAMLLoader

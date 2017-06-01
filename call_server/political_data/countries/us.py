@@ -1,5 +1,5 @@
 import werkzeug.contrib.cache
-from flask.ext.babel import gettext as _
+from flask_babel import gettext as _
 from sunlight import openstates, response_cache
 
 from . import DataProvider, CampaignType
