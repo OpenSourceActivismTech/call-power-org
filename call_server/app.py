@@ -236,12 +236,12 @@ def instance_defaults(app):
 
 
 def configure_logging(app):
-    if app.config.get('DEBUG_INFO'):
-        app.logger.setLevel(logging.INFO)
+    if app.config.get('DEBUG_MORE'):
+        app.logger.setLevel(logging.DEBUG)
     elif app.config.get('DEBUG'):
-        app.logger.setLevel(logging.WARNING)
+        app.logger.setLevel(logging.INFO)
     else:
-        app.logger.setLevel(logging.ERROR)
+        app.logger.setLevel(logging.WARNING)
     
     if app.config.get('OUTPUT_LOG'):
         app.logger.addHandler(logging.StreamHandler())

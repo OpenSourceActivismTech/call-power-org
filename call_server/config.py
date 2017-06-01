@@ -126,7 +126,7 @@ class HerokuConfig(ProductionConfig):
 
 class DevelopmentConfig(DefaultConfig):
     DEBUG = True
-    DEBUG_INFO = True
+    DEBUG_MORE = True
     TESTING = False
 
     CACHE_TYPE = 'redis'
