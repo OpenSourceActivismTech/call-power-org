@@ -1,6 +1,6 @@
 import random
 import pystache
-from twilio.twiml.voice_response import VoiceResponse
+from twilio.twiml.voice_response import VoiceResponse, Gather, Dial
 from sqlalchemy_utils.types.phone_number import PhoneNumber, phonenumbers
 
 from flask import abort, Blueprint, request, url_for, current_app
@@ -124,7 +124,7 @@ def intro_wait_human(params, campaign):
 
     # wait for user keypress, in case we connected to voicemail
     # give up after 10 seconds
-    with resp.gather(numDigits=1, method="POST", timeout=10, action=action) as g:
+    with resp.gather(num_digits=1, method="POST", timeout=10, action=action) as g:
         play_or_say(g, campaign.audio('msg_intro_confirm'),
             lang=campaign.language_code)
 
@@ -153,7 +153,7 @@ def location_gather(resp, params, campaign):
     Play msg_location, and wait for 5 digits from user.
     Then, redirect to location_parse
     """
-    with resp.gather(numDigits=5, method="POST",
+    with resp.gather(num_digits=5, method="POST",
                      action=url_for("call.location_parse", **params)) as g:
         play_or_say(g, campaign.audio('msg_location'),
             lang=campaign.language_code)
@@ -445,11 +445,12 @@ def make_single():
 
     # sending a twiml.Number to dial init will not nest properly
     # have to add it after creation
-    resp.dial(callerId=userPhone,
-              timeLimit=current_app.config['TWILIO_TIME_LIMIT'],
-              timeout=current_app.config['TWILIO_TIMEOUT'], hangupOnStar=True,
+    d = Dial(None, caller_id=userPhone,
+              time_limit=current_app.config['TWILIO_TIME_LIMIT'],
+              timeout=current_app.config['TWILIO_TIMEOUT'], hangup_on_star=True,
               action=url_for('call.complete', **params)) \
         .number(target_phone.e164, sendDigits=target_phone.extension)
+    resp.append(d)
 
     return str(resp)
 
