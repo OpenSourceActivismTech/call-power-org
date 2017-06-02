@@ -110,7 +110,7 @@ def twilio_resync():
     Adds new numbers, saves voice_application_sid, and removes stale entries."""
 
     client = current_app.config.get('TWILIO_CLIENT')
-    twilio_numbers = client.phone_numbers.list()
+    twilio_numbers = client.incoming_phone_numbers.list()
 
     new_numbers = []
     deleted_numbers = []
