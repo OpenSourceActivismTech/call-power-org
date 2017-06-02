@@ -258,14 +258,14 @@ class USDataProvider(DataProvider):
                 if term['start'] < "2011-01-01":
                     continue # don't get too historical
 
+                term['current'] = (term['end'] >= datetime.now().strftime('%Y-%m-%d'))
+
                 if term.get('phone') is None:
                     term['name'] = info['name']['last']
-                    term_end = datetime.strptime(term['end'], '%Y-%m-%d')
-                    if term_end < datetime.now():
-                        # it's not current anyways, skip it
-                        continue
-                    else:
+                    if term['current']:
                         log.error(u"term {start} - {end} does not have field phone for {type} {name}".format(**term))
+                    else:
+                        continue
 
                 district = str(term['district']) if term.has_key('district') else None
 
@@ -278,7 +278,8 @@ class USDataProvider(DataProvider):
                     'chamber':     "senate" if term['type'] == "sen" else "house",
                     'state':       term['state'],
                     'district':    district,
-                    'offices':     offices.get(info['id']['bioguide'], [])
+                    'offices':     offices.get(info['id']['bioguide'], []),
+                    'current':     term['current'],
                 }
 
                 direct_key = self.KEY_BIOGUIDE.format(**record)
@@ -287,8 +288,11 @@ class USDataProvider(DataProvider):
                 else:
                     chamber_key = self.KEY_HOUSE.format(**record)
 
+                # we want bioguide access to all recent legislators
                 legislators[direct_key].append(record)
-                legislators[chamber_key].append(record)
+                # but only house or senate access to current ones
+                if term['current']:
+                    legislators[chamber_key].append(record)
 
         return legislators
 
