@@ -280,30 +280,57 @@ $(document).ready(function () {
   });
 
 
-  CallPower.Collections.CallList = Backbone.Collection.extend({
+  CallPower.Collections.CallList = Backbone.PageableCollection.extend({
     model: CallPower.Models.Call,
     url: '/api/call',
+    queryParams: {
+      pageSize: null,
+      currentPage: "page",
+      totalRecords: "num_results",
+    },
+    state: {
+      firstPage: 1,
+      pageSize: 10,
+      sortKey: "timestamp",
+      direction: -1,
+    },
 
     initialize: function(campaign_id) {
       this.campaign_id = campaign_id;
     },
 
-    parse: function(response) {
+    parseRecords: function(response) {
       return response.objects;
     },
 
+    parseState: function (resp, queryParams, state, options) {
+      return {
+        currentPage: resp.page,
+        totalRecords: resp.num_results
+      };
+    },
+
     fetch: function(options) {
-      // transform filters to flask-restless style
+      // transform filters and pagination to flask-restless style
       // always include campaign_id filter
       var filters = [{name: 'campaign_id', op: 'eq', val: this.campaign_id}];
       if (options.filters) {
         Array.prototype.push.apply(filters, options.filters);
       }
       var flaskQuery = {
-        q: JSON.stringify({ filters: filters })
+        filters: filters,
+        limit: this.state.pageSize,
+        offset: (this.state.currentPage-1)*this.state.pageSize,
+        order_by: [{
+          field: this.state.sortKey,
+          direction: this.state.direction == -1 ? "asc" : "desc"
+        }]
       };
-
-      var fetchOptions = _.extend({ data: flaskQuery }, options);
+      console.log(flaskQuery);
+      console.log(this.state);
+      var fetchOptions = _.extend({ data: {
+        q: JSON.stringify(flaskQuery)
+      }, options});
       return Backbone.Collection.prototype.fetch.call(this, fetchOptions);
     }
   });
@@ -331,6 +358,9 @@ $(document).ready(function () {
       'change .filters select': 'updateFilters',
       'click .filters button.search': 'searchCallIds',
       'blur input[name="call-search"]': 'searchCallIds',
+      'click .pagination .next': 'paginatorNext',
+      'click .pagination .prev': 'paginatorPrev',
+      'page .pagination': 'paginatorPage',
       'click a.info-modal': 'showInfoModal',
     },
 
@@ -347,7 +377,29 @@ $(document).ready(function () {
         });
       });
 
+      this.paginator = $('#calls-list-paginator').bootpag();
+
       this.updateFilters();
+    },
+
+    paginatorNext: function(event) {
+      console.log('paginatorNext');
+      if (this.collection.hasNextPage()) {
+        this.collection.getNextPage();
+      }
+    },
+
+    paginatorPrev: function(event) {
+      console.log('paginatorPrev');
+      if (this.collection.hasPreviousPage()) {
+        this.collection.getPreviousPage();
+      }
+    },
+
+    pagingatorPage: function(event, num){
+      console.log('paginatorPage',num);
+        this.collection.getPage(num);
+        $(this.paginator).bootpag({total: 10, maxVisible: 10});       
     },
 
     updateFilters: function(event) {
@@ -378,6 +430,7 @@ $(document).ready(function () {
       }
 
       this.collection.fetch({filters: filters});
+      $(this.paginator).bootpag({total: this.collection.state.totalPages});
     },
 
     searchCallIds: function() {
