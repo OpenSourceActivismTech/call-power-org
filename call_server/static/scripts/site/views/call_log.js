@@ -85,15 +85,13 @@
 
   CallPower.Views.CallLog = Backbone.View.extend({
     el: $('#call_log'),
+    el_paginator: $('#calls-list-paginator'),
 
     events: {
       'change .filters input': 'updateFilters',
       'change .filters select': 'updateFilters',
       'click .filters button.search': 'searchCallIds',
       'blur input[name="call-search"]': 'searchCallIds',
-      'click .pagination .next': 'paginatorNext',
-      'click .pagination .prev': 'paginatorPrev',
-      'page .pagination': 'paginatorPage',
       'click a.info-modal': 'showInfoModal',
     },
 
@@ -110,26 +108,11 @@
         });
       });
 
-      this.paginator = $('#calls-list-paginator').bootpag();
-
       this.updateFilters();
-    },
-
-    paginatorNext: function(event) {
-      if (this.collection.hasNextPage()) {
-        this.collection.getNextPage();
-      }
-    },
-
-    paginatorPrev: function(event) {
-      if (this.collection.hasPreviousPage()) {
-        this.collection.getPreviousPage();
-      }
     },
 
     pagingatorPage: function(event, num){
       this.collection.getPage(num);
-        $(this.paginator).bootpag({total: 10, maxVisible: 10});       
     },
 
     updateFilters: function(event) {
