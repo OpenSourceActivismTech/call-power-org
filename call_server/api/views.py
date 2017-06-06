@@ -397,9 +397,10 @@ def call_sids_for_number(phone):
 def call_info(sid):
     twilio = current_app.config['TWILIO_CLIENT']
     calls = twilio.calls.list(parent_call_sid=sid)
+    calls_sorted = sorted(calls, key=lambda (v): v.start_time)
     display_fields = ['to', 'from_', 'status', 'duration', 'start_time', 'end_time', 'direction']
     calls_info = []
-    for call in calls:
+    for call in calls_sorted:
         call_info = {}
         for field in display_fields:
             call_info[field] = getattr(call, field)

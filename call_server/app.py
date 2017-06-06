@@ -165,6 +165,8 @@ def configure_assets(app):
                        'bower_components/underscore/underscore-min.js',
                        'bower_components/backbone/backbone.js',
                        'bower_components/backbone-filtered-collection/backbone-filtered-collection.js',
+                       'bower_components/backbone.paginator/lib/backbone.paginator.min.js',
+                       'bower_components/bootpag/lib/jquery.bootpag.min.js',
                        'bower_components/html.sortable/dist/html.sortable.min.js',
                        'bower_components/bootstrap-datepicker/dist/js/bootstrap-datepicker.js',
                        filters='rjsmin', output='dist/js/vendor.js')
