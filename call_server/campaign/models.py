@@ -324,10 +324,10 @@ class TwilioPhoneNumber(db.Model):
         apps = twilio_client.applications.list(friendly_name=twilio_app_name)
         if apps:
             app_sid = apps[0].sid  # there can be only one!
-            app = twilio_client.applications.update(app_sid,
-                                              friendly_name=twilio_app_name,
-                                              voice_url=campaign_call_url,
-                                              voice_method="POST")
+            app = twilio_client.applications(app_sid).fetch()
+            app.update(friendly_name=twilio_app_name,
+                       voice_url=campaign_call_url,
+                       voice_method="POST")
         else:
             app = twilio_client.applications.create(friendly_name=twilio_app_name,
                                               voice_url=campaign_call_url,
@@ -335,8 +335,9 @@ class TwilioPhoneNumber(db.Model):
 
         success = (app.voice_url == campaign_call_url)
 
-        # set twilio number to use app
-        twilio_client.phone_numbers.update(self.twilio_sid, voice_application_sid=app.sid)
+        # set twilio call_in_number to use app
+        call_in_number = twilio_client.incoming_phone_numbers(self.twilio_sid).fetch()
+        call_in_number.update(voice_application_sid=app.sid)
         self.twilio_app = app.sid
         self.call_in_campaign_id = campaign.id
 
