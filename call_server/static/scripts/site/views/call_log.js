@@ -44,28 +44,27 @@
       };
     },
 
-    fetch: function(options) {
+    fetch: function() {
       // transform filters and pagination to flask-restless style
       // always include campaign_id filter
       var filters = [{name: 'campaign_id', op: 'eq', val: this.campaign_id}];
-      if (options.filters) {
-        Array.prototype.push.apply(filters, options.filters);
+      if (this.filters) {
+        Array.prototype.push.apply(filters, this.filters);
       }
+      // calculate offset from currentPage * pageSize, accounting for 1-base
+      var currentOffset = Math.max(this.state.currentPage*-1, 0) * this.state.pageSize;
       var flaskQuery = {
         filters: filters,
-        limit: this.state.pageSize,
-        offset: (this.state.currentPage-1)*this.state.pageSize,
+        offset: currentOffset,
         order_by: [{
           field: this.state.sortKey,
           direction: this.state.direction == -1 ? "asc" : "desc"
         }]
       };
-      console.log(flaskQuery);
-      console.log(this.state);
       var fetchOptions = _.extend({ data: {
         q: JSON.stringify(flaskQuery)
-      }, options});
-      return Backbone.Collection.prototype.fetch.call(this, fetchOptions);
+      }});
+      return Backbone.PageableCollection.prototype.fetch.call(this, fetchOptions);
     }
   });
 
@@ -159,9 +158,17 @@
       if(call_sids) {
         filters.push({'name': 'call_id', 'op': 'in', 'val': call_sids});
       }
+      this.collection.filters = filters;
 
-      this.collection.fetch({filters: filters});
-      $(this.paginator).bootpag({total: this.collection.state.totalPages});
+      var self = this;
+      this.collection.fetch().then(function() {
+        // reset paginator with new results
+        self.el_paginator.bootpag({
+          total: self.collection.state.totalPages,
+          page: self.collection.state.currentPage,
+          maxVisible: 5,
+        }).on('page', _.bind(self.pagingatorPage, self));
+      });
     },
 
     searchCallIds: function() {
