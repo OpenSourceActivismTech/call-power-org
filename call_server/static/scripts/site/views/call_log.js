@@ -17,10 +17,13 @@
   CallPower.Collections.CallList = Backbone.PageableCollection.extend({
     model: CallPower.Models.Call,
     url: '/api/call',
+    // turn off PageableCollection queryParams by setting to null
+    // per https://github.com/backbone-paginator/backbone.paginator/issues/240
     queryParams: {
       pageSize: null,
       currentPage: "page",
-      totalRecords: "num_results",
+      totalRecords: null,
+      totalPages: null,
     },
     state: {
       firstPage: 1,
