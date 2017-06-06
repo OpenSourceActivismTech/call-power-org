@@ -90,12 +90,17 @@
                 <th>{{ _('Country') }}</th>
                 <th>{{ _('Data') }}</th>
             </tr>
+        {% if political_data_cache %}
         {% for (country,summary) in political_data_cache.items() %}
             <tr>
                 <td>{{country}}</td>
-                <td>{% for data_type in summary %}{{data_type}}<br>{%endfor%}</td>
+                <td>{%if summary%}
+                    {% for data_type in summary%}{{data_type}}<br>{%endfor%}
+                    {%else%}Not loaded{%endif%}
+                </td>
             </tr>
         {% endfor %}
+        {% endif %}
     </table>
     </fieldset>
 </div>

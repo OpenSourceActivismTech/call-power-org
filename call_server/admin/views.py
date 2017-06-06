@@ -94,8 +94,10 @@ def system():
     twilio_numbers = TwilioPhoneNumber.query.all()
     admin_api_key = current_app.config.get('ADMIN_API_KEY')
     twilio_account = current_app.config.get('TWILIO_CLIENT').auth[0]
-    political_data_cache = {'US': cache.get('political_data:us'),
+    political_data_cache = {'US': None, #cache.get('political_data:us'),
                             'CA': cache.get('political_data:ca')}
+    if not political_data_cache['US']:
+        flash(_("US Political Data not yet loaded. Run > python manager.py loadpoliticaldata") , 'warning')
     return render_template('admin/system.html',
                            message_defaults=current_app.config.CAMPAIGN_MESSAGE_DEFAULTS,
                            twilio_numbers=twilio_numbers,
