@@ -283,10 +283,13 @@ $(document).ready(function () {
   CallPower.Collections.CallList = Backbone.PageableCollection.extend({
     model: CallPower.Models.Call,
     url: '/api/call',
+    // turn off PageableCollection queryParams by setting to null
+    // per https://github.com/backbone-paginator/backbone.paginator/issues/240
     queryParams: {
       pageSize: null,
       currentPage: "page",
-      totalRecords: "num_results",
+      totalRecords: null,
+      totalPages: null,
     },
     state: {
       firstPage: 1,
@@ -310,28 +313,27 @@ $(document).ready(function () {
       };
     },
 
-    fetch: function(options) {
+    fetch: function() {
       // transform filters and pagination to flask-restless style
       // always include campaign_id filter
       var filters = [{name: 'campaign_id', op: 'eq', val: this.campaign_id}];
-      if (options.filters) {
-        Array.prototype.push.apply(filters, options.filters);
+      if (this.filters) {
+        Array.prototype.push.apply(filters, this.filters);
       }
+      // calculate offset from currentPage * pageSize, accounting for 1-base
+      var currentOffset = Math.max(this.state.currentPage*-1, 0) * this.state.pageSize;
       var flaskQuery = {
         filters: filters,
-        limit: this.state.pageSize,
-        offset: (this.state.currentPage-1)*this.state.pageSize,
+        offset: currentOffset,
         order_by: [{
           field: this.state.sortKey,
           direction: this.state.direction == -1 ? "asc" : "desc"
         }]
       };
-      console.log(flaskQuery);
-      console.log(this.state);
       var fetchOptions = _.extend({ data: {
         q: JSON.stringify(flaskQuery)
-      }, options});
-      return Backbone.Collection.prototype.fetch.call(this, fetchOptions);
+      }});
+      return Backbone.PageableCollection.prototype.fetch.call(this, fetchOptions);
     }
   });
 
@@ -352,15 +354,13 @@ $(document).ready(function () {
 
   CallPower.Views.CallLog = Backbone.View.extend({
     el: $('#call_log'),
+    el_paginator: $('#calls-list-paginator'),
 
     events: {
       'change .filters input': 'updateFilters',
       'change .filters select': 'updateFilters',
       'click .filters button.search': 'searchCallIds',
       'blur input[name="call-search"]': 'searchCallIds',
-      'click .pagination .next': 'paginatorNext',
-      'click .pagination .prev': 'paginatorPrev',
-      'page .pagination': 'paginatorPage',
       'click a.info-modal': 'showInfoModal',
     },
 
@@ -377,29 +377,11 @@ $(document).ready(function () {
         });
       });
 
-      this.paginator = $('#calls-list-paginator').bootpag();
-
       this.updateFilters();
     },
 
-    paginatorNext: function(event) {
-      console.log('paginatorNext');
-      if (this.collection.hasNextPage()) {
-        this.collection.getNextPage();
-      }
-    },
-
-    paginatorPrev: function(event) {
-      console.log('paginatorPrev');
-      if (this.collection.hasPreviousPage()) {
-        this.collection.getPreviousPage();
-      }
-    },
-
     pagingatorPage: function(event, num){
-      console.log('paginatorPage',num);
-        this.collection.getPage(num);
-        $(this.paginator).bootpag({total: 10, maxVisible: 10});       
+      this.collection.getPage(num);
     },
 
     updateFilters: function(event) {
@@ -428,9 +410,17 @@ $(document).ready(function () {
       if(call_sids) {
         filters.push({'name': 'call_id', 'op': 'in', 'val': call_sids});
       }
+      this.collection.filters = filters;
 
-      this.collection.fetch({filters: filters});
-      $(this.paginator).bootpag({total: this.collection.state.totalPages});
+      var self = this;
+      this.collection.fetch().then(function() {
+        // reset paginator with new results
+        self.el_paginator.bootpag({
+          total: self.collection.state.totalPages,
+          page: self.collection.state.currentPage,
+          maxVisible: 5,
+        }).on('page', _.bind(self.pagingatorPage, self));
+      });
     },
 
     searchCallIds: function() {
