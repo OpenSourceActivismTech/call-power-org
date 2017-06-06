@@ -104,7 +104,7 @@ class TestUSStateData(BaseTestCase):
         self.assertEqual(len(uids), 0)
 
     def test_get_state_legid(self):
-        # uses sunlight api directly, not our locate_targets functions
+        # uses openstates api directly, not our locate_targets functions
         self.STATE_CAMPAIGN.campaign_state = 'CA'
 
         legids = self.us_data.get_state_legislators(self.mock_location)

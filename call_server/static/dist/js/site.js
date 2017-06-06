@@ -1579,9 +1579,9 @@ $(document).ready(function () {
             searchData['key'] = 'us_state:governor:'+query;
           } else {
             // hit OpenStates
-            searchURL = CallPower.Config.SUNLIGHT_STATES_URL;
+            searchURL = CallPower.Config.OPENSTATES_URL;
             searchData = {
-              apikey: CallPower.Config.SUNLIGHT_API_KEY,
+              apikey: CallPower.Config.OPENSTATES_API_KEY,
               state: campaign_state,
             }
             if (chamber === 'upper' || chamber === 'lower') {

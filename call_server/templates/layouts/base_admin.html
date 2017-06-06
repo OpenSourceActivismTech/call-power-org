@@ -53,9 +53,8 @@
 <script>
     window.CallPower = {
       Config: {
-        SUNLIGHT_API_KEY: "{{SUNLIGHT_API_KEY}}",
-        SUNLIGHT_CONGRESS_URL: "https://congress.api.sunlightfoundation.com/legislators/",
-        SUNLIGHT_STATES_URL: "https://openstates.org/api/v1/legislators/",
+        OPENSTATES_URL: "https://openstates.org/api/v1/legislators/",
+        OPENSTATES_API_KEY: "{{OPENSTATES_API_KEY}}",
         OPENNORTH_URL: "https://represent.opennorth.ca/",
         {% if twilio_capability %}TWILIO_CAPABILITY: "{{twilio_capability._generate_payload()}}", {%endif%}
       }

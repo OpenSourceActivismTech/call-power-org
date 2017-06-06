@@ -1,6 +1,6 @@
 import werkzeug.contrib.cache
 from flask_babel import gettext as _
-from sunlight import openstates, response_cache
+import pyopenstates
 
 from . import DataProvider, CampaignType
 
@@ -214,8 +214,6 @@ class USDataProvider(DataProvider):
         super(USDataProvider, self).__init__(**kwargs)
         self._cache = cache
         self._geocoder = Geocoder(country='US')
-        if api_cache is not None:
-            response_cache.enable(api_cache)
 
     def get_location(self, locate_by, raw):
         if locate_by == LOCATION_POSTAL:
@@ -400,7 +398,7 @@ class USDataProvider(DataProvider):
         if not location.latitude and location.longitude:
             raise LocationError('USDataProvider.get_state_legislators requires location with lat/lon')
             
-        legislators = openstates.legislator_geo_search(location.latitude, location.longitude)
+        legislators = pyopenstates.locate_legislators(location.latitude, location.longitude)
 
         # save results individually in local cache
         for leg in legislators:
@@ -422,7 +420,7 @@ class USDataProvider(DataProvider):
         
         if not leg:
             # or lookup from openstates and save
-            leg = openstates.legislator_detail(legid)
+            leg = pyopenstates.get_legislator(legid)
             leg['cache_key'] = key
             self.cache_set(key, leg)
         return leg
