@@ -122,8 +122,8 @@ def register_blueprints(app, blueprints):
 
 
 def configure_babel(app):
-    if babel.locale_selector_func and app.config['TESTING']:
-        # short circuit in case of testing
+    if babel.locale_selector_func:
+        # don't redefine babel when testing or migrating
         return True
 
     @babel.localeselector
