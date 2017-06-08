@@ -152,16 +152,14 @@
       });
 
       // start spinner
-      $('.btn.search .spin').css('display', 'inline-block');
-      $('.btn.search .text').hide();
+      $('.btn.search .glyphicon').removeClass('glyphicon-search').addClass('glyphicon-repeat spin');
       $('.btn.search').attr('disabled','disabled');
       return true;
     },
 
     renderSearchResults: function(response) {
       // stop spinner
-      $('#target-search .glyphicon.spin').hide();
-      $('.btn.search .text').show();
+      $('.btn.search .glyphicon').removeClass('glyphicon-repeat spin').addClass('glyphicon-search');
       $('.btn.search').removeAttr('disabled');
 
       // clear existing results, errors

@@ -71,8 +71,7 @@
             {{render_label(form.target_set, label_width)}}
             <div class="controls {{control_width}}">
                 <div class="control-group">
-                    <div class="input-group col-sm-10 left" id="target-search">
-                        <span class="input-group-addon glyphicon glyphicon-search"></span>
+                    <div class="input-group col-xs-10 col-sm-12 col-md-10 left" id="target-search">
                         <div class="search-results open">
                             <input type="text" class="form-control" name="target-search" placeholder="search"/>
                         </div>
@@ -80,19 +79,19 @@
                           <button type="button" class="btn btn-flat btn-white dropdown-toggle" data-toggle="dropdown">Field <span class="caret"></span></button>
                           <ul class="dropdown-menu">
                             <li><a href="#" id="state">State</a></li>
-                            <li><a href="#" id="last_name">Last Name</a></li>
+                            <li><a href="#" id="last_name">Name</a></li>
                             <!--<li><a href="#">Committee</a></li>-->
                           </ul>
                            <input type="hidden" name="search_field" />
                         </div>
                         <span class="input-group-btn">
                             <button class="btn btn-default search" type="button">
-                                <span class="text">Go</span>
+                                <span class="glyphicon glyphicon-search"></span>
                                 <span class="glyphicon glyphicon-repeat spin hide-initial"></span>
                             </button>
                         </span>
                     </div>
-                    <div class="input-group right">
+                    <div class="input-group col-xs-2 right">
                         <button class="btn btn-primary add" type="button">Add</button>
                         <div class="description">
                             <span class="glyphicon glyphicon-info-sign info small"></span>

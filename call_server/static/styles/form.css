@@ -206,15 +206,14 @@ select.block {
 
 .btn.btn-flat {
     text-shadow: 0 1px 0 #fff;
-    
     border-radius: 0;
     border-color: #ccc
 }
 
 .btn.btn-flat.btn-white {
     background-color: white;
+    color: #333;
 }
-
 
 /* Search Results */
 .search-results .close {
