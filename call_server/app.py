@@ -17,6 +17,7 @@ from .admin import admin
 from .user import User, user
 from .call import call
 from .campaign import campaign
+from .schedule import schedule
 from .api import api, configure_restless, restless_preprocessors
 from .political_data import political_data
 
@@ -28,6 +29,7 @@ DEFAULT_BLUEPRINTS = (
     user,
     call,
     campaign,
+    schedule,
     api,
     political_data
 )

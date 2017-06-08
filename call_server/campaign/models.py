@@ -35,12 +35,12 @@ class Campaign(db.Model):
                                  backref=db.backref('campaigns'))
     target_ordering = db.Column(db.String(STRING_LEN))
     target_offices = db.Column(db.String(STRING_LEN))
-
+    call_maximum = db.Column(db.SmallInteger, nullable=True)
     allow_call_in = db.Column(db.Boolean, default=False)
+    
     phone_number_set = db.relationship('TwilioPhoneNumber', secondary='campaign_phone_numbers',
                                        backref=db.backref('campaigns'))
-    call_maximum = db.Column(db.SmallInteger, nullable=True)
-
+    prompt_schedule = db.Column(db.Boolean, default=False)
     audio_recordings = db.relationship('AudioRecording', secondary='campaign_audio_recordings',
                                        backref=db.backref('campaigns'))
 
