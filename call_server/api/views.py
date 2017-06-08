@@ -321,7 +321,10 @@ def campaign_target_calls(campaign_id):
             if ':' in target_uid:
                 data_adapter = adapt_by_key(target_uid)
                 try:
-                    adapted_data = data_adapter.target(target_data)
+                    if target_data:
+                        adapted_data = data_adapter.target(target_data)
+                    else:
+                        adapted_data = data_adapter.target({'title': target_title, 'name': target_name, 'uid': target_uid})
                 except AttributeError:
                     current_app.logger.error('unable to adapt target_data for %s: %s' % (target_uid, target_data))
                     adapted_data = target_data
@@ -349,13 +352,9 @@ def campaign_target_calls(campaign_id):
                 # no need to adapt
                 adapted_data = target_data
             
-            try:
-                targets[target_uid]['title'] = adapted_data['title']
-                targets[target_uid]['name'] = adapted_data['name']
-                targets[target_uid]['district'] = adapted_data['district']
-            except KeyError:
-                current_app.logger.error('unable to get title,name or district for %s: %s' % (target_uid, adapted_data))
-                continue
+            targets[target_uid]['title'] = adapted_data.get('title')
+            targets[target_uid]['name'] = adapted_data.get('name')
+            targets[target_uid]['district'] = adapted_data.get('district')
 
             if call_status == status:
                 targets[target_uid][call_status] = targets.get(target_uid, {}).get(call_status, 0) + count
