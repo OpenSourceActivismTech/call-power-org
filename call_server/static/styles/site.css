@@ -30,6 +30,9 @@
     z-index: 9000;
     width: 100%;
 }
+.alert button.close {
+  margin-top: -10px;
+}
 
 html {
   position: relative;

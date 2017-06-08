@@ -101,8 +101,7 @@ input.form-control[type="radio"] {
 }
 
 .input-group.inline select {
-    vertical-align: bottom;
-    margin: 0 5px 0 2px;
+    margin: 0 5px 0 0px;
 }
 
 input.form-control[step="1"] {
