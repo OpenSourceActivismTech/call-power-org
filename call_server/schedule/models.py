@@ -62,9 +62,13 @@ def create_call(campaign_id, phone, location):
         'userLocation': location
     }
     scheduled_call = ScheduleCall.query.filter_by(campaign_id=campaign_id, phone_number=phone).first()
-    requests.get(url_for('call.create', _external=True, **params))
-    scheduled_call.num_calls += 1
-    scheduled_call.last_called = utc_now()
-    db.session.add(scheduled_call)
-    db.session.commit()
-    return True
+    resp = requests.get(url_for('call.create', _external=True, **params))
+    if resp.status_code == 200:
+        scheduled_call.num_calls += 1
+        scheduled_call.last_called = utc_now()
+        db.session.add(scheduled_call)
+        db.session.commit()
+        return True
+    else:
+        current_app.logger.error('unable to execute scheduled create_call: %s "%s"' % (resp.url, resp.content))
+        return False
