@@ -3,6 +3,7 @@ from flask import current_app, flash
 
 import itertools
 import json
+import pytz
 import yaml
 import yaml.constructor
 
@@ -87,6 +88,12 @@ def choice_items(choices):
 
 def json_markup(obj):
     return Markup(json.dumps(obj))
+
+
+def utc_now():
+    naive = datetime.utcnow()
+    aware = naive.replace(tzinfo=pytz.utc)
+    return aware
 
 
 class OrderedDictYAMLLoader(yaml.Loader):

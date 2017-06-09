@@ -18,6 +18,8 @@ from ..campaign.constants import (LOCATION_POSTAL, LOCATION_DISTRICT,
 from ..campaign.models import Campaign, Target
 from ..political_data.lookup import locate_targets
 from ..political_data.geocode import LocationError
+from ..schedule.models import ScheduleCall
+from ..schedule.views import schedule_created, schedule_deleted
 
 from .decorators import crossdomain, abortJSON, stripANSI
 
@@ -417,18 +419,24 @@ def schedule_parse():
         play_or_say(resp, campaign.audio('msg_schedule_start'),
             lang=campaign.language_code)
         scheduled = True
+        schedule_created.send(ScheduleCall,
+            campaign_id=campaign.id,
+            phone=params['userPhone'],
+            location=params['userLocation'])
     elif schedule_choice == "9":
         # user wishes to opt out
         play_or_say(resp, campaign.audio('msg_schedule_stop'),
             lang=campaign.language_code)
         scheduled = False
+        schedule_deleted.send(ScheduleCall,
+            campaign_id=campaign.id,
+            phone=params['userPhone'])
     else:
         # because of the timeout, we may not have a digit
         scheduled = False
 
     params['scheduled'] = scheduled
     resp.redirect(url_for('call._make_calls', **params))
-
     return str(resp)
 
 

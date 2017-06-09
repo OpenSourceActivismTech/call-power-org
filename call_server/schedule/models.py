@@ -1,6 +1,8 @@
-from datetime import datetime
+from flask import url_for
+import requests
 
-from ..extensions import db
+from ..utils import utc_now
+from ..extensions import db, rq
 
 
 class ScheduleCall(db.Model):
@@ -11,7 +13,7 @@ class ScheduleCall(db.Model):
     created_at = db.Column(db.DateTime(timezone=True))
     subscribed = db.Column(db.Boolean, default=True)
 
-    time_to_call = db.Column(db.Time(timezone=True))
+    time_to_call = db.Column(db.Time()) # should be UTC
     last_called  = db.Column(db.DateTime(timezone=True))
     num_calls = db.Column(db.Integer)
 
@@ -20,19 +22,49 @@ class ScheduleCall(db.Model):
 
     phone_number = db.Column(db.String(16))  # number to call, e164
 
-    def __init__(self, campaign_id, phone_number, time=datetime.utcnow().time()):
-        self.created_at = datetime.utcnow()
+    def __init__(self, campaign_id, phone_number, time=utc_now().time()):
+        self.created_at = utc_now()
         self.campaign_id = campaign_id
         self.phone_number = phone_number
         self.time_to_call = time
-        self.subscribed = True
 
     def __repr__(self):
-        return u'<ScheduleCall for {}>'.format(self.campaign.name)
+        return u'<ScheduleCall for {} to {}>'.format(self.campaign.name, self.phone_number)
+
+    @property
+    def _function_name(self):
+        return 'create_call:{campaign_id}:{phone}'.format(campaign_id=self.campaign_id, phone=self.phone_number)
 
 
-    def start_job(self):
-        pass
+    def start_job(self, location=None):
+        self.subscribed = True
+        weekdays = 'mon,tue,wed,thu,fri'
+        minute = self.time_to_call.minute
+        hour = self.time_to_call.hour
+        # TODO, set a max limit on the number of executions?
+        crontab = '{minute} {hour} {day_of_month} {month} {days_of_week}'.format(
+            minute=minute,
+            hour=hour,
+            day_of_month='*',
+            month='*',
+            days_of_week=weekdays)
+        create_call.cron(crontab, self._function_name, self.campaign_id, self.phone_number, location)
 
     def stop_job(self):
-        pass
+        self.subscribed = False
+        rq.get_scheduler().cancel(self._function_name)
+
+@rq.job
+def create_call(campaign_id, phone, location):
+    params = {
+        'campaignId': campaign_id,
+        'userPhone': phone,
+        'userLocation': location
+    }
+    scheduled_call = ScheduleCall.query.filter_by(campaign_id=campaign_id, phone_number=phone).first()
+    requests.get(url_for('call.create', _external=True, **params))
+    scheduled_call.num_calls += 1
+    scheduled_call.last_called = utc_now()
+    db.session.add(scheduled_call)
+    db.session.commit()
+    return True
