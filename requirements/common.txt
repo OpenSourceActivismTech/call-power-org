@@ -7,7 +7,7 @@ Flask-Jsonpify==1.1
 Flask-Login==0.2.11
 Flask-Mail==0.9.1
 Flask-Restless==0.17.0
-flask-rq2=17.0
+flask-rq2==17.0
 Flask-SQLAlchemy==2.2
 Flask-Script==2.0.5
 -e git://github.com/spacedogXYZ/Flask-Store.git#egg=flask-store
