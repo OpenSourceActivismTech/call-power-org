@@ -4,10 +4,10 @@ msg_location: >
     Please enter your zip code so we can lookup your elected officials.
 msg_invalid_location: Sorry, this campaign is not available in your area.
 msg_unparsed_location: Sorry, we did not understand that zip code. Please try again.
-msg_prompt_schedule: Would you like to make calls at the same time every day? Press 1 to become a daily caller, or 9 to alter your subscription.
+msg_prompt_schedule: Would you like to make calls at the same time every day? Press 1 to become a daily caller, or stay on the line to make just one call today.
 msg_alter_schedule: Thanks for being a daily caller. Press 9 to alter your subscription, or stay on the line to be connected to your daily call.
 msg_schedule_start: Thanks for becoming a daily caller. We'll call you back tomorrow at about this time.
-msg_schedule_stop: Thanks for being a daily caller. We won't call you again. Good bye.
+msg_schedule_stop: Thanks for being a daily caller. We won't call you again after today.
 msg_call_block_intro: >
     {{#many}}We'll now connect you to {{n_targets}} offices. Press
     star for the next call.{{/many}}

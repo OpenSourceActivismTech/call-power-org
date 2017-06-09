@@ -33,6 +33,9 @@
             <tr><td>Call Maximum</td><td>{{campaign.call_maximum}}</td></tr>
             {% endif %}
             <tr><td>Allow Call In</td><td>{{campaign.allow_call_in}}</td></tr>
+            {% if campaign.prompt_schedule %}
+            <tr><td>Prompt to Schedule Recurring Calls</td><td>{{campaign.prompt_schedule}}</td></tr>
+            {% endif %}
             <tr><td>Phone Numbers</td><td>{% for num in campaign.phone_number_set %}{{num}}{%if not loop.last%},{%endif%}{%endfor%}</td></tr>
 
         </table>
