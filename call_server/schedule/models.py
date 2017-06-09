@@ -15,7 +15,7 @@ class ScheduleCall(db.Model):
 
     time_to_call = db.Column(db.Time()) # should be UTC
     last_called  = db.Column(db.DateTime(timezone=True))
-    num_calls = db.Column(db.Integer)
+    num_calls = db.Column(db.Integer, default=0)
 
     campaign_id = db.Column(db.ForeignKey('campaign_campaign.id'))
     campaign = db.relationship('Campaign')

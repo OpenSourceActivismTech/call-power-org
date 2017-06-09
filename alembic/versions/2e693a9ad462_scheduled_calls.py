@@ -24,7 +24,7 @@ def upgrade():
     sa.Column('subscribed', sa.Boolean(), nullable=True),
     sa.Column('time_to_call', sa.Time(), nullable=True),
     sa.Column('last_called', sa.DateTime(timezone=True), nullable=True),
-    sa.Column('num_calls', sa.Integer(), nullable=True),
+    sa.Column('num_calls', sa.Integer(), nullable=False, server_default='0'),
     sa.Column('campaign_id', sa.Integer(), nullable=True),
     sa.Column('phone_number', sa.String(length=16), nullable=True),
     sa.ForeignKeyConstraint(['campaign_id'], ['campaign_campaign.id'], ),
