@@ -10,6 +10,8 @@ def adapt_by_key(key):
         return GovernorAdapter()
     elif key.startswith("ca:opennorth"):
         return OpenNorthAdapter()
+    elif key.startswith("custom"):
+        return CustomDataAdapter()
     else:
         return DataAdapter()
     # TODO add for other countries
@@ -34,6 +36,21 @@ class DataAdapter(object):
     def offices(self, data):
         return [data]
 
+
+class CustomDataAdapter(DataAdapter):
+    def target(self, data):
+        adapted = {
+            'title': data.get('title', ''),
+            'uid': data.get('uid', ''),
+            'number': data.get('number', '')
+        }
+        if 'first_name' in data and 'last_name' in data:
+            adapted['name'] = u'{first_name} {last_name}'.format(**data)
+        elif 'name' in data:
+            adapted['name'] = data['name']
+        else:
+            data['name'] = 'Unknown'
+        return adapted
 
 class UnitedStatesData(DataAdapter):
     def key(self, key):
