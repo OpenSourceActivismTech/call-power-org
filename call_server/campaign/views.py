@@ -279,7 +279,7 @@ def upload_recording(campaign_id):
         if file_storage:
             file_storage.filename = "campaign_{}_{}_{}.{}".format(campaign.id, message_key, recording.version, file_type)
             recording.file_storage = file_storage
-            recording.text_to_speech = None
+            recording.text_to_speech = ''
         else:
             # dummy file storage
             recording.file_storage = TemporaryStore('')
