@@ -155,10 +155,16 @@ def location_gather(resp, params, campaign):
     """
     Play msg_location, and wait for 5 digits from user.
     Then, redirect to location_parse
+    If no response, replay then hang up
     """
     g = Gather(num_digits=5, timeout=5, method="POST", action=url_for("call.location_parse", **params))
     play_or_say(g, campaign.audio('msg_location'), lang=campaign.language_code)
     resp.append(g)
+    # didn't get a response
+    play_or_say(resp, campaign.audio('msg_unparsed_location'), lang=campaign.language_code)
+    resp.append(g) # try second gather
+    play_or_say(resp, campaign.audio('msg_goodbye'), lang=campaign.language_code)
+    # if no response, hang up
 
     return str(resp)
 
