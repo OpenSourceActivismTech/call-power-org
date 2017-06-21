@@ -226,8 +226,13 @@ def schedule_prompt(params, campaign):
 
     resp = VoiceResponse()
     g = Gather(num_digits=1, timeout=3, method="POST", action=url_for("call.schedule_parse", **params))
-    play_or_say(g, campaign.audio('msg_prompt_schedule'), lang=campaign.language_code)
-    # TODO, if user already has a ScheduleCall for this campaign, play_or_say msg_alter_schedule
+    
+    existing_schedule = ScheduleCall.query.filter_by(campaign_id=campaign.id, phone_number=params['userPhone']).first()
+    if existing_schedule:
+        play_or_say(g, campaign.audio('msg_alter_schedule'), lang=campaign.language_code)
+    else:
+        play_or_say(g, campaign.audio('msg_prompt_schedule'), lang=campaign.language_code)
+    
     resp.append(g)
 
     # in case the timeout occurs, we need a redirect verb to ensure that the call doesn't drop
