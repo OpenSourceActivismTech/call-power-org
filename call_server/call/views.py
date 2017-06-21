@@ -43,7 +43,7 @@ def play_or_say(r, audio, voice='alice', lang='en-US', **kwargs):
             else:
                 lang = 'en'
 
-        if (hasattr(audio, 'text_to_speech') and not (audio.text_to_speech == '')):
+        if (hasattr(audio, 'text_to_speech') and audio.text_to_speech):
             msg = pystache.render(audio.text_to_speech, kwargs)
             r.say(msg, voice=voice, language=lang)
         elif (hasattr(audio, 'file_storage') and (audio.file_storage.fp is not None)):
