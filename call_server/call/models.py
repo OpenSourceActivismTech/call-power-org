@@ -63,10 +63,12 @@ class Session(db.Model):
     location = db.Column(db.String(STRING_LEN))  # provided location
 
     # twilio attributes
-    from_number = db.Column(db.String(16))  # outbound call number, e164
+    from_number = db.Column(db.String(16))  # campaign call number, e164
     twilio_id = db.Column(db.String(40))    # twilio call ID
     duration = db.Column(db.Integer)        # twilio call time in seconds
     status = db.Column(db.String(25))       # session status (initiated, completed, failed)
+
+    direction = db.Column(db.String(25))    # (inbound, outbound)
 
     @classmethod
     def hash_phone(cls, number):
@@ -75,7 +77,7 @@ class Session(db.Model):
         """
         return hashlib.sha256(number).hexdigest()
 
-    def __init__(self, campaign_id, phone_number=None, location=None, from_number=None, status='initiated'):
+    def __init__(self, campaign_id, phone_number=None, location=None, from_number=None, status='initiated', direction='outbound'):
         self.timestamp = datetime.utcnow()
         self.campaign_id = campaign_id
         if phone_number:
@@ -83,6 +85,7 @@ class Session(db.Model):
         self.location = location
         self.from_number = from_number
         self.status = status
+        self.direction = direction
 
     def __repr__(self):
         return u'<Session for {}>'.format(self.phone_hash)
