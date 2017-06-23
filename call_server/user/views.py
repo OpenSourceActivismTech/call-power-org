@@ -97,7 +97,7 @@ def create_account():
     form = CreateUserForm(obj=user)
 
     # can't use form.validate_on_submit, because username and email won't be unique
-    if form.is_submitted() and form.validate_csrf_token(form):
+    if form.is_submitted():
         if form.password.validate(form) \
             and form.password_confirm.validate(form) \
                 and form.phone.validate(form):
