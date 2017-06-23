@@ -101,6 +101,10 @@ To run in production, with compiled assets:
 
     # or point your WSGI server to `call_server.wsgi:application`
     # to load the application directly
+
+    # if you wish to enable recurring outbound calls, you need to run the scheduler and at least one worker
+    python manager.py rq scheduler
+    python manager.py rq worker
     
 Make sure your webserver can serve audio files out of `APPLICATION_ROOT/instance/uploads`. Or if you are using Amazon S3, ensure your buckets are configured for public access.
 
