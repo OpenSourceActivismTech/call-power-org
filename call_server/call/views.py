@@ -554,3 +554,27 @@ def complete_status():
         'targetIds': params['targetIds'],
         'campaignId': params['campaignId']
     })
+
+
+@call.route('/status_inbound', methods=call_methods)
+def status_inbound():
+    # async callback from twilio on inbound call complete
+    params, _ = parse_params(request, inbound=True)
+
+    if not params:
+        abort(400)
+
+    # find call_session from number with direction inbound that is not complete
+    user_phone = request.values.get('From')
+    phone_hash = Session.hash_phone(user_phone)
+    call_session = Session.query.filter_by(phone_hash=phone_hash, status='initiated').first_or_404()
+    call_session.status = request.values.get('CallStatus', 'unknown')
+    call_session.duration = request.values.get('CallDuration', None)
+    db.session.add(call_session)
+    db.session.commit()
+
+    return jsonify({
+        'phoneNumber': request.values.get('From', ''),
+        'callStatus': call_session.status,
+        'campaignId': params['campaignId']
+    })
