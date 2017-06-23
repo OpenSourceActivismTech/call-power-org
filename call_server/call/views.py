@@ -6,6 +6,7 @@ from sqlalchemy_utils.types.phone_number import PhoneNumber, phonenumbers
 from flask import abort, Blueprint, request, url_for, current_app
 from flask_jsonpify import jsonify
 from twilio.base.exceptions import TwilioRestException
+from sqlalchemy.sql import desc
 from sqlalchemy.exc import SQLAlchemyError
 
 from ..extensions import csrf, db
@@ -565,9 +566,16 @@ def status_inbound():
         abort(400)
 
     # find call_session from number with direction inbound that is not complete
+    # if there's more than one, get the most recent one
     user_phone = request.values.get('From')
     phone_hash = Session.hash_phone(user_phone)
-    call_session = Session.query.filter_by(phone_hash=phone_hash, status='initiated').first_or_404()
+    call_session = Session.query.filter_by(
+        phone_hash=phone_hash,
+        status='initiated',
+        direction='inbound',
+        campaign_id=params['campaignId'],
+        location=params['userLocation']
+    ).order_by(desc(Session.timestamp)).first_or_404()
     call_session.status = request.values.get('CallStatus', 'unknown')
     call_session.duration = request.values.get('CallDuration', None)
     db.session.add(call_session)
