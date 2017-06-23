@@ -263,6 +263,7 @@ def create():
             'campaign_id': campaign.id,
             'location': params['userLocation'],
             'from_number': from_number,
+            'direction': 'outbound'
         }
         if current_app.config['LOG_PHONE_NUMBERS']:
             call_session_data['phone_number'] = params['userPhone']
@@ -339,6 +340,24 @@ def incoming():
 
     # pull user phone from Twilio incoming request
     params['userPhone'] = request.values.get('From')
+    campaign_number = request.values.get('To')
+
+    # create incoming call session
+    call_session_data = {
+        'campaign_id': campaign.id,
+        'from_number': campaign_number,
+        'direction': 'inbound'
+    }
+    if current_app.config['LOG_PHONE_NUMBERS']:
+        call_session_data['phone_number'] = params['userPhone']
+        # user phone numbers are hashed by the init method
+        # but some installations may not want to log at all
+
+    call_session = Session(**call_session_data)
+    db.session.add(call_session)
+    db.session.commit()
+
+    params['sessionId'] = call_session.id
 
     if campaign.segment_by == SEGMENT_BY_LOCATION and campaign.locate_by in [LOCATION_POSTAL, LOCATION_DISTRICT]:
         return intro_location_gather(params, campaign)
