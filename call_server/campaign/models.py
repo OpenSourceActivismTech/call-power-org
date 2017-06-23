@@ -314,31 +314,35 @@ class TwilioPhoneNumber(db.Model):
 
     def set_call_in(self, campaign):
         twilio_client = current_app.config.get('TWILIO_CLIENT')
-        twilio_app_name = 'CallPower (%s)' % campaign.name
+        twilio_app_data = {'friendly_name': 'CallPower (%s)' % campaign.name}
 
-        # set app VoiceUrl post to campaign url
+        # set twilio_app VoiceUrl post to campaign url
         campaign_call_url = (url_for('call.incoming', _external=True) +
             '?campaignId=' + str(campaign.id))
+        twilio_app_data['voice_url'] = campaign_call_url
+        twilio_app_data['voice_method'] = "POST"
+
+        # set twilio_app StatusCallback post
+        campaign_status_url = (url_for('call.status_inbound', _external=True) +
+            '?campaignId=' + str(campaign.id))
+        twilio_app_data['status_callback'] = campaign_status_url
+        twilio_app_data['status_callback_method'] = "POST"
 
         # get or create twilio app by campaign name
-        apps = twilio_client.applications.list(friendly_name=twilio_app_name)
-        if apps:
-            app_sid = apps[0].sid  # there can be only one!
-            app = twilio_client.applications(app_sid).fetch()
-            app.update(friendly_name=twilio_app_name,
-                       voice_url=campaign_call_url,
-                       voice_method="POST")
+        existing_apps = twilio_client.applications.list(friendly_name=twilio_app_data['friendly_name'])
+        if existing_apps:
+            app_sid = existing_apps[0].sid  # there can be only one!
+            twilio_app = twilio_client.applications(app_sid).fetch()
+            twilio_app.update(**twilio_app_data)
         else:
-            app = twilio_client.applications.create(friendly_name=twilio_app_name,
-                                              voice_url=campaign_call_url,
-                                              voice_method="POST")
+            twilio_app = twilio_client.applications.create(**twilio_app_data)
 
-        success = (app.voice_url == campaign_call_url)
+        success = (twilio_app.voice_url == campaign_call_url)
 
         # set twilio call_in_number to use app
         call_in_number = twilio_client.incoming_phone_numbers(self.twilio_sid).fetch()
-        call_in_number.update(voice_application_sid=app.sid)
-        self.twilio_app = app.sid
+        call_in_number.update(voice_application_sid=twilio_app.sid)
+        self.twilio_app = twilio_app.sid
         self.call_in_campaign_id = campaign.id
 
         return success
