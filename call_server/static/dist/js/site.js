@@ -1804,14 +1804,16 @@ $(document).ready(function () {
       this.$el.on('changeDate', _.debounce(this.renderChart, this));
 
       this.chartOpts = {
-        discrete: true,
         library: {
           canvasDimensions:{ height:250},
           xAxis: {
             type: 'datetime',
             dateTimeLabelFormats: {
-                day: '%e. %b'
-            }
+                day: '%b %e',
+                week: '%b %e',
+                month: '%b %y',
+                year: '%Y',
+            },
           },
           yAxis: { allowDecimals: false, min: null },
         }
@@ -1923,7 +1925,7 @@ $(document).ready(function () {
             // filter out series that have no data
             var seriesFiltered = _.filter(series, function(line) {
               return line.data.length
-            })
+            });
 
             if (seriesFiltered.length) {
               // chart as curved lines
@@ -1988,7 +1990,6 @@ $(document).ready(function () {
     },
 
     downloadTable: function(event) {
-      console.log('download!');
       $('table#table_data').trigger('outputTable');
     },
   });
