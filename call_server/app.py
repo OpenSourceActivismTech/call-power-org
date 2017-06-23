@@ -2,7 +2,7 @@ import os
 import logging
 import glob
 
-from flask import Flask, g, request, session
+from flask import Flask, g, request, session, render_template
 from flask_assets import Bundle
 
 
@@ -55,6 +55,7 @@ def create_app(configuration=None, app_name=None, blueprints=None):
     register_blueprints(app, blueprints)
 
     configure_logging(app)
+    configure_error_pages(app)
 
     # then extension specific configurations
     configure_babel(app)
@@ -230,6 +231,10 @@ def context_processors(app):
             version = os.environ.get('HEROKU_SLUG_DESCRIPTION')
         return {'version': version}
 
+    @app.context_processor
+    def inject_admin_email():
+        return dict(ADMIN_EMAIL=app.config.get('MAIL_DEFAULT_SENDER', 'info@callpower.org'))
+
     # json filter
     app.jinja_env.filters['json'] = json_markup
     app.jinja_env.add_extension('call_server.jinja.SelectiveHTMLCompress')
@@ -256,3 +261,11 @@ def configure_logging(app):
     
     if app.config.get('OUTPUT_LOG'):
         app.logger.addHandler(logging.StreamHandler())
+
+def configure_error_pages(app):
+    @app.errorhandler(404)
+    def page_not_found(e):
+        return render_template('site/404.html'), 404
+    @app.errorhandler(500)
+    def application_error(e):
+        return render_template('site/500.html'), 500

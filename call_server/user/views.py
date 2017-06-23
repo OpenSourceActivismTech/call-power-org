@@ -91,13 +91,12 @@ def create_account():
                          .filter_by(email=email).first()
 
     if user is None:
-        return render_template('user/invalid_invitation.html',
-            email=current_app.config['MAIL_DEFAULT_SENDER'], sitename=current_app.config['SITENAME'])
+        return render_template('user/invalid_invitation.html')
 
     form = CreateUserForm(obj=user)
 
     # can't use form.validate_on_submit, because username and email won't be unique
-    if form.is_submitted() and form.validate_csrf_token(form):
+    if form.is_submitted():
         if form.password.validate(form) \
             and form.password_confirm.validate(form) \
                 and form.phone.validate(form):
