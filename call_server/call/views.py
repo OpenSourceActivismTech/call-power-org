@@ -19,6 +19,8 @@ from ..campaign.constants import (LOCATION_POSTAL, LOCATION_DISTRICT,
 from ..campaign.models import Campaign, Target
 from ..political_data.lookup import locate_targets
 from ..political_data.geocode import LocationError
+from ..schedule.models import ScheduleCall
+from ..schedule.views import schedule_created, schedule_deleted
 
 from .decorators import crossdomain, abortJSON, stripANSI
 
@@ -69,12 +71,13 @@ def parse_params(r, inbound=False):
     Should not edit param values.
     """
     params = {
-        'sessionId': r.values.get('sessionId', None),
         'campaignId': r.values.get('campaignId', None),
+        'scheduled': r.values.get('scheduled', None),
+        'sessionId': r.values.get('sessionId', None),
+        'targetIds': r.values.getlist('targetIds'),
         'userPhone': r.values.get('userPhone', None),
         'userCountry': r.values.get('userCountry', None),
         'userLocation': r.values.get('userLocation', None),
-        'targetIds': r.values.getlist('targetIds'),
     }
 
     if params['userCountry']:
@@ -153,10 +156,16 @@ def location_gather(resp, params, campaign):
     """
     Play msg_location, and wait for 5 digits from user.
     Then, redirect to location_parse
+    If no response, replay then hang up
     """
-    g = Gather(num_digits=5, method="POST", action=url_for("call.location_parse", **params))
+    g = Gather(num_digits=5, timeout=5, method="POST", action=url_for("call.location_parse", **params))
     play_or_say(g, campaign.audio('msg_location'), lang=campaign.language_code)
     resp.append(g)
+    # didn't get a response
+    play_or_say(resp, campaign.audio('msg_unparsed_location'), lang=campaign.language_code)
+    resp.append(g) # try second gather
+    play_or_say(resp, campaign.audio('msg_goodbye'), lang=campaign.language_code)
+    # if no response, hang up
 
     return str(resp)
 
@@ -166,8 +175,6 @@ def make_calls(params, campaign):
     Connect a user to a sequence of targets.
     Performs target lookup, shuffling, and limiting to maximum.
     Plays msg_call_block_intro, then redirects to make_single call.
-
-    Required params: campaignId, targetIds
     """
     resp = VoiceResponse()
 
@@ -211,15 +218,75 @@ def make_calls(params, campaign):
 
     return str(resp)
 
+def schedule_prompt(params, campaign):
+    """
+    Prompt the user to schedule calls
+    """
+    if not params or not campaign:
+        abort(400)
 
-@call.route('/make_calls', methods=call_methods)
-def _make_calls():
-    params, campaign = parse_params(request)
+    resp = VoiceResponse()
+    g = Gather(num_digits=1, timeout=3, method="POST", action=url_for("call.schedule_parse", **params))
+    
+    existing_schedule = ScheduleCall.query.filter_by(campaign_id=campaign.id, phone_number=params['userPhone']).first()
+    if existing_schedule:
+        play_or_say(g, campaign.audio('msg_alter_schedule'), lang=campaign.language_code)
+    else:
+        play_or_say(g, campaign.audio('msg_prompt_schedule'), lang=campaign.language_code)
+    
+    resp.append(g)
+
+    # in case the timeout occurs, we need a redirect verb to ensure that the call doesn't drop
+    params['scheduled'] = False
+    resp.redirect(url_for('call._make_calls', **params))
+
+    return str(resp)
+
+
+#####
+# EXTERNAL ROUTES
+#####
+
+@call.route('/incoming', methods=call_methods)
+def incoming():
+    """
+    Handles incoming calls to the twilio numbers.
+    Required Params: campaignId
+
+    Each Twilio phone number needs to be configured to point to:
+    server.org/call/incoming?campaignId=12345
+    from twilio.com/user/account/phone-numbers/incoming
+    """
+    params, campaign = parse_params(request, inbound=True)
 
     if not params or not campaign:
         abort(400)
 
-    return make_calls(params, campaign)
+    # pull user phone from Twilio incoming request
+    params['userPhone'] = request.values.get('From')
+    campaign_number = request.values.get('To')
+
+    # create incoming call session
+    call_session_data = {
+        'campaign_id': campaign.id,
+        'from_number': campaign_number,
+        'direction': 'inbound'
+    }
+    if current_app.config['LOG_PHONE_NUMBERS']:
+        call_session_data['phone_number'] = params['userPhone']
+        # user phone numbers are hashed by the init method
+        # but some installations may not want to log at all
+
+    call_session = Session(**call_session_data)
+    db.session.add(call_session)
+    db.session.commit()
+
+    params['sessionId'] = call_session.id
+
+    if campaign.segment_by == SEGMENT_BY_LOCATION and campaign.locate_by in [LOCATION_POSTAL, LOCATION_DISTRICT]:
+        return intro_location_gather(params, campaign)
+    else:
+        return intro_wait_human(params, campaign)
 
 
 @call.route('/create', methods=call_methods)
@@ -324,48 +391,6 @@ def connection():
         return intro_wait_human(params, campaign)
 
 
-@call.route('/incoming', methods=call_methods)
-def incoming():
-    """
-    Handles incoming calls to the twilio numbers.
-    Required Params: campaignId
-
-    Each Twilio phone number needs to be configured to point to:
-    server.org/call/incoming?campaignId=12345
-    from twilio.com/user/account/phone-numbers/incoming
-    """
-    params, campaign = parse_params(request, inbound=True)
-
-    if not params or not campaign:
-        abort(400)
-
-    # pull user phone from Twilio incoming request
-    params['userPhone'] = request.values.get('From')
-    campaign_number = request.values.get('To')
-
-    # create incoming call session
-    call_session_data = {
-        'campaign_id': campaign.id,
-        'from_number': campaign_number,
-        'direction': 'inbound'
-    }
-    if current_app.config['LOG_PHONE_NUMBERS']:
-        call_session_data['phone_number'] = params['userPhone']
-        # user phone numbers are hashed by the init method
-        # but some installations may not want to log at all
-
-    call_session = Session(**call_session_data)
-    db.session.add(call_session)
-    db.session.commit()
-
-    params['sessionId'] = call_session.id
-
-    if campaign.segment_by == SEGMENT_BY_LOCATION and campaign.locate_by in [LOCATION_POSTAL, LOCATION_DISTRICT]:
-        return intro_location_gather(params, campaign)
-    else:
-        return intro_wait_human(params, campaign)
-
-
 @call.route("/location_parse", methods=call_methods)
 def location_parse():
     """
@@ -402,7 +427,68 @@ def location_parse():
         db.session.add(call_session)
         db.session.commit()
 
-    return make_calls(params, campaign)
+    resp = VoiceResponse()
+    resp.redirect(url_for('call._make_calls', **params))
+    return str(resp)
+
+
+@call.route("/schedule_parse", methods=call_methods)
+def schedule_parse():
+    """
+    Handle schedule response entered by user
+    Required Params: campaignId, Digits
+    """
+    params, campaign = parse_params(request)
+    resp = VoiceResponse()
+
+    if not params or not campaign:
+        abort(400)
+
+    schedule_choice = request.values.get('Digits', '')
+
+    if current_app.debug:
+        current_app.logger.debug(u'entered = {}'.format(schedule_choice))
+
+    if schedule_choice == "1":
+        # schedule a call at this time every day
+        play_or_say(resp, campaign.audio('msg_schedule_start'),
+            lang=campaign.language_code)
+        scheduled = True
+        schedule_created.send(ScheduleCall,
+            campaign_id=campaign.id,
+            phone=params['userPhone'],
+            location=params['userLocation'])
+    elif schedule_choice == "9":
+        # user wishes to opt out
+        play_or_say(resp, campaign.audio('msg_schedule_stop'),
+            lang=campaign.language_code)
+        scheduled = False
+        schedule_deleted.send(ScheduleCall,
+            campaign_id=campaign.id,
+            phone=params['userPhone'])
+    else:
+        # because of the timeout, we may not have a digit
+        scheduled = False
+
+    params['scheduled'] = scheduled
+    resp.redirect(url_for('call._make_calls', **params))
+    return str(resp)
+
+
+@call.route('/make_calls', methods=call_methods)
+def _make_calls():
+    """
+    Start to make calls, scheduling daily calls if desired.
+    """
+    params, campaign = parse_params(request)
+
+    if not params or not campaign:
+        abort(400)
+
+    if campaign.prompt_schedule and not params.get('scheduled'):
+        return schedule_prompt(params, campaign)
+    else:
+        return make_calls(params, campaign)
 
 
 @call.route('/make_single', methods=call_methods)

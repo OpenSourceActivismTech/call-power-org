@@ -7,6 +7,7 @@ from flask_script import Manager, Command
 import alembic
 import alembic.config, alembic.command
 from flask_assets import ManageAssets
+from flask_rq2.script import RQManager
 
 from call_server.app import create_app
 from call_server.extensions import assets, db, cache
@@ -18,6 +19,7 @@ log = logging.getLogger(__name__)
 app = create_app()
 app.db = db
 manager = Manager(app)
+manager.add_command('rq', RQManager(app.rq))
 
 alembic_config = alembic.config.Config(os.path.realpath(os.path.dirname(__name__)) + "/alembic.ini")
 # let the config override the default db location in production

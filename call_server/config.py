@@ -8,7 +8,7 @@ class DefaultConfig(object):
     DEBUG = False
     TESTING = False
     ENVIRONMENT = "Default"
-    VERSION = "1.3-beta3"
+    VERSION = "1.3-scheduled-calls"
 
     APP_NAME = "call_server"
     APPLICATION_ROOT = None  # the path where the application is configured
@@ -69,6 +69,7 @@ class ProductionConfig(DefaultConfig):
     CACHE_TYPE = 'redis'
     CACHE_REDIS_URL = os.environ.get('REDIS_URL')
     CACHE_KEY_PREFIX = 'call-power'
+    RQ_REDIS_URL = os.environ.get('REDIS_URL')
 
     LOG_PHONE_NUMBERS = os.environ.get('LOG_PHONE_NUMBERS', False)
     OUTPUT_LOG = os.environ.get('OUTPUT_LOG', False)

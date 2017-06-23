@@ -67,6 +67,7 @@ class CampaignForm(FlaskForm):
                                                 query_factory=TwilioPhoneNumber.available_numbers,
                                                 validators=[Required()])
     allow_call_in = BooleanField(_('Allow Call In'))
+    prompt_schedule = BooleanField(_('Prompt to Schedule Recurring Calls'))
 
     submit = SubmitField(_('Edit Audio'))
     submit_skip_audio = SubmitField(_('Save and Test'))
@@ -106,6 +107,10 @@ class CampaignAudioForm(FlaskForm):
     msg_invalid_location = TextField(_('Invalid Location'))
     msg_unparsed_location = TextField(_('Unparsed Location'))
     msg_choose_target = TextField(_('Choose Target'))
+    msg_prompt_schedule = TextField(_('Prompt to Schedule'))
+    msg_alter_schedule = TextField(_('Alter Existing Schedule'))
+    msg_schedule_start = TextField(_('Schedule Started'))
+    msg_schedule_stop = TextField(_('Schedule Stopped'))
     msg_call_block_intro = TextField(_('Call Block Introduction'))
     msg_target_intro = TextField(_('Target Introduction'))
     msg_target_busy = TextField(_('Target Busy'))

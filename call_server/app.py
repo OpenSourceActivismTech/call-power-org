@@ -17,10 +17,11 @@ from .admin import admin
 from .user import User, user
 from .call import call
 from .campaign import campaign
+from .schedule import schedule
 from .api import api, configure_restless, restless_preprocessors
 from .political_data import political_data
 
-from extensions import cache, db, babel, assets, login_manager, csrf, mail, store, rest
+from extensions import cache, db, babel, assets, login_manager, csrf, mail, store, rest, rq
 
 DEFAULT_BLUEPRINTS = (
     site,
@@ -28,6 +29,7 @@ DEFAULT_BLUEPRINTS = (
     user,
     call,
     campaign,
+    schedule,
     api,
     political_data
 )
@@ -106,10 +108,13 @@ def init_extensions(app):
     csrf.init_app(app)
     mail.init_app(app)
     login_manager.init_app(app)
+    rq.init_app(app)
+    app.rq = rq
     store.init_app(app)
     rest.init_app(app, flask_sqlalchemy_db=db,
                   preprocessors=restless_preprocessors)
     rest.app = app
+
 
     if app.config.get('DEBUG'):
         from flask_debugtoolbar import DebugToolbarExtension

@@ -1,4 +1,4 @@
-campaign_type: This campaign targets which type of decision-makers?
+campaign_type: This campaign targets which type of decision-makers?msg_schedule_stop
 segment_by: Segment callers to targets by which attribute?
 include_custom: Include custom targets in addition to location-segmented ones?
 locate_by: Determine location by which attribute?
@@ -13,6 +13,10 @@ msg_intro_location: Introduce yourself and the campaign briefly, and also the ne
 msg_location: Ask the caller to enter their location by zipcode.
 msg_invalid_location: If their location is not within the campaign area, let them know about alternatives.
 msg_unparsed_location: If we could not understand their location entry, ask them to try again.
+msg_prompt_schedule: Prompt the user to schedule a call. Press 1 to start, 9 to stop. Three second timeout will continue.
+msg_alter_schedule: If the user is already a scheduled caller, thank them and let them opt out by pressing 9.
+msg_schedule_start: Thank the user for becoming a scheduled caller, and remind them we will call them back at the same time tomorrow.
+msg_schedule_stop: Thank the user for being a scheduled caller, and let them know we won't call again.
 msg_call_block_intro: Before beginning a block of calls, let the caller know what to expect.
 msg_target_intro: When we are about to connect them, remind the caller who they are going to speak with.
 msg_target_busy: If the target is busy, let the caller know when to call again.
