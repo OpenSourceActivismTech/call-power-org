@@ -395,6 +395,11 @@ def location_parse():
         return location_gather(resp, params, campaign)
 
     params['userLocation'] = location
+    call_session = Session.query.get(params['sessionId'])
+    if not call_session.location:
+        call_session.location = location
+        db.session.add(call_session)
+        db.session.commit()
 
     return make_calls(params, campaign)
 
