@@ -1,14 +1,14 @@
 """scheduled_calls
 
 Revision ID: 2e693a9ad462
-Revises: 58fd841f12d7
+Revises: 7901940f204e
 Create Date: 2017-06-08 20:25:09.308586
 
 """
 
 # revision identifiers, used by Alembic.
 revision = '2e693a9ad462'
-down_revision = '58fd841f12d7'
+down_revision = '7901940f204e'
 branch_labels = None
 depends_on = None
 

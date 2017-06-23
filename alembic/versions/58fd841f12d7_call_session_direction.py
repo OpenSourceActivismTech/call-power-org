@@ -1,14 +1,14 @@
 """call session direction
 
 Revision ID: 58fd841f12d7
-Revises: 7901940f204e
+Revises: 2e693a9ad462
 Create Date: 2017-06-23 12:12:00.578637
 
 """
 
 # revision identifiers, used by Alembic.
 revision = '58fd841f12d7'
-down_revision = '7901940f204e'
+down_revision = '2e693a9ad462'
 branch_labels = None
 depends_on = None
 
