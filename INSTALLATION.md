@@ -17,7 +17,7 @@ At a minimum, you will need to set:
 
 To lookup individual representatives, you need:
 
-* US Congress contact information is provided in call_server/political_data/data. [Update instructions](/OPEN_DATA_SOURCES.md#update_instructions)
+* US Congress contact information is provided in call_server/political_data/data. [Update instructions](/OPEN_DATA_SOURCES.md#update-instructions)
 * OPENSTATES_API_KEY, to perform state legislative lookups. Sign up for one at [OpenStates.org](https://openstates.org/api/register/)
 * GEOCODE_PROVIDER must be one of ('Google', 'Nominatim', or 'SmartyStreets'). We suggest Google for international campaigns.
 * GEOCODE_API_KEY as required by the provider. Google and SmartyStreets require keys, Nominatim does not.
@@ -77,6 +77,11 @@ To install locally and run in debug mode use:
  
     # run local server for debugging, pass external name from ngrok
     python manager.py runserver --external=SERVERID.ngrok.io
+
+    # if testing scheduled calls, run broker, scheduler and workers in new tabs
+    redis-server
+    python manager.py rq scheduler
+    python manager.py rq worker
 
 When the dev server is running, the front-end will be accessible at [http://localhost:5000/](http://localhost:5000/), and proxied to external routes at [http://ngrok.com](http://ngrok.com).
 
