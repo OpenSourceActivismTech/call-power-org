@@ -10,11 +10,17 @@ At a minimum, you will need to set:
 
 * SECRET_KEY, to secure login sessions cryptographically
     * This will be created for you automatically if you use the deploy to Heroku button, or you can generate one using with this Javascript one-liner: `chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz1234567890-=!@#$%^&*()_+:<>{}[]".split(''); key = ''; for (i = 0; i < 50; i++) key += chars[Math.floor(Math.random() * chars.length)]; alert(key);`
-* SUNLIGHT_API_KEY, to do Congressional lookups. Sign up for one at [SunlightFoundation.com](https://sunlightfoundation.com/api/accounts/register/)
 * TWILIO_ACCOUNT_SID, for an account with at least one purchased phone number
 * TWILIO_AUTH_TOKEN, for the same account
-* INSTALLED_ORG, displayed on the site homepage
+* INSTALLED_ORG, displayed on the site homepage and read in intro messages
 * SITENAME, defaults to CallPower
+
+To lookup individual representatives, you need:
+
+* US Congress contact information is provided in call_server/political_data/data. [Update instructions](/OPEN_DATA_SOURCES.md#update_instructions)
+* OPENSTATES_API_KEY, to perform state legislative lookups. Sign up for one at [OpenStates.org](https://openstates.org/api/register/)
+* GEOCODE_PROVIDER must be one of ('Google', 'Nominatim', or 'SmartyStreets'). We suggest Google for international campaigns.
+* GEOCODE_API_KEY as required by the provider. Google and SmartyStreets require keys, Nominatim does not.
 
 To test Twilio functionality in development, you will need your server to have a web-routable address. 
 
