@@ -33,6 +33,7 @@ For production, you will also need to set:
 * DATABASE_URI, a sqlalchemy [connection string](https://pythonhosted.org/Flask-SQLAlchemy/config.html#connection-uri-format) for a postgres or mysql database addresses
 * REDIS_URL, a URI for the Redis server
 * APPLICATION_ROOT to the path where the application will live. If you are using a whole domain or subdomain, this *SHOULD NOT* be defined. Otherwise, it will mess up cookie handling and cause CSRF 400 errors on login.
+* SERVER_NAME to the domain or subdomain on which the application will live
 
 If you are storing assets on Amazon S3, or another [Flask-Store provider](http://flask-store.soon.build)
 
