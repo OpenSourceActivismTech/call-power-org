@@ -22,6 +22,8 @@ class ScheduleCall(db.Model):
 
     phone_number = db.Column(db.String(16))  # number to call, e164
 
+    job_id = db.Column(db.String(36)) # UUID4
+
     def __init__(self, campaign_id, phone_number, time=utc_now().time()):
         self.created_at = utc_now()
         self.campaign_id = campaign_id
@@ -48,11 +50,12 @@ class ScheduleCall(db.Model):
             day_of_month='*',
             month='*',
             days_of_week=weekdays)
-        create_call.cron(crontab, self._function_name, self.campaign_id, self.phone_number, location)
+        cron_job = create_call.cron(crontab, self._function_name, self.campaign_id, self.phone_number, location)
+        self.job_id = cron_job.id
 
     def stop_job(self):
         self.subscribed = False
-        rq.get_scheduler().cancel(self._function_name)
+        rq.get_scheduler().cancel(self.job_id)
 
 @rq.job
 def create_call(campaign_id, phone, location):
