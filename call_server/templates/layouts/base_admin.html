@@ -56,7 +56,7 @@
         OPENSTATES_URL: "https://openstates.org/api/v1/legislators/",
         OPENSTATES_API_KEY: "{{OPENSTATES_API_KEY}}",
         OPENNORTH_URL: "https://represent.opennorth.ca/",
-        {% if twilio_capability %}TWILIO_CAPABILITY: "{{twilio_capability._generate_payload()}}", {%endif%}
+        {% if twilio_capability %}TWILIO_CAPABILITY: "{{twilio_capability.to_jwt()|safe}}", {%endif%}
       }
     };
 </script>
