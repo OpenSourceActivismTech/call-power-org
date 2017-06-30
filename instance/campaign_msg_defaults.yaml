@@ -16,3 +16,4 @@ msg_target_busy: Sorry, {{title}} {{name}} is busy right now. Please try again l
 msg_between_calls: You're doing great, only {{calls_left}} more to go. Here's the next call.
 msg_final_thanks: Thank you!
 msg_goodbye: Good bye!
+msg_campaign_complete: This campaign has concluded. Thank you for taking action!

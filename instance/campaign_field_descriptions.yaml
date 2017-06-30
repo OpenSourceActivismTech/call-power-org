@@ -22,6 +22,7 @@ msg_target_intro: When we are about to connect them, remind the caller who they 
 msg_target_busy: If the target is busy, let the caller know when to call again.
 msg_between_calls: Between calls, encourage the caller to keep going and remind them of any specific instructions.
 msg_final_thanks: When all calls are complete, thank the caller for taking action.
+msg_campaign_complete: When a campaign is archived, tell the caller it has concluded, and thank them for taking action.
 
 embed_script: Enter the suggested call script here as HTML.
 embed_script_display: How should the script display on the action page? Replace the form, in a modal overlay, or something custom.

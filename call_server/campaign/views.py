@@ -20,6 +20,7 @@ from .models import (Campaign, Target, CampaignTarget,
                      AudioRecording, CampaignAudioRecording,
                      TwilioPhoneNumber)
 from ..call.models import Call
+from ..schedule.models import ScheduleCall
 from .forms import (CountryTypeForm, CampaignForm, CampaignAudioForm,
                     AudioRecordingForm, CampaignLaunchForm,
                     CampaignStatusForm, TargetForm)
@@ -444,12 +445,25 @@ def status(campaign_id):
     form = CampaignStatusForm(obj=campaign)
 
     if form.validate_on_submit():
-        form.populate_obj(campaign)
-
+        form.populate_obj(campaign)        
         db.session.add(campaign)
         db.session.commit()
 
-        flash('Campaign status updated.', 'success')
+        if campaign.status == 'paused':
+            # unsubscribe outgoing recurring calls
+            scheduled_calls = ScheduleCall.query.filter_by(campaign=campaign)
+            for sc in scheduled_calls:
+                sc.stop_job()
+                db.session.add(sc)
+            db.session.commit()
+            flash('Campaign paused. No more scheduled calls will go out.', 'warning')
+        elif campaign.status == 'archived':
+            # release twilio numbers
+            campaign.phone_number_set = []
+            flash('Campaign archived. Incoming calls will not connect.', 'alert')
+        else:
+            flash('Campaign status updated.', 'success')
+
         return redirect(url_for('campaign.index'))
 
     return render_template('campaign/status.html', campaign=campaign, form=form)

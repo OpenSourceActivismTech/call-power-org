@@ -262,6 +262,11 @@ def incoming():
     if not params or not campaign:
         abort(400)
 
+    if campaign.status == 'archived':
+        resp = VoiceResponse()
+        play_or_say(resp, campaign.audio('msg_campaign_complete'))
+        return resp        
+
     # pull user phone from Twilio incoming request
     params['userPhone'] = request.values.get('From')
     campaign_number = request.values.get('To')

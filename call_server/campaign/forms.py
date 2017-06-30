@@ -116,6 +116,7 @@ class CampaignAudioForm(FlaskForm):
     msg_target_busy = TextField(_('Target Busy'))
     msg_between_calls = TextField(_('Between Calls'))
     msg_final_thanks = TextField(_('Final Thanks'))
+    msg_campaign_complete = TextField(_('Campaign Complete'))
 
     submit = SubmitField(_('Save and Test'))
 
