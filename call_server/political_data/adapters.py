@@ -173,11 +173,16 @@ class OpenNorthAdapter(DataAdapter):
     def target(self, data):
         adapted = {
             'title': data.get('elected_office', ''),
-            'number': filter(lambda d: d['type'] == 'legislature', data['offices'])[0].get('tel', ''),
             # legislature office number
             'uid': data.get('cache_key', ''),
             'district': data.get('district_name', '')
         }
+        if data.get('offices'):
+            office_legistlature = filter(lambda d: d['type'] == 'legislature', data['offices'])
+            adapted['number'] = office_legistlature[0].get('tel', '')
+        else:
+            adapted['number'] = ''
+
         if 'first_name' in data and 'last_name' in data:
             adapted['name'] = u'{first_name} {last_name}'.format(**data)
         elif data.get('full_name'):
