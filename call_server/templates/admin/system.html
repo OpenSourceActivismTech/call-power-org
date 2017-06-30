@@ -27,15 +27,26 @@
         <thead>
             <tr>
                 <th>{{ _('Number') }}</th>
-                <th>{{ _('Campaign') }}</th>
-                <th>{{ _('Dial In') }}</th>
+                <th>{{ _('Info') }}</th>
             </tr>
         </thead>
         {% for p in twilio_numbers %}
         <tr>
             <td>{{ p.number.international }} </td>
-            <td>{% for c in p.campaigns %}{{c.name}}{%if not loop.last%}, {%endif%}{%endfor%}</td>
-            <td>{% for c in p.campaigns %}{{c.allow_call_in }}{%if not loop.last%}, {%endif%}{%endfor%}</td>
+            <td>
+                <table>
+                    <thead>
+                        <th>{{ _('Campaign') }}</th>
+                        <th>{{ _('Dial In') }}</th>
+                    </thead>
+                    {% for c in p.campaigns %}
+                    <tr>
+                        <td>{{c.name}}</td>
+                        <td>{% if c.allow_call_in %}<i class="glyphicon glyphicon-check"></i>{%endif%}</td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </td>
         </tr>
         {% endfor %}
     </table>
