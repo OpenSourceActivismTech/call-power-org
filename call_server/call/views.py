@@ -29,11 +29,6 @@ call_methods = ['GET', 'POST']
 csrf.exempt(call)
 call.errorhandler(400)(abortJSON)
 
-# legacy call blueprint for compatibility with call-congress api
-legacy_call = Blueprint('legacy_call', __name__, url_prefix='/')
-csrf.exempt(legacy_call)
-legacy_call.errorhandler(400)(abortJSON)
-
 def play_or_say(r, audio, voice='alice', lang='en-US', **kwargs):
     """
     Take twilio response and play or say message from an AudioRecording
@@ -305,7 +300,6 @@ def incoming():
         return intro_wait_human(params, campaign)
 
 
-@legacy_call.route('', methods=call_methods)
 @call.route('/create', methods=call_methods)
 @crossdomain(origin='*')
 def create():
