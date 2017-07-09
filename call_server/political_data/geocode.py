@@ -155,6 +155,9 @@ class Geocoder(object):
             if service == NOMINATIM_SERVICE:
                 # nominatim won't return metadata unless we ask
                 response = self.client.geocode(address, addressdetails=True)
+            if service == SMARTYSTREETS_SERVICE:
+                # smarty just return one response
+                response = self.client.geocode(address, exactly_one=True)
             else:
                 response = self.client.geocode(address)
 
