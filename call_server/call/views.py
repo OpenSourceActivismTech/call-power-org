@@ -29,6 +29,10 @@ call_methods = ['GET', 'POST']
 csrf.exempt(call)
 call.errorhandler(400)(abortJSON)
 
+# legacy call blueprint for compatibility with call-congress api
+legacy_call = Blueprint('legacy_call', __name__, url_prefix='/')
+csrf.exempt(legacy_call)
+legacy_call.errorhandler(400)(abortJSON)
 
 def play_or_say(r, audio, voice='alice', lang='en-US', **kwargs):
     """
@@ -89,8 +93,15 @@ def parse_params(r, inbound=False):
     if not params['campaignId']:
         abort(400, 'campaignId required')
 
+    # fallback to zipcode for legacy call-congress compatibility
+    if not params['userLocation'] and r.values.get('zipcode', None):
+        params['userLocation'] = r.values.get('zipcode')
+
     # lookup campaign by ID
     campaign = Campaign.query.get(params['campaignId'])
+    # fallback to name for legacy call-congress compatibility
+    if not campaign:
+        campaign = Campaign.query.filter_by(name=params['campaignId']).first()
     if not campaign:
         abort(400, 'invalid campaignId %(campaignId)s' % params)
 
@@ -294,6 +305,7 @@ def incoming():
         return intro_wait_human(params, campaign)
 
 
+@legacy_call.route('', methods=call_methods)
 @call.route('/create', methods=call_methods)
 @crossdomain(origin='*')
 def create():
