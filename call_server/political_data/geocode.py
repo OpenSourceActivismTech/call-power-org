@@ -23,8 +23,12 @@ class Location(geopy.Location):
     def __getattr__(self, attr):
         if attr in self.__dict__:
             return getattr(self, attr)
-        if self._wrapped_obj:
+        if attr == '_wrapped_obj':
+            return self
+        if attr in self._wrapped_obj.__dict__:
             return getattr(self._wrapped_obj, attr)
+        else:
+            raise AttributeError('Location object has no attribute %s' % attr)
 
     def _find_in_raw(self, field):
         """
