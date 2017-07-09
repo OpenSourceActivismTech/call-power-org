@@ -6,6 +6,7 @@ from constants import US_STATE_NAME_DICT, CA_PROVINCE_NAME_DICT
 GOOGLE_SERVICE = 'GoogleV3'
 SMARTYSTREETS_SERVICE = 'LiveAddress'
 NOMINATIM_SERVICE = 'Nominatim'
+LOCAL_USDATA_SERVICE = 'LocalUSDataProvider'
 
 class Location(geopy.Location):
     """
@@ -45,6 +46,9 @@ class Location(geopy.Location):
         
         elif self.service == NOMINATIM_SERVICE:
             return self.raw['address'].get(field)
+
+        elif self.service == LOCAL_USDATA_SERVICE:
+            return self.raw.get(field)
 
         try:
             # try simple extraction from components
@@ -93,8 +97,10 @@ class Location(geopy.Location):
             return self._find_in_raw('zipcode')
         elif self.service == NOMINATIM_SERVICE:
             return self._find_in_raw('postcode')
-        else:
+        elif self.service == LOCAL_USDATA_SERVICE:
             return self._find_in_raw('zipcode')
+        else:
+            return self._find_in_raw('postal')
 
 
 class LocationError(TypeError):
@@ -137,7 +143,6 @@ class Geocoder(object):
             districts = provider.get_districts(code)
             if len(districts) == 1:
                 d = districts[0]
-                d['components'] = {'zipcode': code}
                 l = Location(code, (None, None), d)
                 l.service = 'LocalUSDataProvider'
                 return l
