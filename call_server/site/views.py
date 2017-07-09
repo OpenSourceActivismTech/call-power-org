@@ -1,4 +1,5 @@
-from flask import Blueprint, render_template, current_app, redirect, url_for, request
+from flask import Blueprint, render_template, current_app, request
+from ..call.views import create
 from ..call.decorators import crossdomain
 from ..extensions import csrf
 
@@ -11,7 +12,9 @@ def index():
     return render_template('site/index.html', INSTALLED_ORG=INSTALLED_ORG)
 
 
-@site.route('/create')
+# legacy route to be compatible with call-congress
+@site.route('/create', methods = ['GET', 'POST'])
 @crossdomain(origin='*')
 def legacy_call_redirect():
-	return redirect(url_for('call.create', **request.args), 302)
+	# don't redirect, just return desired function
+	return create()
