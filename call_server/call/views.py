@@ -93,9 +93,10 @@ def parse_params(r, inbound=False):
         params['userLocation'] = r.values.get('zipcode')
 
     # lookup campaign by ID
-    campaign = Campaign.query.get(params['campaignId'])
-    # fallback to name for legacy call-congress compatibility
-    if not campaign:
+    if params['campaignId'].isdigit():
+        campaign = Campaign.query.get(params['campaignId'])
+    else:
+        # fallback to name for legacy call-congress compatibility
         campaign = Campaign.query.filter_by(name=params['campaignId']).first()
     if not campaign:
         abort(400, 'invalid campaignId %(campaignId)s' % params)
