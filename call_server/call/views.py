@@ -75,7 +75,7 @@ def parse_params(r, inbound=False):
         'sessionId': r.values.get('sessionId', None),
         'targetIds': r.values.getlist('targetIds'),
         'userPhone': r.values.get('userPhone', None),
-        'userCountry': r.values.get('userCountry', None),
+        'userCountry': r.values.get('userCountry', 'us'),
         'userLocation': r.values.get('userLocation', None),
     }
 
