@@ -32,18 +32,18 @@ class Location(geopy.Location):
         if not self.raw:
             return None
 
-        if self.service is GOOGLE_SERVICE:
+        if self.service == GOOGLE_SERVICE:
             # google style, raw.address_components are a list of dicts, with types in list
             for c in self.raw['address_components']:
                 if field in c['types']:
                     return c['short_name']
             return None
             
-        elif self.service is SMARTYSTREETS_SERVICE:
+        elif self.service == SMARTYSTREETS_SERVICE:
             # smarty streets style, raw.components are named
             return self.raw['components'].get(field)
         
-        elif self.service is NOMINATIM_SERVICE:
+        elif self.service == NOMINATIM_SERVICE:
             return self.raw['address'].get(field)
 
         try:
@@ -65,11 +65,11 @@ class Location(geopy.Location):
 
     @property
     def state(self):
-        if self.service is GOOGLE_SERVICE:
+        if self.service == GOOGLE_SERVICE:
             return self._find_in_raw('administrative_area_level_1')
-        elif self.service is SMARTYSTREETS_SERVICE:
+        elif self.service == SMARTYSTREETS_SERVICE:
             return self._find_in_raw('state_abbreviation')
-        elif self.service is NOMINATIM_SERVICE:
+        elif self.service == NOMINATIM_SERVICE:
             if self._find_in_raw('country_code') == 'us':
                 state_name = self._find_in_raw('state')
                 return US_STATE_NAME_DICT.get(state_name)
@@ -87,11 +87,11 @@ class Location(geopy.Location):
 
     @property
     def postal(self):
-        if self.service is GOOGLE_SERVICE:
+        if self.service == GOOGLE_SERVICE:
             return self._find_in_raw('postal_code')
-        elif self.service is SMARTYSTREETS_SERVICE:
+        elif self.service == SMARTYSTREETS_SERVICE:
             return self._find_in_raw('zipcode')
-        elif self.service is NOMINATIM_SERVICE:
+        elif self.service == NOMINATIM_SERVICE:
             return self._find_in_raw('postcode')
         else:
             return self._find_in_raw('zipcode')
@@ -133,7 +133,7 @@ class Geocoder(object):
         return self.client.__class__.__name__.split('.')[-1]
 
     def postal(self, code, country='us', cache=None):
-        if cache and country is 'us':
+        if cache and country == 'us':
             districts = cache.get_districts(code)
             if len(districts) == 1:
                 d = districts[0]
@@ -149,10 +149,10 @@ class Geocoder(object):
         service = self.get_service_name()
 
         try:
-            if service is GOOGLE_SERVICE:
+            if service == GOOGLE_SERVICE:
                 response = self.client.geocode(address, region=self.country)
                 # bias responses to region/country (2-letter TLD)           
-            if service is NOMINATIM_SERVICE:
+            if service == NOMINATIM_SERVICE:
                 # nominatim won't return metadata unless we ask
                 response = self.client.geocode(address, addressdetails=True)
             else:
