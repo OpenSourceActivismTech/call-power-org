@@ -15,7 +15,7 @@ class Location(geopy.Location):
     """
 
     def __init__(self, *args, **kwargs):
-        if type(args[0]) == str:
+        if isinstance(args[0], basestring):
             super(Location, self).__init__(*args, **kwargs)
         else:
             self._wrapped_obj = args[0]
