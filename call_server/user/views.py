@@ -232,7 +232,7 @@ def invite():
         url = url_for('user.create_account',
             email=user.email,
             activation_key=user.activation_key,
-            _external=True)
+            _external=True, _scheme='https')
         body = render_template('user/email/invite_user.txt', sitename=current_app.config['SITENAME'],
             username=user.name,
             url=url)

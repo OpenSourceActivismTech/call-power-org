@@ -65,6 +65,7 @@ class ProductionConfig(DefaultConfig):
     SERVER_NAME = os.environ.get('SERVER_NAME')
     APPLICATION_ROOT = os.environ.get('APPLICATION_ROOT', None)
     ADMIN_API_KEY = os.environ.get('ADMIN_API_KEY', None)
+    PREFERRED_URL_SCHEME = 'https'
 
     CACHE_TYPE = 'redis'
     CACHE_REDIS_URL = os.environ.get('REDIS_URL')
