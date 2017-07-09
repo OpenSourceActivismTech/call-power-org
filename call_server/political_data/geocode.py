@@ -49,7 +49,7 @@ class Location(geopy.Location):
         try:
             # try simple extraction from components
             return self.raw['components'].get(field)
-        except ValueError:
+        except KeyError, ValueError:
             raise NotImplementedError('unable to parse address components from geocoder service '+self.service)
 
     @property
@@ -132,13 +132,14 @@ class Geocoder(object):
         "returns geopy.geocoder class name, like GoogleV3, LiveAddress, Nominatim, etc"
         return self.client.__class__.__name__.split('.')[-1]
 
-    def postal(self, code, country='us', cache=None):
-        if cache and country == 'us':
-            districts = cache.get_districts(code)
+    def postal(self, code, country='us', provider=None):
+        if provider and country == 'us':
+            districts = provider.get_districts(code)
             if len(districts) == 1:
                 d = districts[0]
-                l = Location(d, (None, None), d)
-                l.service = 'LocalUSDistrictCache'
+                d['components'] = {'zipcode': code}
+                l = Location(code, (None, None), d)
+                l.service = 'LocalUSDataProvider'
                 return l
 
         # fallback to geocoder if cache unavailable

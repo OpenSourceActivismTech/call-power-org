@@ -217,7 +217,7 @@ class USDataProvider(DataProvider):
 
     def get_location(self, locate_by, raw):
         if locate_by == LOCATION_POSTAL:
-            return self._geocoder.postal(raw)
+            return self._geocoder.postal(raw, provider=self)
         elif locate_by == LOCATION_ADDRESS:
             return self._geocoder.geocode(raw)
         elif locate_by == LOCATION_LATLON:
