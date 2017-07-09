@@ -432,7 +432,7 @@ def location_parse():
 
     if not located_target_ids:
         resp = VoiceResponse()
-        play_or_say(resp, campaign.audio('msg_unparsed_location'),
+        play_or_say(resp, campaign.audio('msg_invalid_location'),
             lang=campaign.language_code)
 
         return location_gather(resp, params, campaign)
