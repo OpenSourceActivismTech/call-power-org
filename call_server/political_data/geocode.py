@@ -104,7 +104,7 @@ class Location(geopy.Location):
         elif self.service == LOCAL_USDATA_SERVICE:
             return self._find_in_raw('zipcode')
         else:
-            return self._find_in_raw('postal')
+            return self._find_in_raw('zipcode')
 
 
 class LocationError(TypeError):
@@ -129,7 +129,7 @@ class Geocoder(object):
                 # nominatim sets country bias at init
                 # and has no API_KEY
                 self.client = service(country_bias=country, timeout=3)
-        if API_NAME == 'liveaddress':
+        elif API_NAME == 'liveaddress':
             AUTH_TOKEN = os.environ.get('GEOCODE_API_TOKEN', None)
             self.client = service(API_KEY, AUTH_TOKEN, timeout=3)
         elif API_KEY:
