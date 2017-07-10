@@ -25,7 +25,7 @@ class Location(geopy.Location):
             return getattr(self, attr)
         if attr == '_wrapped_obj':
             return self
-        if attr in self._wrapped_obj.__dict__:
+        if self.__wrapped_obj and attr in self._wrapped_obj.__dict__:
             return getattr(self._wrapped_obj, attr)
         else:
             raise AttributeError('Location object has no attribute %s' % attr)
