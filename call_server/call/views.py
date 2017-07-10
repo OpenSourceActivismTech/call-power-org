@@ -677,29 +677,37 @@ def status_callback():
 @call.route('/status_inbound', methods=call_methods)
 def status_inbound():
     # async callback from twilio on inbound call complete
-    params, _ = parse_params(request, inbound=True)
+    params, campaign = parse_params(request, inbound=True)
 
     if not params:
         abort(400)
 
     # find call_session from number with direction inbound that is not complete
     # if there's more than one, get the most recent one
-    user_phone = request.values.get('From')
+    user_phone = request.values.get('From', '')
     phone_hash = Session.hash_phone(user_phone)
     call_session = Session.query.filter_by(
         phone_hash=phone_hash,
         status='initiated',
         direction='inbound',
-        campaign_id=params['campaignId'],
+        campaign_id=campaign.id,
         location=params['userLocation']
-    ).order_by(desc(Session.timestamp)).first_or_404()
-    call_session.status = request.values.get('CallStatus', 'unknown')
-    call_session.duration = request.values.get('CallDuration', None)
-    db.session.add(call_session)
-    db.session.commit()
+    ).order_by(desc(Session.timestamp)).first()
+    if call_session:
+        call_session.status = request.values.get('CallStatus', 'unknown')
+        call_session.duration = request.values.get('CallDuration', None)
+        db.session.add(call_session)
+        db.session.commit()
 
-    return jsonify({
-        'phoneNumber': request.values.get('From', ''),
-        'callStatus': call_session.status,
-        'campaignId': params['campaignId']
-    })
+        return jsonify({
+            'phoneNumber': request.values.get('From', ''),
+            'callStatus': call_session.status,
+            'campaignId': params['campaignId']
+        })
+    else:
+        return jsonify({
+            'phoneNumber': request.values.get('From', ''),
+            'callStatus': 'unknown',
+            'message': 'unable to find CallSession matching campaign, location, and phone',
+            'campaignId': params['campaignId']
+        })

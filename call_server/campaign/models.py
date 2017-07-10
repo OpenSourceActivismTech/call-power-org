@@ -322,10 +322,10 @@ class TwilioPhoneNumber(db.Model):
         twilio_app_data['voice_url'] = campaign_call_url
         twilio_app_data['voice_method'] = "POST"
 
-        # set twilio_app StatusCallback post
-        campaign_status_url = (url_for('call.status_inbound', _external=True) +
-            '?campaignId=' + str(campaign.id))
+        # set twilio_app StatusCallback post for completed event
+        campaign_status_url = url_for('call.status_inbound', _external=True, campaignId=str(campaign.id))
         twilio_app_data['status_callback'] = campaign_status_url
+        twilio_app_data['status_callback_event'] = 'completed'
         twilio_app_data['status_callback_method'] = "POST"
 
         # get or create twilio app by campaign name
