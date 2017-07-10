@@ -69,6 +69,7 @@ class Session(db.Model):
     status = db.Column(db.String(25))       # session status (initiated, completed, failed)
 
     direction = db.Column(db.String(25))    # (inbound, outbound)
+    queue_delay = db.Column(db.Interval)  # difference between timestamp and ringing event
 
     @classmethod
     def hash_phone(cls, number):

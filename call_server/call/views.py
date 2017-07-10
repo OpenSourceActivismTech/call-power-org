@@ -8,6 +8,7 @@ from flask_jsonpify import jsonify
 from twilio.base.exceptions import TwilioRestException
 from sqlalchemy.sql import desc
 from sqlalchemy.exc import SQLAlchemyError
+from datetime import datetime
 
 from ..extensions import csrf, db
 
@@ -362,7 +363,8 @@ def create():
             from_=from_number,
             url=url_for('call.connection', _external=True, **params),
             timeout=current_app.config['TWILIO_TIMEOUT'],
-            status_callback=url_for("call.complete_status", _external=True, **params),
+            status_callback=url_for("call.status_callback", _external=True, **params),
+            status_callback_event=['ringing','completed'],
             record=request.values.get('record', False))
 
         if campaign.embed:
@@ -632,24 +634,41 @@ def complete():
     return str(resp)
 
 
-@call.route('/complete_status', methods=call_methods)
-def complete_status():
-    # async callback from twilio on call complete
+@call.route('/status_callback', methods=call_methods)
+def status_callback():
+    # async callback from twilio on call events
     params, _ = parse_params(request)
 
     if not params:
         abort(400)
 
-    # update call_session with complete status
-    call_session = Session.query.get(request.values.get('sessionId'))
-    call_session.status = request.values.get('CallStatus', 'unknown')
-    call_session.duration = request.values.get('CallDuration', None)
-    db.session.add(call_session)
-    db.session.commit()
+    if not params.get('sessionId'):
+        return jsonify({
+            'phoneNumber': request.values.get('From', ''),
+            'callStatus': 'unknown',
+            'message': 'no sessionId passed, unable to update status',
+            'campaignId': params['campaignId']
+        })
+
+    if request.values.get('CallStatus') == 'ringing':
+        # update call_session with time interval calculated in Twilio queue
+        call_session = Session.query.get(request.values.get('sessionId'))
+        call_session.queue_delay = datetime.utcnow() - call_session.timestamp
+        db.session.add(call_session)
+        db.session.commit()
+
+    # CallDuration only present when call is complete
+    # update call_session with status, duration
+    if request.values.get('CallDuration'):
+        call_session = Session.query.get(request.values.get('sessionId'))
+        call_session.status = request.values.get('CallStatus', 'unknown')
+        call_session.duration = request.values.get('CallDuration', None)
+        db.session.add(call_session)
+        db.session.commit()
 
     return jsonify({
         'phoneNumber': request.values.get('To', ''),
-        'callStatus': call_session.status,
+        'callStatus': request.values.get('CallStatus'),
         'targetIds': params['targetIds'],
         'campaignId': params['campaignId']
     })
