@@ -408,10 +408,11 @@ def call_info(sid):
     return jsonify({'objects': calls_info})
 
 
-# embed campaign routes, should be public
-# js must be crossdomain
+# embed js campaign routes, should be public
+# make accessible crossdomain, and cache for 10 min
 @api.route('/campaign/<int:campaign_id>/embed.js', methods=['GET'])
 @crossdomain(origin='*')
+@cache.cached(timeout=600)
 def campaign_embed_js(campaign_id):
     campaign = Campaign.query.filter_by(id=campaign_id).first_or_404()
     return render_template('api/embed.js', campaign=campaign, mimetype='text/javascript')
@@ -419,12 +420,14 @@ def campaign_embed_js(campaign_id):
 
 @api.route('/campaign/<int:campaign_id>/CallPowerForm.js', methods=['GET'])
 @crossdomain(origin='*')
+@cache.cached(timeout=600)
 def campaign_form_js(campaign_id):
     campaign = Campaign.query.filter_by(id=campaign_id).first_or_404()
     return render_template('api/CallPowerForm.js', campaign=campaign, mimetype='text/javascript')
 
 
 @api.route('/campaign/<int:campaign_id>/embed_iframe.html', methods=['GET'])
+@cache.cached(timeout=600)
 def campaign_embed_iframe(campaign_id):
     campaign = Campaign.query.filter_by(id=campaign_id).first_or_404()
     return render_template('api/embed_iframe.html', campaign=campaign)
