@@ -85,6 +85,10 @@
         <td class="col-sm-6"><input id="calls_per_session" class="col-sm-12" value="<%= data.calls_per_session %>" readonly/></td>
         <td class="col-sm-6"><label class="inline" for="calls_per_session">Session Median</label></td>
     </tr><% } %>
+    <% if (data.queue_avg_seconds) { %><tr>
+        <td class="col-sm-6"><input id="queue_avg_seconds" class="col-sm-12" value="<%= data.queue_avg_seconds %>" readonly/></td>
+        <td class="col-sm-6"><label class="inline" for="queue_avg_seconds">Queue Avg (sec)</label></td>
+    </tr><% } %>
     <% if (data.id) { %><tr>
         <td></td>
         <td class="col-sm-12">
