@@ -5,7 +5,7 @@ import dateutil
 import twilio.twiml
 from flask import Blueprint, Response, current_app, render_template, abort, request, jsonify
 
-from sqlalchemy.sql import func, extract, distinct
+from sqlalchemy.sql import func, extract, distinct, cast
 
 from decorators import api_key_or_auth_required, restless_api_auth
 from ..utils import median
@@ -139,11 +139,17 @@ def campaign_stats(campaign_id):
     campaign = Campaign.query.filter_by(id=campaign_id).first_or_404()
 
     # number of sessions started in campaign
-    sessions_started = db.session.query(
-        func.count(Session.id)
+    # total count and average queue_delay
+    sessions_started, queue_avg_timedelta = db.session.query(
+        func.count(Session.id).label('count'),
+        func.avg(Session.queue_delay).label('queue_avg')
     ).filter_by(
         campaign_id=campaign.id
-    ).scalar()
+    ).all()[0]
+    if isinstance(queue_avg_timedelta, timedelta):
+        queue_avg_seconds = queue_avg_timedelta.total_seconds()
+    else:
+        queue_avg_seconds = ''
 
     # number of sessions completed in campaign
     sessions_completed = db.session.query(
@@ -177,8 +183,9 @@ def campaign_stats(campaign_id):
     data = {
         'id': campaign.id,
         'name': campaign.name,
-        'sessions_completed': sessions_completed,
         'sessions_started': sessions_started,
+        'queue_avg_seconds': queue_avg_seconds,
+        'sessions_completed': sessions_completed,
         'calls_per_session': calls_per_session,
     }
 
