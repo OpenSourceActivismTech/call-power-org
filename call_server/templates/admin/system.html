@@ -57,23 +57,26 @@
     </form>
     </fieldset>
 
-
     <fieldset class="border">
-    <legend>Default Messages</legend>
+    <legend>Blocklist</legend>
+    <div class="pull-right">
+        <a class="btn btn-success" href="{{ url_for('admin.blocklist') }}"><strong>{{ _('Add') }} +</strong></a>
+    </div>
     <table class='table table-bordered table-hover'>
         <thead>
             <tr>
-                <th>{{ _('Type') }}</th>
-                <th>{{ _('Message') }}</th>
+                <th>{{ _('Timestamp') }}</th>
+                <th>{{ _('Phone or IP') }}</th>
+                <th>{{ _('Expires') }}</th>
             </tr>
-        {% for msg_key,msg_text in message_defaults.items() %}
-            <tr>
-                <td>{{msg_key}}</td>
-                <td>{{msg_text}}</td>
+        {% for item in blocked %}
+            <tr class="{% if not item.is_active %}warning{%endif%}">
+                <td>{{item.timestamp}}</td>
+                <td>{{item.phone_number|default('', true)}} {{item.ip_address|default('', true)}}</td>
+                <td>{{item.expires}}</td>
             </tr>
         {% endfor %}
     </table>
-    <span class="help-block">Edit these defaults in <samp>APPLICATION_ROOT/instance/campaign_msg_defaults.yaml</samp></span>
     </fieldset>
 
     {% if admin_api_key %}
@@ -114,5 +117,24 @@
         {% endif %}
     </table>
     </fieldset>
+
+    <fieldset class="border">
+    <legend>Default Messages</legend>
+    <table class='table table-bordered table-hover'>
+        <thead>
+            <tr>
+                <th>{{ _('Type') }}</th>
+                <th>{{ _('Message') }}</th>
+            </tr>
+        {% for msg_key,msg_text in message_defaults.items() %}
+            <tr>
+                <td>{{msg_key}}</td>
+                <td>{{msg_text}}</td>
+            </tr>
+        {% endfor %}
+    </table>
+    <span class="help-block">Edit these defaults in <samp>APPLICATION_ROOT/instance/campaign_msg_defaults.yaml</samp></span>
+    </fieldset>
+
 </div>
 {% endblock %}
