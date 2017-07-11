@@ -60,27 +60,28 @@ class Location(geopy.Location):
         if not self.raw:
             return None
 
-        if self.service == GOOGLE_SERVICE:
-            # google style, raw.address_components are a list of dicts, with types in list
-            for c in self.raw['address_components']:
-                if field in c['types']:
-                    return c['short_name']
-            return None
-        elif self.service == SMARTYSTREETS_SERVICE:
-            # smarty streets style, raw.components are named
-            return self.raw['components'].get(field)
-        elif self.service == SMARTYSTEETS_ZIPCODE_SERVICE:
-            return self.raw.get(field)
-        elif self.service == NOMINATIM_SERVICE:
-            return self.raw['address'].get(field)
-        elif self.service == LOCAL_USDATA_SERVICE:
-            return self.raw.get(field)
-
         try:
-            # try simple extraction from components
-            return self.raw['components'].get(field)
-        except KeyError, ValueError:
-            raise NotImplementedError('unable to parse address components from geocoder service '+self.service)
+            if self.service == GOOGLE_SERVICE:
+                # google style, raw.address_components are a list of dicts, with types in list
+                for c in self.raw['address_components']:
+                    if field in c['types']:
+                        return c['short_name']
+                return None
+            elif self.service == SMARTYSTREETS_SERVICE:
+                # smarty streets style, raw.components are named
+                return self.raw['components'].get(field)
+            elif self.service == SMARTYSTEETS_ZIPCODE_SERVICE:
+                return self.raw.get(field)
+            elif self.service == NOMINATIM_SERVICE:
+                return self.raw['address'].get(field)
+            elif self.service == LOCAL_USDATA_SERVICE:
+                return self.raw.get(field)
+        except KeyError:
+            try:
+                # try simple extraction from raw
+                return self.raw.get(field)
+            except KeyError, ValueError:
+                raise ValueError('unable to parse raw fields from geocoder service '+self.service)
 
     @property
     def service(self):
@@ -185,10 +186,16 @@ class Geocoder(object):
             if service == GOOGLE_SERVICE:
                 response = self.client.geocode(address, region=self.country)
                 # bias responses to region/country (2-letter TLD)           
-            if service == NOMINATIM_SERVICE:
+            elif service == NOMINATIM_SERVICE:
                 # nominatim won't return metadata unless we ask
                 response = self.client.geocode(address, addressdetails=True)
-            if service == SMARTYSTREETS_SERVICE:
+                intermediate = Location(response)
+                if postal_only or (not intermediate.postal):
+                    # nominatim doesn't give full location for lots of queries
+                    # so take the response, flip it and reverse it
+                    reverse_response = self.client.reverse(intermediate.latlon)
+                    response = reverse_response
+            elif service == SMARTYSTREETS_SERVICE:
                 if postal_only:
                     # smarty has a separate US Zipcode API endpoint
                     response = self.client_uszipcode.geocode(address)
@@ -219,8 +226,9 @@ class Geocoder(object):
                 (lat, lon) = latlon.split(',')
             except ValueError:
                 raise ValueError('unable to parse latlon as either tuple or comma delimited string')
-
-        return Location(self.client.reverse((lat, lon)))
+        located = Location(self.client.reverse((lat, lon)))
+        located.service = self.get_service_name()
+        return located
 
 
 # separate Smartystreets API endpoint for US Zipcodes
