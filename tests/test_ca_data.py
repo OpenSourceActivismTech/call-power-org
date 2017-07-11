@@ -37,7 +37,7 @@ class TestCAData(BaseTestCase):
 
         # well, really montreal
         self.mock_location = Location('North Pole', (45.500577, -73.567427),
-            {'components':{'province':'QC','postal_code':'H0H 0H0'}})
+            {'province':'QC','postal_code':'H0H 0H0'})
 
     def test_cache(self):
         self.assertIsNotNone(self.mock_cache)

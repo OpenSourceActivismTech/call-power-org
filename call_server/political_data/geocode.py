@@ -76,9 +76,12 @@ class Location(geopy.Location):
                 return self.raw['address'].get(field)
             elif self.service == LOCAL_USDATA_SERVICE:
                 return self.raw.get(field)
+            else:
+                # try simple extraction from raw
+                return self.raw.get(field)
         except KeyError:
             try:
-                # try simple extraction from raw
+                # fallback to raw
                 return self.raw.get(field)
             except KeyError, ValueError:
                 raise ValueError('unable to parse raw fields from geocoder service '+self.service)

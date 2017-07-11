@@ -33,15 +33,15 @@ class TestUSData(BaseTestCase):
 
         # avoid geocoding round-trip
         self.mock_location = Location('Boston, MA', (42.355662,-71.065483),
-            {'components':{'state':'MA','zipcode':'02111'}})
+            {'state':'MA','zipcode':'02111'})
 
        # this zipcode pretty evenly split between KY-2 & TN-7
         self.mock_location_multiple_states = Location('Fort Campbell, KY', (36.647207, -87.451635),
-            {'components':{'state':'KY','zipcode':'42223'}})
+            {'state':'KY','zipcode':'42223'})
 
         # this zipcode pretty evenly split between WI-2 & WI-3
         self.mock_location_multiple_districts = Location('Hazel Green, WI', (42.532498, -90.436727),
-            {'components':{'state':'WI','zipcode':'53811'}})
+            {'state':'WI','zipcode':'53811'})
 
     def test_cache(self):
         self.assertIsNotNone(self.mock_cache)
