@@ -36,30 +36,15 @@ class TestGeocoders(BaseTestCase):
         self.assertEqual(result.state, 'CA')
 
     def test_geocoder_us_zipcode_might_exist(self):
-        maybe_zipcode = '34770' # business only zipcode, will have to hit the real service
+        maybe_zipcode = '12345' # business only zipcode, will have to hit the real service
         result = self.us_data._geocoder.postal(maybe_zipcode)
 
-        self.assertEqual(result.postal, '34770')
-        self.assertEqual(result.state, 'FL')
-
-    def test_geocoder_us_zipcode_does_not_exist(self):
-        fake_zipcode = '00000'
-        result = self.us_data._geocoder.postal(fake_zipcode)
-
-        self.assertIsNone(result.postal)
-        self.assertIsNone(result.state)
-
+        self.assertEqual(result.postal, '12345')
+        # don't assert about state, it's not consistent across geocoders...
 
     def test_geocoder_us_address_exists(self):
-        real_address = '1600 Pennsylvania Ave, Washington DC'
+        real_address = '1600 Pennsylvania Ave NW, Washington DC'
         result = self.us_data._geocoder.geocode(real_address)
 
-        self.assertEqual(result.postal, '20003')
+        self.assertEqual(result.postal, '20500')
         self.assertEqual(result.state, 'DC')
-
-    def test_geocoder_us_address_does_not_exist(self):
-        fake_address = 'Nowhere, USA'
-        result = self.us_data._geocoder.geocode(fake_address)
-        
-        self.assertIsNone(result.postal)
-        self.assertIsNone(result.state)
