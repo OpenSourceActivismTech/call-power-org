@@ -165,11 +165,11 @@ def campaign_stats(campaign_id):
     ).filter_by(
         campaign_id=campaign.id,
         status='completed'
-    ).all()
+    )
 
     # get completed calls per session in campaign
     calls_per_session = db.session.query(
-        func.count(Call.id).label('call_count'),
+        func.count(Call.id.distinct()).label('call_count'),
     ).filter(
         Call.campaign_id == campaign.id,
         Call.status == 'completed',
@@ -203,10 +203,12 @@ def campaign_stats(campaign_id):
     }
 
     if calls_completed:
+        first_call_completed = calls_completed.first()
+        last_call_completed = calls_completed.order_by(Call.timestamp.desc()).first()
         data.update({
-            'date_start': datetime.strftime(calls_completed[0][0], '%Y-%m-%d'),
-            'date_end': datetime.strftime(calls_completed[-1][0] + timedelta(days=1), '%Y-%m-%d'),
-            'calls_completed': len(calls_completed)
+            'date_start': datetime.strftime(first_call_completed[0], '%Y-%m-%d'),
+            'date_end': datetime.strftime(last_call_completed[0] + timedelta(days=1), '%Y-%m-%d'),
+            'calls_completed': calls_completed.count()
         })
 
     return jsonify(data)
