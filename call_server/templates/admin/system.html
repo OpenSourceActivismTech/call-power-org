@@ -74,7 +74,7 @@
             <tr class="{% if not item.is_active %}warning{%endif%}">
                 <td>{{item.timestamp.strftime('%Y-%m-%d %H:%M:%S (%z)')}}</td>
                 <td>{{item}}</td>
-                <td>{{item.expires}}</td>
+                <td>{{item.expires|default('Never')}}</td>
                 <td>{{item.hits}}</td>
             </tr>
         {% endfor %}
