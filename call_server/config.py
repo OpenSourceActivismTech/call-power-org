@@ -8,7 +8,7 @@ class DefaultConfig(object):
     DEBUG = False
     TESTING = False
     ENVIRONMENT = "Default"
-    VERSION = "1.3.3"
+    VERSION = "1.3.4"
 
     APP_NAME = "call_server"
     APPLICATION_ROOT = None  # the path where the application is configured
