@@ -99,7 +99,7 @@ def system():
     twilio_account = current_app.config.get('TWILIO_CLIENT').auth[0]
     political_data_cache = {'US': cache.get('political_data:us'),
                             'CA': cache.get('political_data:ca')}
-    blocked = Blocklist.query.all()
+    blocked = Blocklist.query.order_by(Blocklist.timestamp.desc()).all()
     if not political_data_cache['US']:
         flash(_("US Political Data not yet loaded. Run > python manager.py loadpoliticaldata") , 'warning')
     return render_template('admin/system.html',

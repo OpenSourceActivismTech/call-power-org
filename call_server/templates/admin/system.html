@@ -71,10 +71,10 @@
                 <th>{{ _('Hits') }}</th>
             </tr>
         {% for item in blocked %}
-            <tr class="{% if not item.is_active %}warning{%endif%}">
+            <tr class="{% if not item.is_active() %}active{%endif%}">
                 <td>{{item.timestamp.strftime('%Y-%m-%d %H:%M:%S (%z)')}}</td>
                 <td>{{item}}</td>
-                <td>{{item.expires|default('Never')}}</td>
+                <td>{%if item.expires%}{{item.expires}}{%else%}Never{%endif%}</td>
                 <td>{{item.hits}}</td>
             </tr>
         {% endfor %}
