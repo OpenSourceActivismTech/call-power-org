@@ -1,7 +1,9 @@
 import logging
+from datetime import datetime, timedelta
 
 from run import BaseTestCase
 
+from call_server.utils import utc_now
 from call_server.extensions import db
 from call_server.admin.models import Blocklist
 
@@ -26,20 +28,20 @@ class TestBlocklist(BaseTestCase):
         db.session.commit()
 
     def test_no_blocks(self):
-        self.assertEqual(Blocklist.query_active().all(), [])
+        self.assertEqual(Blocklist.active_blocks(), [])
 
         is_blocked = Blocklist.user_blocked(self.user_phone, self.user_ip)
         self.assertFalse(is_blocked)
 
     def test_phone_block(self):
-        b = Blocklist(self.user_phone)
+        b = Blocklist(phone_number=self.user_phone)
         db.session.add(b)
         db.session.commit()
 
-        self.assertEqual(Blocklist.query_active().count(), 1)
+        self.assertEqual(len(Blocklist.active_blocks()), 1)
 
         is_blocked = Blocklist.user_blocked(self.user_phone, self.user_ip)
-        self.assertTrue(is_blocked)        self.assertTrue(is_blocked)
+        self.assertTrue(is_blocked)
 
         other_blocked = Blocklist.user_blocked(self.other_phone, self.other_ip)
         self.assertFalse(other_blocked)
@@ -120,3 +122,28 @@ class TestBlocklist(BaseTestCase):
         other_blocked = Blocklist.user_blocked(self.other_phone, self.other_ip)
         self.assertFalse(other_blocked)
 
+    def test_block_expires(self):
+        one_hour = timedelta(hours=1)
+        b = Blocklist(phone_number=self.user_phone, ip_address=self.user_ip)
+        b.expires = one_hour
+
+        db.session.add(b)
+        db.session.commit()
+
+        self.assertEqual(len(Blocklist.active_blocks()), 1)
+        is_blocked = Blocklist.user_blocked(self.user_phone, self.user_ip)
+        self.assertTrue(is_blocked)
+        self.assertEqual(b.hits, 1)
+
+        # move creation timestamp backwards to expire it
+        b.timestamp = b.timestamp - one_hour - timedelta(minutes=2)
+        db.session.add(b)
+        db.session.commit()
+
+        self.assertEqual(len(Blocklist.active_blocks()), 0)
+        is_blocked = Blocklist.user_blocked(self.user_phone, self.user_ip)
+        self.assertFalse(is_blocked)
+
+        other_blocked = Blocklist.user_blocked(self.other_phone, self.other_ip)
+        self.assertFalse(other_blocked)
+        self.assertEqual(b.hits, 1)

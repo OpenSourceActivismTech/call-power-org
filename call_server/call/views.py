@@ -345,7 +345,7 @@ def create():
         # press onward, but we may not be able to actually dial
         userPhone = params['userPhone']
 
-    if Blocklist.user_blocked(params['userPhone'], params['userIPAddress']):
+    if Blocklist.user_blocked(params['userPhone'], params['userIPAddress'], user_country=params['userCountry']):
         abort(429, {'kthx': 'bai'}) # submission tripped blocklist
 
     # start call session for user
