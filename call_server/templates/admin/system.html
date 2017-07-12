@@ -68,12 +68,14 @@
                 <th>{{ _('Timestamp') }}</th>
                 <th>{{ _('Phone or IP') }}</th>
                 <th>{{ _('Expires') }}</th>
+                <th>{{ _('Hits') }}</th>
             </tr>
         {% for item in blocked %}
             <tr class="{% if not item.is_active %}warning{%endif%}">
                 <td>{{item.timestamp}}</td>
                 <td>{{item.phone_number|default('', true)}} {{item.ip_address|default('', true)}}</td>
                 <td>{{item.expires}}</td>
+                <td>{{item.hits}}</td>
             </tr>
         {% endfor %}
     </table>
