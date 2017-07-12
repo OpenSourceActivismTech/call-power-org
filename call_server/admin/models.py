@@ -28,9 +28,9 @@ class Blocklist(db.Model):
         if self.phone_number:
             return self.phone_number.__unicode__()
         if self.phone_hash:
-            return self.phone_hash.__unicode__()
+            return self.phone_hash
         if self.ip_address:
-            return  self.ip_address.__unicode__()
+            return  self.ip_address
 
 
     def is_active(self):

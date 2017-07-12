@@ -7,7 +7,7 @@ from wtforms.validators import Optional, IPAddress
 
 class BlocklistForm(FlaskForm):
     phone_number = PhoneNumberField(_('Phone Number'), [Optional()])
-    phone_hash = StringField(_('IP Address'), validators=[Optional()])
+    phone_hash = StringField(_('Phone Hash'), validators=[Optional()])
     ip_address = StringField(_('IP Address'), validators=[Optional(), IPAddress()])
     expires = TimeField(_('Expiration'), [Optional()])
     submit = SubmitField(_('Next'))
