@@ -15,6 +15,7 @@ class Blocklist(db.Model):
     timestamp = db.Column(db.DateTime(timezone=True))
     expires = db.Column(db.Interval)
     phone_number = db.Column(phone_number.PhoneNumberType(), nullable=True)
+    phone_hash = db.Column(db.String(64), nullable=True) # hashed phone number (optional)
     ip_address = db.Column(db.String(16), nullable=True)
     hits = db.Column(db.Integer(), default=0)
 
@@ -22,6 +23,15 @@ class Blocklist(db.Model):
         self.timestamp = utc_now()
         self.phone_number = phone_number
         self.ip_address = ip_address
+
+    def __unicode__(self):
+        if self.phone_number:
+            return self.phone_number.__unicode__()
+        if self.phone_hash:
+            return self.phone_hash.__unicode__()
+        if self.ip_address:
+            return  self.ip_address.__unicode__()
+
 
     def is_active(self):
         if self.expires:
@@ -35,14 +45,17 @@ class Blocklist(db.Model):
         else:
             return True
 
+    def match(self, user_phone, user_ip, user_country='US'):
+        if self.phone_number:
+            return self.phone_number == phone_number.PhoneNumber(user_phone, user_country)
+        if self.phone_hash:
+            return self.phone_hash == hashlib.sha256(user_phone).hexdigest()
+        if self.ip_address:
+            return self.ip_address == user_ip
+
     @classmethod
     def active_blocks(cls):
         return [b for b in Blocklist.query.all() if b.is_active()]
-        # TODO defer timezone conversions to the database, for speed?
-        #return Blocklist.query.filter(
-        #    (utc_now() <= (Blocklist.timestamp + Blocklist.expires)) |
-        #    (Blocklist.expires == None)
-        #)
 
     @classmethod
     def user_blocked(cls, user_phone, user_ip, user_country='US'):
@@ -51,26 +64,17 @@ class Blocklist(db.Model):
         """
         active_blocks = cls.active_blocks()
         if not active_blocks:
-            # exit early if no blocks defined
+            # exit early if no blocks active
             return False
 
-        matching_blocks = [b for b in active_blocks if (
-            b.phone_number == phone_number.PhoneNumber(user_phone, user_country) or
-            b.ip_address == user_ip
-        )]
-
-        # TODO, do it in the database for speed
-        #matching_blocks = cls.query_active().filter(
-        #    (Blocklist.phone_number == phone_number) |
-        #    (Blocklist.ip_address == ip_address)
-        #).all()
-
-        if matching_blocks:
-            for b in matching_blocks:
+        matched = False
+        for b in active_blocks:
+            if b.match(user_phone, user_ip, user_country):
+                matched = True
                 b.hits += 1
                 db.session.add(b)
-            db.session.commit()
 
-            return True
-        return False
+        if matched:
+            db.session.commit()
+        return matched
 

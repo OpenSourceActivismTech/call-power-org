@@ -48,6 +48,22 @@ class TestBlocklist(BaseTestCase):
 
         self.assertEqual(b.hits, 1)
 
+    def test_phone_hash_block(self):
+        b = Blocklist()
+        b.phone_hash = '2ceab7622c3ea1de7e5b1db8c90ed3c161a4d097df6755d21df8a349fe63089c'
+        db.session.add(b)
+        db.session.commit()
+
+        self.assertEqual(len(Blocklist.active_blocks()), 1)
+
+        is_blocked = Blocklist.user_blocked(self.user_phone, self.user_ip)
+        self.assertTrue(is_blocked)
+
+        other_blocked = Blocklist.user_blocked(self.other_phone, self.other_ip)
+        self.assertFalse(other_blocked)
+
+        self.assertEqual(b.hits, 1)
+
     def test_ip_block(self):
         b = Blocklist(ip_address=self.user_ip)
         db.session.add(b)

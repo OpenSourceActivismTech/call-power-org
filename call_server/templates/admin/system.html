@@ -72,8 +72,8 @@
             </tr>
         {% for item in blocked %}
             <tr class="{% if not item.is_active %}warning{%endif%}">
-                <td>{{item.timestamp}}</td>
-                <td>{{item.phone_number|default('', true)}} {{item.ip_address|default('', true)}}</td>
+                <td>{{item.timestamp.strftime('%Y-%m-%d %H:%M:%S (%z)')}}</td>
+                <td>{{item}}</td>
                 <td>{{item.expires}}</td>
                 <td>{{item.hits}}</td>
             </tr>
