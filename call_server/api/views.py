@@ -109,10 +109,11 @@ def campaigns_overall():
     if end:
         try:
             endDate = dateutil.parser.parse(end)
-            if endDate < startDate:
-                abort(400, 'end should be after start')
-            if endDate == startDate:
-                endDate = startDate + timedelta(days=1)
+            if start:
+                if endDate < startDate:
+                    abort(400, 'end should be after start')
+                if endDate == startDate:
+                    endDate = startDate + timedelta(days=1)
         except ValueError:
             abort(400, 'end should be in isostring format')
         query = query.filter(Call.timestamp <= endDate)
@@ -250,10 +251,11 @@ def campaign_date_calls(campaign_id):
     if end:
         try:
             endDate = dateutil.parser.parse(end)
-            if endDate < startDate:
-                abort(400, 'end should be after start')
-            if endDate == startDate:
-                endDate = startDate + timedelta(days=1)
+            if start:
+                if endDate < startDate:
+                    abort(400, 'end should be after start')
+                if endDate == startDate:
+                    endDate = startDate + timedelta(days=1)
         except ValueError:
             abort(400, 'end should be in isostring format')
         query = query.filter(Call.timestamp <= endDate)
