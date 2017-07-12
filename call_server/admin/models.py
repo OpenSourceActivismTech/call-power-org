@@ -14,6 +14,7 @@ class Blocklist(db.Model):
     expires = db.Column(db.Interval)
     phone_number = db.Column(phone_number.PhoneNumberType(), nullable=True)
     ip_address = db.Column(db.String(16), nullable=True)
+    hits = db.Column(db.Integer(), default=0)
 
     def __init__(self, phone_number=None, ip_address=None):
         self.timestamp = datetime.utcnow()
@@ -46,6 +47,10 @@ class Blocklist(db.Model):
         ).all()
 
         if matching_blocks:
+            for b in matching_blocks:
+                b.hits += 1
+                db.session.add(b)
+            db.session.commit()
             return True
         return False
 

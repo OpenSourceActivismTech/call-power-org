@@ -25,6 +25,7 @@ def upgrade():
     sa.Column('expires', sa.Interval(), nullable=True),
     sa.Column('phone_number', sqlalchemy_utils.types.phone_number.PhoneNumberType(length=20), nullable=True),
     sa.Column('ip_address', sa.String(length=16), nullable=True),
+    sa.Column('hits', sa.Integer(), nullable=True, server_default='0'),
     sa.PrimaryKeyConstraint('id')
     )
     ### end Alembic commands ###
