@@ -76,19 +76,19 @@ def campaigns_overall():
     if timespan not in API_TIMESPANS.keys():
         abort(400, 'timespan should be one of %s' % ','.join(API_TIMESPANS))
     else:
-        timespan_strf = API_TIMESPANS[timespan]
+        timespan_strf, timespan_to_char = API_TIMESPANS[timespan]
 
-    timespan_extract = extract(timespan, Call.timestamp).label(timespan)
+    timestamp_to_char = func.to_char(Call.timestamp, timespan_to_char).label(timespan)
 
     query = (
         db.session.query(
             func.min(Call.timestamp.label('date')),
             Call.campaign_id,
-            timespan_extract,
+            timestamp_to_char,
             func.count(distinct(Call.id)).label('calls_count')
         )
         .group_by(Call.campaign_id)
-        .group_by(timespan_extract)
+        .group_by(timestamp_to_char)
         .order_by(timespan)
     )
 
@@ -225,20 +225,20 @@ def campaign_date_calls(campaign_id):
     if timespan not in API_TIMESPANS.keys():
         abort(400, 'timespan should be one of %s' % ','.join(API_TIMESPANS))
     else:
-        timespan_strf = API_TIMESPANS[timespan]
+        timespan_strf, timespan_to_char = API_TIMESPANS[timespan]
 
     campaign = Campaign.query.filter_by(id=campaign_id).first_or_404()
-    timespan_extract = extract(timespan, Call.timestamp).label(timespan)
+    timestamp_to_char = func.to_char(Call.timestamp, timespan_to_char).label(timespan)
 
     query = (
         db.session.query(
             func.min(Call.timestamp.label('date')),
-            timespan_extract,
+            timestamp_to_char,
             Call.status,
             func.count(distinct(Call.id)).label('calls_count')
         )
         .filter(Call.campaign_id == int(campaign.id))
-        .group_by(timespan_extract)
+        .group_by(timestamp_to_char)
         .order_by(timespan)
         .group_by(Call.status)
     )
