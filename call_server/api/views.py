@@ -5,7 +5,7 @@ import dateutil
 import twilio.twiml
 from flask import Blueprint, Response, current_app, render_template, abort, request, jsonify
 
-from sqlalchemy.sql import func, extract, distinct, cast
+from sqlalchemy.sql import func, extract, distinct, cast, join
 
 from decorators import api_key_or_auth_required, restless_api_auth
 from ..call.decorators import crossdomain
@@ -150,12 +150,12 @@ def campaign_stats(campaign_id):
     else:
         queue_avg_seconds = ''
 
-    # number of sessions completed in campaign
-    sessions_completed = db.session.query(
-        func.count(Session.id)
-    ).filter_by(
-        campaign_id=campaign.id,
-        status='completed'
+    # number of sessions with at least one completed call in campaign
+    sessions_completed = (db.session.query(func.count(Session.id.distinct()))
+        .select_from(join(Session, Call))
+        .filter(Call.campaign_id==campaign.id,
+            Call.status=='completed'
+        )
     ).scalar()
 
     # number of calls completed in campaign
