@@ -22,6 +22,7 @@ from ..political_data.lookup import locate_targets
 from ..political_data.geocode import LocationError
 from ..schedule.models import ScheduleCall
 from ..schedule.views import schedule_created, schedule_deleted
+from ..admin.models import Blocklist
 
 from .decorators import crossdomain, abortJSON, stripANSI
 
@@ -78,6 +79,7 @@ def parse_params(r, inbound=False):
         'userPhone': r.values.get('userPhone', None),
         'userCountry': r.values.get('userCountry', 'us'),
         'userLocation': r.values.get('userLocation', None),
+        'userIPAddress': r.values.get('userIPAddress', None)
     }
 
     if params['userCountry']:
@@ -101,6 +103,13 @@ def parse_params(r, inbound=False):
         campaign = Campaign.query.filter_by(name=params['campaignId']).first()
     if not campaign:
         abort(400, 'invalid campaignId %(campaignId)s' % params)
+
+    if params['userIPAddress'] == None:
+        params['userIPAddress'] = r.headers.get('x-forwarded-for', r.remote_addr)
+
+        if "," in params['userIPAddress']:
+            ips = params['userIPAddress'].split(", ")
+            params['userIPAddress'] = ips[0]
 
     return params, campaign
 
@@ -335,6 +344,9 @@ def create():
         current_app.logger.error('Unable to parse %(userPhone)s for %(userCountry)s' % params)
         # press onward, but we may not be able to actually dial
         userPhone = params['userPhone']
+
+    if Blocklist.user_blocked(params['userPhone'], params['userIPAddress'], user_country=params['userCountry']):
+        abort(429, {'kthx': 'bai'}) # submission tripped blocklist
 
     # start call session for user
     try:

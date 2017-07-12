@@ -7,6 +7,9 @@ from flask_babel import gettext as _
 from ..extensions import db, cache
 from sqlalchemy.sql import func, desc
 
+from .models import Blocklist
+from .forms import BlocklistForm
+
 from ..campaign.models import TwilioPhoneNumber, Campaign
 from ..call.models import Call
 from ..campaign.constants import STATUS_PAUSED
@@ -96,6 +99,7 @@ def system():
     twilio_account = current_app.config.get('TWILIO_CLIENT').auth[0]
     political_data_cache = {'US': cache.get('political_data:us'),
                             'CA': cache.get('political_data:ca')}
+    blocked = Blocklist.query.all()
     if not political_data_cache['US']:
         flash(_("US Political Data not yet loaded. Run > python manager.py loadpoliticaldata") , 'warning')
     return render_template('admin/system.html',
@@ -103,7 +107,34 @@ def system():
                            twilio_numbers=twilio_numbers,
                            twilio_account=twilio_account,
                            admin_api_key=admin_api_key,
-                           political_data_cache=political_data_cache)
+                           political_data_cache=political_data_cache,
+                           blocked=blocked)
+
+
+@admin.route('/system/blocklist/create', methods=['GET', 'POST'])
+@admin.route('/system/blocklist/<int:blocklist_id>/edit', methods=['GET', 'POST'])
+def blocklist(blocklist_id=None):
+    edit = False
+    if blocklist_id:
+        edit = True
+
+    if edit:
+        blocklist = Blocklist.query.filter_by(id=blocklist_id).first_or_404()
+    else:
+        blocklist = Blocklist()
+
+    form = BlocklistForm()
+    
+    if form.validate_on_submit():
+        form.populate_obj(blocklist)
+
+        db.session.add(blocklist)
+        db.session.commit()
+
+        flash('Blocklist updated.', 'success')
+        return redirect(url_for('admin.system'))
+
+    return render_template('admin/blocklist.html', blocklist=blocklist, form=form)
 
 
 @admin.route('/twilio/resync', methods=['POST'])
