@@ -199,6 +199,9 @@ def make_calls(params, campaign):
         # check if campaign custom segmenting specified
         if campaign.segment_by == SEGMENT_BY_CUSTOM:
             params['targetIds'] = [t.uid for t in campaign.target_set]
+            if campaign.target_ordering == 'shuffle':      
+                # reshuffle for each caller
+                random.shuffle(params['targetIds'])
         elif campaign.segment_by == SEGMENT_BY_LOCATION:
             # lookup targets for campaign type by segment, put in desired order
             try:
