@@ -8,7 +8,6 @@ from flask import Blueprint, Response, current_app, render_template, abort, requ
 from sqlalchemy.sql import func, extract, distinct, cast
 
 from decorators import api_key_or_auth_required, restless_api_auth
-from ..utils import median
 from ..call.decorators import crossdomain
 
 from constants import API_TIMESPANS
@@ -167,18 +166,31 @@ def campaign_stats(campaign_id):
         status='completed'
     ).all()
 
-    # list of completed calls per session in campaign
-    calls_session_grouped = db.session.query(
-        func.count(Call.id)
+    # get completed calls per session in campaign
+    calls_per_session = db.session.query(
+        func.count(Call.id).label('call_count'),
     ).filter(
         Call.campaign_id == campaign.id,
         Call.status == 'completed',
         Call.session_id != None
     ).group_by(
         Call.session_id
-    ).all()
-    calls_session_list = [int(n[0]) for n in calls_session_grouped]
-    calls_per_session = median(calls_session_list)
+    )
+    calls_per_session_avg = db.session.query(
+        func.avg(calls_per_session.subquery().columns.call_count),
+    )
+    # use this one weird trick to calculate the median
+    # https://stackoverflow.com/a/27826044
+    calls_per_session_med = db.session.query(
+        func.percentile_cont(0.5).within_group(
+            calls_per_session.subquery().columns.call_count.desc()
+        )
+    )
+    # calls_session_list = [int(n[0]) for n in calls_session_grouped.all()]
+    calls_per_session = {
+        'avg': '%.2f' % calls_per_session_avg.scalar() or 0,
+        'med': calls_per_session_med.scalar() or '?'
+    }
 
     data = {
         'id': campaign.id,

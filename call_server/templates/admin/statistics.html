@@ -82,8 +82,11 @@
         <td class="col-sm-6"><label class="inline" for="conversion_rate">Conversion Rate</label></td>
     </tr><% } %>
     <% if (data.calls_per_session) { %><tr>
-        <td class="col-sm-6"><input id="calls_per_session" class="col-sm-12" value="<%= data.calls_per_session %>" readonly/></td>
-        <td class="col-sm-6"><label class="inline" for="calls_per_session">Session Median</label></td>
+        <td class="col-sm-6">
+            <input id="calls_per_session_avg" class="col-sm-12" value="<%= data.calls_per_session.avg %> avg" readonly/>
+            <input id="calls_per_session_med" class="col-sm-12" value="<%= data.calls_per_session.med %> med" readonly/>
+        </td>
+        <td class="col-sm-6"><label class="inline" for="calls_per_session">Calls per Session</label></td>
     </tr><% } %>
     <% if (data.queue_avg_seconds) { %><tr>
         <td class="col-sm-6"><input id="queue_avg_seconds" class="col-sm-12" value="<%= data.queue_avg_seconds %>" readonly/></td>
