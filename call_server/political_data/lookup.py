@@ -1,5 +1,6 @@
 from flask import current_app
 from collections import OrderedDict
+import random
 
 from ..extensions import cache
 from ..campaign.constants import INCLUDE_SPECIAL_FIRST, INCLUDE_SPECIAL_LAST, INCLUDE_SPECIAL_ONLY, SEGMENT_BY_LOCATION

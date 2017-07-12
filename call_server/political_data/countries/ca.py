@@ -7,7 +7,6 @@ from ..geocode import Geocoder, LocationError
 from ..constants import CA_PROVINCE_ABBR_DICT
 from ...campaign.constants import (LOCATION_POSTAL, LOCATION_ADDRESS, LOCATION_LATLON)
 
-import random
 import logging
 log = logging.getLogger(__name__)
 
@@ -60,9 +59,6 @@ class CACampaignType_Parliament(CACampaignType):
 
         if subtype == 'lower':
             result.extend(targets.get('lower'))
-
-        if order == 'shuffle':
-            random.shuffle(result)
 
         return result
 

@@ -11,7 +11,6 @@ from ...campaign.constants import (LOCATION_POSTAL, LOCATION_ADDRESS, LOCATION_L
 import csv
 import yaml
 import collections
-import random
 from datetime import datetime
 import logging
 log = logging.getLogger(__name__)
@@ -90,9 +89,6 @@ class USCampaignType_Congress(USCampaignType):
         elif subtype == 'lower':
             result.extend(targets.get('lower'))
 
-        if order == 'shuffle':
-            random.shuffle(result)
-
         return result
 
     def _get_congress_upper(self, location):
@@ -162,9 +158,6 @@ class USCampaignType_State(USCampaignType):
             result.extend(targets.get('upper'))
         elif subtype == 'lower':
             result.extend(targets.get('lower'))
-
-        if order == 'shuffle':
-            random.shuffle(result)
 
         return result
 
