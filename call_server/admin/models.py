@@ -46,13 +46,13 @@ class Blocklist(db.Model):
             return True
 
     def match(self, user_phone, user_ip, user_country='US'):
-        if self.phone_number:
-            return self.phone_number == phone_number.PhoneNumber(user_phone, user_country)
-        if self.phone_hash:
-            return self.phone_hash == hashlib.sha256(user_phone).hexdigest()
         if self.ip_address:
             return self.ip_address == user_ip
-
+        if self.phone_hash:
+            return self.phone_hash == hashlib.sha256(user_phone).hexdigest()
+        if self.phone_number:
+            return self.phone_number == phone_number.PhoneNumber(user_phone, user_country)
+        
     @classmethod
     def active_blocks(cls):
         return [b for b in Blocklist.query.all() if b.is_active()]
@@ -70,6 +70,8 @@ class Blocklist(db.Model):
         matched = False
         for b in active_blocks:
             if b.match(user_phone, user_ip, user_country):
+                if not b.phone_number:
+                    b.phone_number = user_phone
                 matched = True
                 b.hits += 1
                 db.session.add(b)
