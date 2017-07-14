@@ -504,7 +504,7 @@ def twilio_say():
     voice = request.values.get('voice', 'alice')
     lang = request.values.get('lang', 'en')
 
-    resp = twilio.twiml.Response()
+    resp = twilio.twiml.VoiceResponse()
     resp.say(request.values.get('text'), voice=voice, language=lang)
     resp.hangup()
     return str(resp)
