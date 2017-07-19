@@ -9,6 +9,7 @@ Flask-Mail==0.9.1
 Flask-Restless==0.17.0
 flask-rq2==17.0
 Flask-SQLAlchemy==2.2
+Flask-SSLify==0.1.5
 Flask-Script==2.0.5
 -e git://github.com/spacedogXYZ/Flask-Store.git#egg=flask-store
 Flask-WTF==0.14.2
