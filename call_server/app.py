@@ -46,12 +46,21 @@ def create_app(configuration=None, app_name=None, blueprints=None):
     app = Flask(app_name)
     # configure app from object or environment
     configure_app(app, configuration)
+
+    if app.config.get('SENTRY_DSN'):
+        from raven.contrib.flask import Sentry
+        sentry = Sentry()
+        sentry.init_app(app, dsn=app.config['SENTRY_DSN'])
+        app.config['SENTRY_DSN_PUBLIC'] = sentry.client.get_public_dsn('https')
+        
+    # set production security headers
     if app.config['ENVIRONMENT'] == "Production":
         from flask_sslify import SSLify
         SSLify(app, subdomains=True)
-        secure_headers.update({
+
+        secure_headers.rewrite({
             'CSP':{
-                'report-uri': ['*'], # we're not using it, but might use Sentry in the future
+                'report-uri': [app.config.get('SENTRY_DSN_PUBLIC') or '*'],
                 'default-src':['self', 'https:'],
                 'script-src':['self', 'unsafe-inline', 'cdnjs.cloudflare.com'],
                 'style-src': ['self', 'unsafe-inline']
