@@ -52,7 +52,8 @@ def create_app(configuration=None, app_name=None, blueprints=None):
         secure_headers.update({
             'CSP':{
                 'default-src':['self', 'https:'],
-                'script-src':['self', 'unsafe-inline', 'cdnjs.cloudflare.com']
+                'script-src':['self', 'unsafe-inline', 'cdnjs.cloudflare.com'],
+                'style-src': ['self', 'unsafe-inline']
             }
         })
         secure_headers.init_app(app)
