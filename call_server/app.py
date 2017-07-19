@@ -51,6 +51,7 @@ def create_app(configuration=None, app_name=None, blueprints=None):
         SSLify(app, subdomains=True)
         secure_headers.update({
             'CSP':{
+                'report-uri': ['*'], # we're not using it, but might use Sentry in the future
                 'default-src':['self', 'https:'],
                 'script-src':['self', 'unsafe-inline', 'cdnjs.cloudflare.com'],
                 'style-src': ['self', 'unsafe-inline']
