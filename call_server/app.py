@@ -49,7 +49,12 @@ def create_app(configuration=None, app_name=None, blueprints=None):
     if app.config['ENVIRONMENT'] == "Production":
         from flask_sslify import SSLify
         SSLify(app, subdomains=True)
-        secure_headers.update({'CSP':{'script-src':['self','cdnjs.cloudflare.com']}})
+        secure_headers.update({
+            'CSP':{
+                'default-src':['self', 'https:'],
+                'script-src':['self', 'unsafe-inline', 'cdnjs.cloudflare.com']
+            }
+        })
         secure_headers.init_app(app)
 
     # init extensions once we have app context

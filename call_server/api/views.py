@@ -444,7 +444,11 @@ def campaign_embed_js(campaign_id):
 
 @api.route('/campaign/<int:campaign_id>/CallPowerForm.js', methods=['GET'])
 @crossdomain(origin='*')
-@secure_headers.wrapper({'X_Frame_Options':None,'X-XSS-Protection':None})
+@secure_headers.wrapper({
+    'X_Frame_Options':None,
+    'X-XSS-Protection':None,
+    'CSP': {'script-src':['self', 'unsafe-inline', 'unsafe-eval', 'cdnjs.cloudflare.com']}
+}) # add unsafe-eval, to execute campaign.embed.custom_js
 @cache.cached(timeout=600)
 def campaign_form_js(campaign_id):
     campaign = Campaign.query.filter_by(id=campaign_id).first_or_404()
