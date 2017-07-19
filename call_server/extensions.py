@@ -24,6 +24,9 @@ rest = APIManager()
 from flask_wtf.csrf import CSRFProtect
 csrf = CSRFProtect()
 
+from flask_secure_headers.core import Secure_Headers
+secure_headers = Secure_Headers()
+
 from flask_store import Store
 store = Store()
 

@@ -108,7 +108,7 @@ class ProductionConfig(DefaultConfig):
 class HerokuConfig(ProductionConfig):
     # Heroku addons use a few different environment variable names
 
-    ENVIRONMENT = "Heroku"
+    ENVIRONMENT = "Production"
 
     # db via heroku postgres
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')

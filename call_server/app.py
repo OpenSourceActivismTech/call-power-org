@@ -21,7 +21,7 @@ from .schedule import schedule
 from .api import api, configure_restless, restless_preprocessors
 from .political_data import political_data
 
-from extensions import cache, db, babel, assets, login_manager, csrf, mail, store, rest, rq
+from extensions import cache, db, babel, assets, login_manager, csrf, mail, store, rest, rq, secure_headers
 
 DEFAULT_BLUEPRINTS = (
     site,
@@ -48,7 +48,9 @@ def create_app(configuration=None, app_name=None, blueprints=None):
     configure_app(app, configuration)
     if app.config['ENVIRONMENT'] == "Production":
         from flask_sslify import SSLify
-        SSLify(app)
+        SSLify(app, subdomains=True)
+        secure_headers.init_app(app)
+
     # init extensions once we have app context
     init_extensions(app)
     # then blueprints, for url/view routing
