@@ -63,7 +63,7 @@ def create_app(configuration=None, app_name=None, blueprints=None):
                 'report-uri': [app.config.get('SENTRY_DSN_PUBLIC') or '*'],
                 'default-src':['self', 'https:'],
                 'script-src':['self', 'unsafe-inline', 'cdnjs.cloudflare.com'],
-                'style-src': ['self', 'unsafe-inline']
+                'style-src': ['self', 'unsafe-inline', 'fonts.googleapis.com']
             }
         })
         secure_headers.init_app(app)
