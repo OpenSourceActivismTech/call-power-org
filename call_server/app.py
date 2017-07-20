@@ -59,11 +59,13 @@ def create_app(configuration=None, app_name=None, blueprints=None):
         SSLify(app, subdomains=True)
 
         secure_headers.rewrite({
+            'X-Frame-Options': {'value': 'sameorigin'},
             'CSP':{
                 'report-uri': [app.config.get('SENTRY_DSN_PUBLIC') or '/csp_report'],
                 'default-src':['self', ],
                 'script-src':['self', 'unsafe-inline', 'cdnjs.cloudflare.com'],
-                'style-src': ['self', 'unsafe-inline', 'fonts.googleapis.com']
+                'style-src': ['self', 'unsafe-inline', 'fonts.googleapis.com'], 
+                'font-src': ['self', 'fonts.gstatic.com']
             }
         })
         secure_headers.init_app(app)

@@ -435,7 +435,6 @@ def call_info(sid):
 # make accessible crossdomain, and cache for 10 min
 @api.route('/campaign/<int:campaign_id>/embed.js', methods=['GET'])
 @crossdomain(origin='*')
-@secure_headers.wrapper({'X_Frame_Options':None,'X-XSS-Protection':None})
 @cache.cached(timeout=600)
 def campaign_embed_js(campaign_id):
     campaign = Campaign.query.filter_by(id=campaign_id).first_or_404()
@@ -445,9 +444,7 @@ def campaign_embed_js(campaign_id):
 @api.route('/campaign/<int:campaign_id>/CallPowerForm.js', methods=['GET'])
 @crossdomain(origin='*')
 @secure_headers.wrapper({
-    'X_Frame_Options':None,
-    'X-XSS-Protection':None,
-    'CSP': {'script-src':['self', 'unsafe-inline', 'unsafe-eval', 'cdnjs.cloudflare.com']}
+    'CSP': {'script-src':['unsafe-eval']}
 }) # add unsafe-eval, to execute campaign.embed.custom_js
 @cache.cached(timeout=600)
 def campaign_form_js(campaign_id):
@@ -457,7 +454,7 @@ def campaign_form_js(campaign_id):
 
 @api.route('/campaign/<int:campaign_id>/embed_iframe.html', methods=['GET'])
 @cache.cached(timeout=600)
-@secure_headers.wrapper({'X_Frame_Options':None,'X-XSS-Protection':None})
+@secure_headers.wrapper({'X-Frame-Options': None}) # allow iframe'ing on this route only
 def campaign_embed_iframe(campaign_id):
     campaign = Campaign.query.filter_by(id=campaign_id).first_or_404()
     return render_template('api/embed_iframe.html', campaign=campaign)
