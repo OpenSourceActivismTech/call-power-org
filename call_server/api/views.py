@@ -189,7 +189,7 @@ def campaign_stats(campaign_id):
     )
     # calls_session_list = [int(n[0]) for n in calls_session_grouped.all()]
     calls_per_session = {
-        'avg': '%.2f' % calls_per_session_avg.scalar() or 0,
+        'avg': '%.2f' % (calls_per_session_avg.scalar() or 0),
         'med': calls_per_session_med.scalar() or '?'
     }
 
@@ -200,15 +200,15 @@ def campaign_stats(campaign_id):
         'queue_avg_seconds': queue_avg_seconds,
         'sessions_completed': sessions_completed,
         'calls_per_session': calls_per_session,
+        'calls_completed': calls_completed.count()
     }
 
-    if calls_completed:
+    if data['calls_completed']:
         first_call_completed = calls_completed.first()
         last_call_completed = calls_completed.order_by(Call.timestamp.desc()).first()
         data.update({
             'date_start': datetime.strftime(first_call_completed[0], '%Y-%m-%d'),
             'date_end': datetime.strftime(last_call_completed[0] + timedelta(days=1), '%Y-%m-%d'),
-            'calls_completed': calls_completed.count()
         })
 
     return jsonify(data)
