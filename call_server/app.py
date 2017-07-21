@@ -1,6 +1,7 @@
 import os
 import logging
 import glob
+import urlparse
 
 from flask import Flask, g, request, session, render_template
 from flask_assets import Bundle
@@ -49,6 +50,8 @@ def create_app(configuration=None, app_name=None, blueprints=None):
         
     # set production security headers
     if app.config['ENVIRONMENT'] == "Production":
+        # amend media-src to include flask-store domain
+        CALLPOWER_CSP['media-src'] = [urlparse.urlparse(app.config['STORE_DOMAIN']).netloc,]
         talisman.init_app(app,
             force_https=True,
             content_security_policy=CALLPOWER_CSP
