@@ -21,7 +21,7 @@ from .schedule import schedule
 from .api import api, configure_restless, restless_preprocessors
 from .political_data import political_data
 
-from extensions import cache, db, babel, assets, login_manager, csrf, mail, store, rest, rq, secure_headers
+from extensions import cache, db, babel, assets, login_manager, csrf, mail, store, rest, rq, talisman, CALLPOWER_CSP
 
 DEFAULT_BLUEPRINTS = (
     site,
@@ -46,29 +46,19 @@ def create_app(configuration=None, app_name=None, blueprints=None):
     app = Flask(app_name)
     # configure app from object or environment
     configure_app(app, configuration)
+        
+    # set production security headers
+    if app.config['ENVIRONMENT'] == "Production":
+        talisman.init_app(app,
+            force_https=True,
+            content_security_policy=CALLPOWER_CSP
+        )
 
     if app.config.get('SENTRY_DSN'):
         from raven.contrib.flask import Sentry
         sentry = Sentry()
         sentry.init_app(app, dsn=app.config['SENTRY_DSN'])
-        app.config['SENTRY_DSN_PUBLIC'] = sentry.client.get_public_dsn('https')
-        
-    # set production security headers
-    if app.config['ENVIRONMENT'] == "Production":
-        from flask_sslify import SSLify
-        SSLify(app, subdomains=True)
-
-        secure_headers.rewrite({
-            'X-Frame-Options': {'value': 'sameorigin'},
-            'CSP':{
-                'report-uri': [app.config.get('SENTRY_DSN_PUBLIC') or '/csp_report'],
-                'default-src':['self', ],
-                'script-src':['self', 'unsafe-inline', 'cdnjs.cloudflare.com'],
-                'style-src': ['self', 'unsafe-inline', 'fonts.googleapis.com'], 
-                'font-src': ['self', 'fonts.gstatic.com']
-            }
-        })
-        secure_headers.init_app(app)
+        talisman.content_security_policy_report_uri = sentry.client.get_public_dsn('https')
 
     # init extensions once we have app context
     init_extensions(app)

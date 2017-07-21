@@ -9,7 +9,6 @@ Flask-Mail==0.9.1
 Flask-Restless==0.17.0
 flask-rq2==17.0
 Flask-SQLAlchemy==2.2
-Flask-SSLify==0.1.5
 Flask-Script==2.0.5
 -e git://github.com/spacedogXYZ/Flask-Store.git#egg=flask-store
 Flask-WTF==0.14.2
@@ -25,7 +24,7 @@ Werkzeug==0.10.4
 alembic==0.8.8
 blinker==1.3
 decorator==3.4.2
-flask-secure-headers==0.6
+flask-talisman==0.3.2
 geopy==1.11.0
 httplib2==0.8
 infinity==1.3

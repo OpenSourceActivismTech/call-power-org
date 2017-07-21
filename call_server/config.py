@@ -130,7 +130,7 @@ class HerokuConfig(ProductionConfig):
 
 
 class DevelopmentConfig(DefaultConfig):
-    DEBUG = True
+    DEBUG = os.environ.get('APP_DEBUG', True)
     DEBUG_MORE = True
     TESTING = False
 

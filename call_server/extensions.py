@@ -24,11 +24,17 @@ rest = APIManager()
 from flask_wtf.csrf import CSRFProtect
 csrf = CSRFProtect()
 
-from flask_secure_headers.core import Secure_Headers
-secure_headers = Secure_Headers()
-
 from flask_store import Store
 store = Store()
 
 from flask_rq2 import RQ
 rq = RQ()
+
+from flask_talisman import Talisman
+CALLPOWER_CSP = {
+    'default-src':'\'self\'',
+    'script-src':['\'self\'', '\'unsafe-inline\'', 'cdnjs.cloudflare.com'],
+    'style-src': ['\'self\'', '\'unsafe-inline\'', 'fonts.googleapis.com'], 
+    'font-src': ['\'self\'', 'fonts.gstatic.com']
+}
+talisman = Talisman()
