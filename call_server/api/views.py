@@ -453,7 +453,7 @@ def campaign_form_js(campaign_id):
 
 @api.route('/campaign/<int:campaign_id>/embed_iframe.html', methods=['GET'])
 @cache.cached(timeout=600)
-@talisman(frame_options=ALLOW_FROM, frame_options_allow_from='*') # allow iframe'ing on this route only
+@talisman(frame_options=None) # allow iframe'ing on this route only
 def campaign_embed_iframe(campaign_id):
     campaign = Campaign.query.filter_by(id=campaign_id).first_or_404()
     return render_template('api/embed_iframe.html', campaign=campaign)
