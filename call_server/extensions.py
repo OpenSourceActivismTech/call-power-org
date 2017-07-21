@@ -33,8 +33,10 @@ rq = RQ()
 from flask_talisman import Talisman
 CALLPOWER_CSP = {
     'default-src':'\'self\'',
-    'script-src':['\'self\'', '\'unsafe-inline\'', 'cdnjs.cloudflare.com', 'media.twiliocdn.com'],
+    'script-src':['\'self\'', '\'unsafe-inline\'', '\'unsafe-eval\'', 'cdnjs.cloudflare.com', 'media.twiliocdn.com'],
     'style-src': ['\'self\'', '\'unsafe-inline\'', 'fonts.googleapis.com'], 
     'font-src': ['\'self\'', 'fonts.gstatic.com'],
 }
+# unsafe-inline needed to render <script> tags without nonce
+# unsafe-eval needed to run bootstrap templates
 talisman = Talisman()
