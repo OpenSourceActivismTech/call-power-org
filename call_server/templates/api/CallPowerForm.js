@@ -146,10 +146,9 @@ CallPowerForm.prototype = function() {
 
     if (this.scriptDisplay === 'overlay') {
       // display simple overlay with script content
-      var scriptOverlay = this.$('<div class="overlay"><div class="modal">'+response.script+'</div></div>');
+      var scriptOverlay = this.$('<div class="overlay shown"><div class="modal">'+response.script+'</div></div>');
       this.$('body').append(scriptOverlay);
       scriptOverlay.overlay();
-      scriptOverlay.trigger('show');
     }
 
     if (this.scriptDisplay === 'replace') {
