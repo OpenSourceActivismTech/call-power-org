@@ -199,7 +199,10 @@ CallPowerForm.prototype = function() {
 
   var makeCall = function(event, options) {
     // stop default form submit event
-    if (event !== undefined) { event.preventDefault(); }
+    if (event !== undefined) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+    }
 
     if (this.locationField.length && !this.location()) {
       return this.onError(this.locationField, 'Invalid location');
@@ -239,6 +242,9 @@ CallPowerForm.prototype = function() {
       }
     }, this))
     .fail(this.$.proxy(this.onError, this, this.form, 'Sorry, there was an error making the call'));
+
+    return false;
+    // just in case, to stop initial event propagation
   };
 
   var formSubmit = function() {
