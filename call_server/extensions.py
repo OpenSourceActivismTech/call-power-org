@@ -33,7 +33,8 @@ rq = RQ()
 from flask_talisman import Talisman
 CALLPOWER_CSP = {
     'default-src':'\'self\'',
-    'script-src':['\'self\'', '\'unsafe-inline\'', '\'unsafe-eval\'', 'cdnjs.cloudflare.com', 'media.twiliocdn.com'],
+    'script-src':['\'self\'', '\'unsafe-inline\'', '\'unsafe-eval\'',
+        'cdnjs.cloudflare.com', 'media.twiliocdn.com', 'js-agent.newrelic.com'],
     'style-src': ['\'self\'', '\'unsafe-inline\'', 'fonts.googleapis.com'], 
     'font-src': ['\'self\'', 'fonts.gstatic.com'],
     'media-src': ['\'self\'', 'media.twiliocdn.com'],
