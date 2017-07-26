@@ -11,8 +11,9 @@ from decorators import api_key_or_auth_required, restless_api_auth
 from ..call.decorators import crossdomain
 
 from constants import API_TIMESPANS
+from flask_talisman import ALLOW_FROM
 
-from ..extensions import csrf, rest, db, cache
+from ..extensions import csrf, rest, db, cache, talisman, CALLPOWER_CSP
 from ..campaign.models import Campaign, Target, AudioRecording
 from ..political_data.adapters import adapt_by_key, UnitedStatesData
 from ..call.models import Call, Session
@@ -21,7 +22,6 @@ from ..call.constants import TWILIO_CALL_STATUS
 
 api = Blueprint('api', __name__, url_prefix='/api')
 csrf.exempt(api)
-
 
 restless_preprocessors = {'GET_SINGLE':   [restless_api_auth],
                           'GET_MANY':     [restless_api_auth],
@@ -443,6 +443,8 @@ def campaign_embed_js(campaign_id):
 
 @api.route('/campaign/<int:campaign_id>/CallPowerForm.js', methods=['GET'])
 @crossdomain(origin='*')
+@talisman(content_security_policy=CALLPOWER_CSP.copy().update({'script-src':['\'self\'', '\'unsafe-eval\'']}))
+# add unsafe-eval, to execute campaign.embed.custom_js
 @cache.cached(timeout=600)
 def campaign_form_js(campaign_id):
     campaign = Campaign.query.filter_by(id=campaign_id).first_or_404()
@@ -451,6 +453,7 @@ def campaign_form_js(campaign_id):
 
 @api.route('/campaign/<int:campaign_id>/embed_iframe.html', methods=['GET'])
 @cache.cached(timeout=600)
+@talisman(frame_options=None) # allow iframe'ing on this route only
 def campaign_embed_iframe(campaign_id):
     campaign = Campaign.query.filter_by(id=campaign_id).first_or_404()
     return render_template('api/embed_iframe.html', campaign=campaign)
