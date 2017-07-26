@@ -50,8 +50,9 @@ def create_app(configuration=None, app_name=None, blueprints=None):
         
     # set production security headers
     if app.config['ENVIRONMENT'] == "Production":
-        # amend media-src to include flask-store domain
-        CALLPOWER_CSP['media-src'] = [urlparse.urlparse(app.config['STORE_DOMAIN']).netloc,]
+        # append media-src to include flask-store domain
+        store_domain = urlparse.urlparse(app.config['STORE_DOMAIN']).netloc,
+        CALLPOWER_CSP['media-src'].extend(store_domain)
         talisman.init_app(app,
             force_https=True,
             content_security_policy=CALLPOWER_CSP
