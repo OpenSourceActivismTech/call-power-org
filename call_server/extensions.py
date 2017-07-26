@@ -37,8 +37,9 @@ CALLPOWER_CSP = {
         'cdnjs.cloudflare.com', 'media.twiliocdn.com', 'js-agent.newrelic.com'],
     'style-src': ['\'self\'', '\'unsafe-inline\'', 'fonts.googleapis.com'], 
     'font-src': ['\'self\'', 'fonts.gstatic.com'],
-    'media-src': ['\'self\'', 'media.twiliocdn.com'],
-    'connect-src': ['\'self\'', 'wss://*.twilio.com', ]
+    'media-src': ['\'self\'', 'blob:', 'media.twiliocdn.com'],
+    'connect-src': ['\'self\'', 'wss://*.twilio.com', ],
+    'object-src': ['\'self\'', 'blob:'],
 }
 # unsafe-inline needed to render <script> tags without nonce
 # unsafe-eval needed to run bootstrap templates
