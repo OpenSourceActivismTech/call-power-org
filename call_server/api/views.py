@@ -438,7 +438,7 @@ def call_info(sid):
 @cache.cached(timeout=600)
 def campaign_embed_js(campaign_id):
     campaign = Campaign.query.filter_by(id=campaign_id).first_or_404()
-    return render_template('api/embed.js', campaign=campaign, mimetype='text/javascript')
+    return Response(render_template('api/embed.js', campaign=campaign), content_type='application/javascript')
 
 
 @api.route('/campaign/<int:campaign_id>/CallPowerForm.js', methods=['GET'])
@@ -448,7 +448,7 @@ def campaign_embed_js(campaign_id):
 @cache.cached(timeout=600)
 def campaign_form_js(campaign_id):
     campaign = Campaign.query.filter_by(id=campaign_id).first_or_404()
-    return render_template('api/CallPowerForm.js', campaign=campaign, mimetype='text/javascript')
+    return Response(render_template('api/CallPowerForm.js', campaign=campaign), content_type='application/javascript')
 
 
 @api.route('/campaign/<int:campaign_id>/embed_iframe.html', methods=['GET'])
