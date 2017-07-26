@@ -62,7 +62,10 @@ def create_app(configuration=None, app_name=None, blueprints=None):
         from raven.contrib.flask import Sentry
         sentry = Sentry()
         sentry.init_app(app, dsn=app.config['SENTRY_DSN'])
-        talisman.content_security_policy_report_uri = sentry.client.get_public_dsn('https')
+        sentry_report_uri = 'https://sentry.io/api/%s/csp-report/?sentry_key=%s' % (
+            sentry.client.remote.project, sentry.client.remote.public_key
+        )
+        talisman.content_security_policy_report_uri = sentry_report_uri
 
     # init extensions once we have app context
     init_extensions(app)
