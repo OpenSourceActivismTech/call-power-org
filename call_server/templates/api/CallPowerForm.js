@@ -230,8 +230,13 @@ CallPowerForm.prototype = function() {
       // redirect after original form submission is complete
       
       if (this.scriptDisplay === 'overlay') {
+        var scriptOverlay = this.$('.overlay');
         // bind overlay hide to original form submit
-        this.$('.overlay').on('hide', this.$.proxy(this.formSubmit, this));
+        scriptOverlay.on('hide', this.$.proxy(this.formSubmit, this));
+        scriptOverlay.on('click', this.$.proxy(function(e) {
+          if (e.target.className === scriptOverlay.attr('class')) return scriptOverlay.trigger('hide');
+          // only trigger hide when clicking overlay background, not modal
+        }, this));
       } else if (this.scriptDisplay === 'replace') {
         // original form still exists, but is hidden
         // do nothing
