@@ -37,7 +37,7 @@ CALLPOWER_CSP = {
     'style-src': ['\'self\'', '\'unsafe-inline\'', 'fonts.googleapis.com'], 
     'font-src': ['\'self\'', 'fonts.gstatic.com'],
     'media-src': ['\'self\'', 'media.twiliocdn.com'],
-    'connect-src': ['*.twilio.com', ]
+    'connect-src': ['\'self\'', 'wss://*.twilio.com', ]
 }
 # unsafe-inline needed to render <script> tags without nonce
 # unsafe-eval needed to run bootstrap templates
