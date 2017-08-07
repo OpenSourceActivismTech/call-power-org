@@ -154,7 +154,7 @@ class Geocoder(object):
         if API_NAME == 'nominatim':
                 # nominatim sets country bias at init
                 # and has no API_KEY
-                self.client = service(country_bias=country, timeout=3)
+                self.client = service(country_bias=country, timeout=5)
         elif API_NAME == 'liveaddress':
             AUTH_TOKEN = os.environ.get('GEOCODE_API_TOKEN', None)
             self.client = service(API_KEY, AUTH_TOKEN, timeout=3)

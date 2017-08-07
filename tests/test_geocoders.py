@@ -38,8 +38,9 @@ class TestGeocoders(BaseTestCase):
         result = self.us_data._geocoder.postal(real_zipcode)
 
         self.assertIsNot(result.service, LOCAL_USDATA_SERVICE)
-        if result.service != NOMINATIM_SERVICE: 
-            # nominatim is too flaky to be part of CI tests
+        if result.service == 'Timeout':
+            print "geocoder timeout, skipping"
+        else:
             self.assertEqual(result.postal, '94612')
             self.assertEqual(result.state, 'CA')
 
@@ -48,8 +49,9 @@ class TestGeocoders(BaseTestCase):
         result = self.us_data._geocoder.postal(not_a_zipcode)
 
         self.assertIsNot(result.service, LOCAL_USDATA_SERVICE)
-        if result.service != NOMINATIM_SERVICE: 
-            # nominatim is too flaky to be part of CI tests
+        if result.service == 'Timeout':
+            print "geocoder timeout, skipping"
+        else:
             self.assertEqual(result.postal, None)
 
     def test_geocoder_us_address_exists_live_api(self):
@@ -57,6 +59,8 @@ class TestGeocoders(BaseTestCase):
         result = self.us_data._geocoder.geocode(real_address)
 
         self.assertIsNot(result.service, LOCAL_USDATA_SERVICE)
-        if result.service != NOMINATIM_SERVICE: 
+        if result.service == 'Timeout':
+            print "geocoder timeout, skipping"
+        else:
             self.assertEqual(result.postal, '20500')
             self.assertEqual(result.state, 'DC')
