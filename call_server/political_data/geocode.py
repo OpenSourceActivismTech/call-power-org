@@ -191,7 +191,7 @@ class Geocoder(object):
                 # bias responses to region/country (2-letter TLD)           
             elif service == NOMINATIM_SERVICE:
                 # nominatim won't return metadata unless we ask
-                response = self.client.geocode(query=address, addressdetails=True)
+                response = self.client.geocode(address, addressdetails=True)
                 if not response:
                     return Location()
                 intermediate = Location(response)
