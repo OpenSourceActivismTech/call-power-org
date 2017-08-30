@@ -67,6 +67,7 @@ class CampaignForm(FlaskForm):
                                                 query_factory=TwilioPhoneNumber.available_numbers,
                                                 validators=[Required()])
     allow_call_in = BooleanField(_('Allow Call In'))
+    allow_intl_calls = BooleanField(_('Allow International Calls'))
     prompt_schedule = BooleanField(_('Prompt to Schedule Recurring Calls'))
 
     submit = SubmitField(_('Edit Audio'))
