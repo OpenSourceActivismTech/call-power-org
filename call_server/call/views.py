@@ -361,6 +361,9 @@ def create():
         if campaign.target_ordering == 'shuffle':
             # do randomization now
             random.shuffle(targets_list)
+            # limit to maximum
+            if campaign.call_maximum:
+                targets_list = targets_list[:campaign.call_maximum]
             # save to params so order persists for this caller
             params['targetIds'] = [t.uid for t in targets_list]
         target_response = {
