@@ -39,7 +39,7 @@ CALLPOWER_CSP = {
     'style-src': ['\'self\'', '\'unsafe-inline\'', 'fonts.googleapis.com'], 
     'font-src': ['\'self\'', 'data:', 'fonts.gstatic.com'],
     'media-src': ['\'self\'', 'blob:', 'media.twiliocdn.com'],
-    'connect-src': ['\'self\'', '*.twilio.com', 'openstates.org'],
+    'connect-src': ['\'self\'', 'https://*.twilio.com', 'wss://*.twilio.com', 'openstates.org'],
     'object-src': ['\'self\'', 'blob:'],
     'image-src': ['\'self\'', 'data:']
 }
