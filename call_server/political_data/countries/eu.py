@@ -23,6 +23,10 @@ class EUDataProvider(DataProvider):
         self._cache = cache
         self._geocoder = Geocoder(country=self.country_code.upper())
 
+    def load_data(self):
+        # no stored data to load for this data provider
+        return 0
+
 class FRDataProvider(EUDataProvider):
     country_name = "France"
     country_code = "fr"
