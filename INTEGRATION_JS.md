@@ -19,3 +19,35 @@ Custom Embeds
 The embed script should interoperate with existing forms, but if you have a form with a submit callback already defined, you may want to write your own integration. You can add javascript that will be run after the success callback in the Custom JS field. For example, if you are using the overlay script display, you might want to manually trigger an action after the overlay is closed, like `$('.overlay').on('hide', function() { actionkit.form.submit(); });`
 
 If your validation needs are more complex, you can include just CallPowerForm.js from `/api/campaign/ID/CallPowerForm.js` and define your own functions for location, phone, onSuccess or onError.
+
+Calling Endpoints Directly
+--------------------------
+
+You can also trigger a phone call by hitting the `/call/create` endpoint directly with either a GET or a POST. URL parameters should include:
+
+* userPhone (required)
+* campaignId (required)
+* userLocation (optional)
+* userCountry (optional)
+
+The response will be a JSON object with the following fields:
+
+```
+{
+  "call": "queued", 
+  "campaign": "live", "paused", or "archived", 
+  "fromNumber": "+18005551212", 
+  "redirect": null or a URL to redirect to on success, 
+  "script": "" or an HTML blob to display to the user, 
+  "targets": {
+    "segment": "custom",
+    "objects": [
+      {
+        "name": "", 
+        "phone": "", 
+        "title": ""
+      }, 
+    ]
+    or "display": "Congress" (a string to display for campaigns which do not have pre-set custom targets)
+}
+```
