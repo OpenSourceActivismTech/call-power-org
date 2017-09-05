@@ -38,7 +38,10 @@ def locate_targets(location, campaign, skip_special=False, cache=cache):
         elif campaign.include_special == INCLUDE_SPECIAL_ONLY:
             # find overlap between special_targets and location_targets
             overlap = set(special_targets).intersection(set(location_targets))
-            return list(overlap)
+            overlap_list = list(overlap)
+            if campaign.target_ordering == 'shuffle':
+                random.shuffle(overlap_list)
+            return overlap_list
         else:
             return special_targets
     else:
