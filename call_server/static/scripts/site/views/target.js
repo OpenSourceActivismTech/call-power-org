@@ -15,7 +15,10 @@
 
   CallPower.Collections.TargetList = Backbone.Collection.extend({
     model: CallPower.Models.Target,
-    comparator: 'order'
+    comparator: function( model ) {
+      // have to coerce to integer, because otherwise it will sort lexicographically
+      return parseInt(model.get('order'));
+    }
   });
 
   CallPower.Views.TargetItemView = Backbone.View.extend({
