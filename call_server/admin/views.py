@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 
-from flask import Blueprint, render_template, current_app, flash, url_for, redirect
-from flask_login import login_required
+from flask import Blueprint, render_template, current_app, flash, url_for, redirect, request
+from flask_login import login_required, current_user
 from flask_babel import gettext as _
 
 from ..extensions import db, cache
@@ -15,6 +15,7 @@ from ..call.models import Call
 from ..campaign.constants import STATUS_PAUSED
 from ..api.constants import API_TIMESPANS
 from ..utils import get_one_or_create
+from ..user.models import User
 
 admin = Blueprint('admin', __name__, url_prefix='/admin')
 
@@ -136,6 +137,16 @@ def blocklist(blocklist_id=None):
 
     return render_template('admin/blocklist.html', blocklist=blocklist, form=form)
 
+
+# for flask-limit exempt-when
+# called with request context
+def admin_phone():
+    if current_user.is_authenticated():
+        return True
+
+    # if calling from embedded website, check list of admin users
+    phone = request.values.get('userPhone')
+    return User.query.filter_by(phone=phone).count()
 
 @admin.route('/twilio/resync', methods=['POST'])
 def twilio_resync():
