@@ -4,13 +4,14 @@ from twilio.twiml.voice_response import VoiceResponse, Gather, Dial
 from sqlalchemy_utils.types.phone_number import PhoneNumber, phonenumbers
 
 from flask import abort, Blueprint, request, url_for, current_app
+from flask_login import current_user
 from flask_jsonpify import jsonify
 from twilio.base.exceptions import TwilioRestException
 from sqlalchemy.sql import desc
 from sqlalchemy.exc import SQLAlchemyError
 from datetime import datetime
 
-from ..extensions import csrf, db
+from ..extensions import csrf, db, limiter
 
 from .models import Call, Session
 from .constants import TWILIO_TTS_LANGUAGES
@@ -316,6 +317,10 @@ def incoming():
 
 @call.route('/create', methods=call_methods)
 @crossdomain(origin='*')
+@limiter.limit("1/hour",
+    key_func = lambda : request.values.get('userPhone'),
+    exempt_when=lambda: current_user.is_authenticated
+)
 def create():
     """
     Places a phone call to a user, given a country, phone number, and campaign.

@@ -71,6 +71,7 @@ class ProductionConfig(DefaultConfig):
     CACHE_REDIS_URL = os.environ.get('REDIS_URL')
     CACHE_KEY_PREFIX = 'call-power'
     RQ_REDIS_URL = os.environ.get('REDIS_URL')
+    RATELIMIT_STORAGE_URL = os.environ.get('REDIS_URL')
 
     LOG_PHONE_NUMBERS = os.environ.get('LOG_PHONE_NUMBERS', False)
     OUTPUT_LOG = os.environ.get('OUTPUT_LOG', False)

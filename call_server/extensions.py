@@ -46,3 +46,7 @@ CALLPOWER_CSP = {
 # unsafe-inline needed to render <script> tags without nonce
 # unsafe-eval needed to run bootstrap templates
 talisman = Talisman()
+
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+limiter = Limiter(key_func=get_remote_address)

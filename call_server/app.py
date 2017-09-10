@@ -22,7 +22,8 @@ from .schedule import schedule
 from .api import api, configure_restless, restless_preprocessors
 from .political_data import political_data
 
-from extensions import cache, db, babel, assets, login_manager, csrf, mail, store, rest, rq, talisman, CALLPOWER_CSP
+from extensions import (cache, db, babel, assets, login_manager, 
+    csrf, mail, store, rest, rq, talisman, CALLPOWER_CSP, limiter)
 
 DEFAULT_BLUEPRINTS = (
     site,
@@ -133,6 +134,9 @@ def init_extensions(app):
                   preprocessors=restless_preprocessors)
     rest.app = app
 
+    limiter.init_app(app)
+    for handler in app.logger.handlers:
+        limiter.logger.addHandler(handler)
 
     if app.config.get('DEBUG'):
         from flask_debugtoolbar import DebugToolbarExtension
