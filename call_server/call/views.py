@@ -319,7 +319,7 @@ def incoming():
 
 @call.route('/create', methods=call_methods)
 @crossdomain(origin='*')
-@limiter.limit("1/hour",
+@limiter.limit("2/hour",
     key_func = lambda : request.values.get('userPhone'),
     exempt_when=admin_phone
 )
