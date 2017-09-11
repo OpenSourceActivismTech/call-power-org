@@ -31,6 +31,8 @@ call = Blueprint('call', __name__, url_prefix='/call')
 call_methods = ['GET', 'POST']
 csrf.exempt(call)
 call.errorhandler(400)(abortJSON)
+call.errorhandler(429)(abortJSON)
+
 
 def play_or_say(r, audio, voice='alice', lang='en-US', **kwargs):
     """
