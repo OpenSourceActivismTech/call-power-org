@@ -1963,6 +1963,8 @@ $(document).ready(function () {
         $.getJSON(tableDataUrl).success(function(data) {
           var content = self.targetDataTemplate(data.objects);
           return $('table#table_data').html(content).promise();
+        }).error(function() {
+          $('table#table_data').html('<span class="glyphicon glyphicon-exclamation-sign error"></span> Error loading table');
         }).then(function() {
           return $('table#table_data').tablesorter({
             theme: "bootstrap",
