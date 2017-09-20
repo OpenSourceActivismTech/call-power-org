@@ -2040,6 +2040,7 @@ $(document).ready(function () {
   CallPower.Collections.TargetList = Backbone.Collection.extend({
     model: CallPower.Models.Target,
     comparator: function( model ) {
+      // have to coerce to integer, because otherwise it will sort lexicographically
       return parseInt(model.get('order'));
     }
   });
@@ -2476,6 +2477,12 @@ $(document).ready(function () {
               var msg = response.message + ': '+ fieldDescription + ' version ' + response.version;
               // and display to user
               window.flashMessage(msg, 'success');
+
+              // update parent form-group status and description
+              var parentFormGroup = $('.form-group.'+response.key);
+              parentFormGroup.addClass('valid');
+              parentFormGroup.find('.input-group .help-block').text('');
+              parentFormGroup.find('.description .status').addClass('glyphicon-check');
 
               // close the modal, and cleanup subviews
               if (hideOnComplete) {
