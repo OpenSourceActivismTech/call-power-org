@@ -10,7 +10,7 @@ from sqlalchemy.sql import desc
 from sqlalchemy.exc import SQLAlchemyError
 from datetime import datetime
 
-from ..extensions import csrf, db
+from ..extensions import csrf, db, limiter
 
 from .models import Call, Session
 from .constants import TWILIO_TTS_LANGUAGES
@@ -23,6 +23,7 @@ from ..political_data.geocode import LocationError
 from ..schedule.models import ScheduleCall
 from ..schedule.views import schedule_created, schedule_deleted
 from ..admin.models import Blocklist
+from ..admin.views import admin_phone
 
 from .decorators import crossdomain, abortJSON, stripANSI
 
@@ -30,6 +31,8 @@ call = Blueprint('call', __name__, url_prefix='/call')
 call_methods = ['GET', 'POST']
 csrf.exempt(call)
 call.errorhandler(400)(abortJSON)
+call.errorhandler(429)(abortJSON)
+
 
 def play_or_say(r, audio, voice='alice', lang='en-US', **kwargs):
     """
@@ -316,6 +319,10 @@ def incoming():
 
 @call.route('/create', methods=call_methods)
 @crossdomain(origin='*')
+@limiter.limit("2/hour",
+    key_func = lambda : request.values.get('userPhone'),
+    exempt_when=admin_phone
+)
 def create():
     """
     Places a phone call to a user, given a country, phone number, and campaign.
@@ -355,6 +362,27 @@ def create():
         result = jsonify(campaign=campaign.status)
         return result
 
+    # compute campaign targeting now, to return to calling page
+    if campaign.segment_by == SEGMENT_BY_CUSTOM:
+        targets_list = [t for t in campaign.target_set]
+        if campaign.target_ordering == 'shuffle':
+            # do randomization now
+            random.shuffle(targets_list)
+            # limit to maximum
+            if campaign.call_maximum:
+                targets_list = targets_list[:campaign.call_maximum]
+            # save to params so order persists for this caller
+            params['targetIds'] = [t.uid for t in targets_list]
+        target_response = {
+            'segment': 'custom',
+            'objects': [{'name': t.name, 'title': t.title, 'phone': t.number.e164} for t in targets_list]
+        }
+    else:
+        target_response = {
+            'segment': campaign.segment_by,
+            'display': campaign.targets_display()
+        }
+
     # start call session for user
     try:
         from_number = random.choice(phone_numbers)
@@ -392,7 +420,8 @@ def create():
         else:
             script = ''
             redirect = ''
-        result = jsonify(campaign=campaign.status, call=call.status, script=script, redirect=redirect, fromNumber=from_number)
+        result = jsonify(campaign=campaign.status, call=call.status, script=script, redirect=redirect,
+            fromNumber=from_number, targets=target_response)
         result.status_code = 200 if call.status != 'failed' else 500
     except TwilioRestException, err:
         twilio_error = stripANSI(err.msg)

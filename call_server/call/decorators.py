@@ -48,12 +48,15 @@ def crossdomain(origin=None, methods=None, headers=None,
 
 
 def abortJSON(status, message=None):
+    data = {'status': status.code}
+
     if message:
         current_app.logger.error(message)
-        response = jsonify({'error': message})
+        data['error'] = message
     else:
-
-        response = jsonify({'error': status.description})
+        data['error'] = status.name
+        data['description'] = status.description
+    response = jsonify(data)
     response.status_code = status.code
     return response
 

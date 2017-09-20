@@ -71,19 +71,20 @@ TWILIO_SID_LENGTH = 34
 # from https://www.twilio.com/docs/api/twiml/say#attributes-alice
 # enable more when we get political data for other countries
 LANGUAGE_CHOICES = (
-    # ('da', 'Danish'),
-    # ('de', 'German'),
     ('en', 'English'),
+
+    # ('da', 'Danish'),
+    ('de', 'German'),
     # ('ca', 'Catalan'),
     ('es', 'Spanish'),
     # ('fi', 'Finnish'),
     ('fr', 'French'),
-    # ('it', 'Italian'),
+    ('it', 'Italian'),
     # ('ja', 'Japanese'),
     # ('ko', 'Korean'),
     # ('no', 'Norwegian'),
     # ('nl', 'Dutch'),
-    # ('pl', 'Polish'),
+    ('pl', 'Polish'),
     # ('pt', 'Portuguese'),
     # ('ru', 'Russian'),
     # ('sv', 'Swedish'),
