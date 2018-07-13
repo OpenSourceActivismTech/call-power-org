@@ -9,9 +9,9 @@
 		<title>Call Power{%if page.title%} - {{page.title}}{%endif%}</title>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<!--[if lte IE 8]><script src="{{ site.github.url }}/assets/js/ie/html5shiv.js"></script><![endif]-->
-		<link rel="stylesheet" href="{{ site.github.url }}/assets/css/main.css?d={{site.time | date: '%s'}}" />
-		<!--[if lte IE 8]><link rel="stylesheet" href="{{ site.github.url }}/assets/css/ie8.css" /><![endif]-->
+		<!--[if lte IE 8]><script src="{{site.github.url|replace:'http://','//'}}/assets/js/ie/html5shiv.js"></script><![endif]-->
+		<link rel="stylesheet" href="{{site.github.url|replace:'http://','//'}}/assets/css/main.css?d={{site.time | date: '%s'}}" />
+		<!--[if lte IE 8]><link rel="stylesheet" href="{{site.github.url|replace:'http://','//'}}/assets/css/ie8.css" /><![endif]-->
 
 		<meta property="og:url"                content="https://callpower.org{{page.url}}" />
 		<meta property="og:type"               content="website" />
@@ -70,11 +70,11 @@
 
 		<!-- Scripts -->
 		{% include redirect.html %}
-		<script src="{{ site.github.url }}/assets/js/jquery.min.js"></script>
-		<script src="{{ site.github.url }}/assets/js/skel.min.js"></script>
-		<script src="{{ site.github.url }}/assets/js/util.js"></script>
-		<!--[if lte IE 8]><script src="{{ site.github.url }}/assets/js/ie/respond.min.js"></script><![endif]-->
-		<script src="{{ site.github.url }}/assets/js/main.js?d={{ site.time | date: '%s' }}"></script>
+		<script src="{{site.github.url|replace:'http://','//'}}/assets/js/jquery.min.js"></script>
+		<script src="{{site.github.url|replace:'http://','//'}}/assets/js/skel.min.js"></script>
+		<script src="{{site.github.url|replace:'http://','//'}}/assets/js/util.js"></script>
+		<!--[if lte IE 8]><script src="{{site.github.url|replace:'http://','//'}}/assets/js/ie/respond.min.js"></script><![endif]-->
+		<script src="{{site.github.url|replace:'http://','//'}}/assets/js/main.js?d={{ site.time | date: '%s' }}"></script>
 
 		{% if page.extra_scripts %}
 			{{page.extra_scripts}}
