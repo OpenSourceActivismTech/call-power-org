@@ -3,7 +3,7 @@
 var onMainDomain = /(^|\.)callpower\.org|localhost$/.test(window.location.hostname);
 if (!onMainDomain) {
 	var page = window.location.pathname.replace('/call-power-org/','');
-	var redirect = 'http://www.callpower.org/'+page;
+	var redirect = 'https://www.callpower.org/'+page;
 	window.location.replace(redirect);
 }
 </script>
