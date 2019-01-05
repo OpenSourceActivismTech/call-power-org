@@ -1903,7 +1903,7 @@ input[type="button"],
     .feature.left .content {
       padding-right: 0; }
   .feature.right {
-    text-align: right; }
+    text-align: left; }
     .feature.right .image {
       float: right; }
       .feature.right .image img {
